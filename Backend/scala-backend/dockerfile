@@ -1,0 +1,13 @@
+# FROM bitbucketpipelines/scala-sbt
+
+FROM openjdk:11-jre-slim
+
+ADD target/universal/klassentrenner-1.0.zip klassentrenner-1.0.zip
+
+RUN apt-get update -y
+
+RUN apt-get install -y unzip
+
+RUN unzip klassentrenner-1.0.zip
+
+ENTRYPOINT [ "bash", "klassentrenner-1.0/bin/klassentrenner", "-Dplay.http.secret.key='Vd=iSgvwzT=Q;<PKfEjx<4n:V:jQ0xo/6Z?`3ti<b_ZtuuJUbagfi>fPWAY68<`k'" ]
