@@ -3,3 +3,4 @@
 Backend/scala-backend/.gitignore
 .metals/metals.lock.db
 .metals/metals.h2.db
+.vscode

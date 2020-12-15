@@ -12,3 +12,8 @@ RUN npm run build --prod
 # Stage 2
 FROM nginx:1.19.5-alpine
 COPY --from=build-step /app/dist/klassentrener-ui /usr/share/nginx/html
+
+
+# TO use it:
+# docker build -t rauwuckl/test .
+# docker run -d -it -p 80:80/tcp --name test rauwuckl/test
