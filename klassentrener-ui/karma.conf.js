@@ -37,7 +37,19 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome'],
+    // browsers: ['Chrome'],
+    // from https://stackoverflow.com/questions/42805028/how-to-debug-karma-tests-in-visual-studio-code
+    browsers: [
+      'ChromeDebugging'
+    ],
+    
+    customLaunchers: {
+      ChromeDebugging: {
+        base: 'Chrome',
+        flags: [ '--remote-debugging-port=9333' ]
+      }
+    },
+    // end
     singleRun: false,
     restartOnFileChange: true
   });
