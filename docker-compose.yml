@@ -13,3 +13,8 @@ services:
     volumes:
       - $HOME/Desktop/postgres-Snippets/test.sql:/test.sql
     network_mode: bridge 
+  backend:
+    build: Backend/scala-backend
+    ports: 
+      - "9000:9000"
+    network_mode: bridge 

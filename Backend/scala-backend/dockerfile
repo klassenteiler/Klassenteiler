@@ -1,13 +1,38 @@
-FROM bitbucketpipelines/scala-sbt
+FROM openjdk:11-jdk-slim
 
+RUN apt-get update
 RUN apt-get install -y unzip
+RUN apt-get install -y curl
 
-COPY . /app
+# Set environment variables.
+ENV SCALA_VERSION 2.13.3
+ENV SBT_VERSION 1.3.13
 
-WORKDIR /app
+# Install scala.
+RUN \
+  cd /root && \
+  curl -o scala-$SCALA_VERSION.tgz http://downloads.typesafe.com/scala/$SCALA_VERSION/scala-$SCALA_VERSION.tgz && \
+  tar -xf scala-$SCALA_VERSION.tgz && \
+  rm scala-$SCALA_VERSION.tgz && \
+  echo >> /root/.bashrc && \
+  echo 'export PATH=~/scala-$SCALA_VERSION/bin:$PATH' >> /root/.bashrc
+
+# Install sbt.
+RUN \
+  curl -k -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb && \
+  dpkg -i sbt-$SBT_VERSION.deb && \
+  rm sbt-$SBT_VERSION.deb && \
+  apt-get update && \
+  apt-get install sbt
+
+RUN sbt update
+
+COPY . /src
+
+WORKDIR /src
 
 RUN sbt dist
 
-RUN unzip /app/target/universal/klassentrenner-1.0.zip 
+RUN unzip /src/target/universal/klassentrenner-1.0.zip 
 
 ENTRYPOINT [ "bash", "klassentrenner-1.0/bin/klassentrenner", "-Dplay.http.secret.key='Vd=iSgvwzT=Q;<PKfEjx<4n:V:jQ0xo/6Z?`3ti<b_ZtuuJUbagfi>fPWAY68<`k'" ]
