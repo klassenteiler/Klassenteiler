@@ -175,6 +175,20 @@ export class ClassTeacher{
     return teachT
   }
 
+
+  clearLocalStudentFromTransport(studentT: StudentT): ClearLocalStudent{
+    const studentName = this.decrypt(studentT.encryptedName)
+    
+    const out: ClearLocalStudent = impl<ClearLocalStudent>({
+      id: studentT.id,
+      decryptedName: studentName,
+      groupBelonging: studentT.groupBelonging,
+      selfReported: studentT.selfReported
+    })
+    return out
+  }
+
+
   toJsonString(): string {
      const keyPem: string = forge.pki.privateKeyToPem(this.privateKey)
 
