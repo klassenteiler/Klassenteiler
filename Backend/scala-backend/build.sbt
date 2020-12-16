@@ -1,4 +1,4 @@
-name := """Klassentrenner"""
+name := """Klassenteiler"""
 organization := "com.cogscigang"
 
 version := "1.0"
@@ -8,8 +8,12 @@ scalaVersion := "2.13.3"
 
 maintainer := "anton@laukemper.it"
 
-libraryDependencies += guice
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+libraryDependencies ++= Seq(
+guice,
+jdbc,
+"org.postgresql" % "postgresql" % "42.1.0",
+"org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+)
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.cogscigang.controllers._"
