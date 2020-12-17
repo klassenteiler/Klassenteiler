@@ -1,7 +1,7 @@
 FROM openjdk:11-jdk-slim
 
 RUN apt-get update
-RUN apt-get install -y unzip
+# RUN apt-get install -y unzip
 RUN apt-get install -y curl
 
 # Set environment variables.
@@ -31,8 +31,8 @@ COPY . /src
 
 WORKDIR /src
 
-RUN sbt dist
+ENTRYPOINT ["sbt", "run"]
 
-RUN unzip /src/target/universal/klassentrenner-1.0.zip 
+# RUN unzip /src/target/universal/klassentrenner-1.0.zip 
 
-ENTRYPOINT [ "bash", "klassentrenner-1.0/bin/klassentrenner", "-Dplay.http.secret.key='Vd=iSgvwzT=Q;<PKfEjx<4n:V:jQ0xo/6Z?`3ti<b_ZtuuJUbagfi>fPWAY68<`k'" ]
+# ENTRYPOINT [ "bash", "klassentrenner-1.0/bin/klassentrenner", "-Dplay.http.secret.key='Vd=iSgvwzT=Q;<PKfEjx<4n:V:jQ0xo/6Z?`3ti<b_ZtuuJUbagfi>fPWAY68<`k'" ]
