@@ -2,6 +2,9 @@ import { Injectable } from '@angular/core';
 import * as forge from 'node-forge';
 import { ClassTeacherT, ClearLocalStudent, SchoolClassT, StudentT } from '../models';
 import {environment} from '../../environments/environment'
+import { bindCallback, Observable } from 'rxjs';
+import { RSA_NO_PADDING } from 'constants';
+import { map } from 'rxjs/operators';
 
 const classSecretLength: number = environment.classSecretLength
 const teacherPasswordLength: number = environment.teacherPasswordLength
@@ -20,6 +23,21 @@ export class EncTools {
       return hashHex
   }
 
+  static generateKeypairAsync(): Observable<forge.pki.rsa.KeyPair>{
+    const out:Observable<forge.pki.rsa.KeyPair> = new Observable(subscriber => {
+      forge.pki.rsa.generateKeyPair({bits: 2048, workers: 2}, function(err, keypair){
+        if (err === null){
+          subscriber.next(keypair);
+        }
+        else {
+          subscriber.error(err)
+        }
+        subscriber.complete()
+      })
+    });
+    return out
+  }
+
   static createRandomString(length: number): string{
     const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678'
     const nChars = charset.length
@@ -33,18 +51,28 @@ export class EncTools {
     return  password
   }
 
-  static makeClass(schoolName: string, className: string, password: string): [SchoolClass, ClassTeacher]{
-    const keys = forge.pki.rsa.generateKeyPair();
+  static createTeacherPassword(): string {
+    console.log(">>create teacher password<<")
+    return EncTools.createRandomString(teacherPasswordLength)
+  }
+
+  static makeClass(schoolName: string, className: string, password: string): Observable<[SchoolClass, ClassTeacher]>{
+    // console.log(">>Executing slow make class<<")
+    const keysObs: Observable<forge.pki.rsa.KeyPair> = EncTools.generateKeypairAsync();
 
     const class_secret = EncTools.createRandomString(classSecretLength)
 
-    const schoolClass: SchoolClass = new SchoolClass(schoolName, className, class_secret, keys.publicKey)
+    const finalObs: Observable<[SchoolClass, ClassTeacher]> = keysObs.pipe(map(keys => {
+      const schoolClass: SchoolClass = new SchoolClass(schoolName, className, class_secret, keys.publicKey)
 
-    const teacherSecret: string = schoolClass.deriveTeacherSecret(password)
+      const teacherSecret: string = schoolClass.deriveTeacherSecret(password)
 
-    const classTeacher : ClassTeacher = new ClassTeacher(keys.privateKey, teacherSecret)
+      const classTeacher : ClassTeacher = new ClassTeacher(keys.privateKey, teacherSecret)
 
-    return [schoolClass, classTeacher]
+      return [schoolClass, classTeacher]
+    }));
+
+    return finalObs
   }
 
   static encrypt(msg: string, publicKey: forge.pki.rsa.PublicKey): string {
@@ -82,6 +110,17 @@ export class SchoolClass{
 
   deriveTeacherSecret(teacherPassword: string): string{
     return this.hashForClass(teacherPassword)
+  }
+
+  name(): string{
+    return `${this.className} - ${this.schoolName}`
+  }
+
+  url(): string{
+    if (this.id === undefined){
+      throw new Error("Cannot get URL of a class that has undefined id")
+    }
+    return `${this.id}/${this.classSecret}`
   }
 
   hashStudentName(studentName: string): string {

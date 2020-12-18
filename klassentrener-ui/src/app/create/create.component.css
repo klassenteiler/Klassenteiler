@@ -1,0 +1,17 @@
+
+
+
+/* .card {
+    margin: 0 auto;
+    float: none;
+    margin-bottom: 10px;
+} */
+.container-fluid {
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 800px; /* or 950px */
+  }
+
+#passwordDisplay {
+    display: inline-block;
+}

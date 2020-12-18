@@ -5,7 +5,8 @@
 export const environment = {
   production: false,
   teacherPasswordLength: 8,
-  classSecretLength: 8
+  classSecretLength: 8,
+  configPath: "/assets/config.json"
 };
 
 /*
