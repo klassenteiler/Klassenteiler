@@ -23,4 +23,12 @@ export class BackendService {
 
      return req
   }
+
+  teacherAuth(classId: number, classSecret: string, teacherSecret: string): Observable<ClassTeacherT> {
+    const headers = new HttpHeaders().set("teacherSecret", teacherSecret)
+    const req = this.http.get<ClassTeacherT>(`${this.config.apiBaseUrl}/teacherAuth/${classId}/${classSecret}`, 
+      {headers: headers}
+    )
+    return req
+  }
 }

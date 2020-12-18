@@ -1,2 +1,23 @@
 <p>teacher-view works!</p>
-{{schoolClass.className}}
+
+<div class="container container-fluid">
+    <H1>Lehreransicht: <mark>{{schoolClass.name()}} </mark></H1>
+
+
+    <div class="card">
+        <div *ngIf="classTeacher === null" class="card-body">
+          Sie sind noch nicht authentifiziert. Bitte Geben sie den Code für diese Klasse:
+          <form class = "form">
+            <div>
+              <label>Code:</label>
+              <input #teacherPassword placeholder="aBcD1eF2" type="text" class="form-control" style="max-width: 300px;">
+            </div>
+              <button type='button' class="btn btn-primary btn-sm" (click)="authenticateTeacher(teacherPassword.value)">Bestätigen </button>
+          </form>
+        </div>
+        <div *ngIf="classTeacher !== null" class="card-body">
+          Authentifiziert. 
+        </div>
+     </div>
+</div>
+<!-- {{schoolClass.className}} -->
