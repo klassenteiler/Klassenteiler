@@ -11,7 +11,7 @@ CREATE TABLE SchoolClass (
 
 CREATE TABLE Student (
     id serial PRIMARY KEY,
-    classId INTEGER REFERENCES SchoolClass (id) ON DELETE CASCADE,
+    classId integer REFERENCES SchoolClass (id) ON DELETE CASCADE,
     hash varchar(100) NOT NULL,
     encryptedName varchar(100) NOT NULL,
     selfReported boolean NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE Student (
 
 CREATE TABLE Relationship (
     id serial PRIMARY KEY,
-    sourceID INTEGER REFERENCES SchoolClass (id) ON DELETE SET NULL,
-    targetID INTEGER REFERENCES SchoolClass(id) ON DELETE SET NULL
- 
+    sourceID integer REFERENCES SchoolClass (id) ON DELETE SET NULL,
+    targetID integer REFERENCES SchoolClass (id) ON DELETE SET NULL
 );
+
