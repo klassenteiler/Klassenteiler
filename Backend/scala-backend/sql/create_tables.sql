@@ -6,7 +6,7 @@ CREATE TABLE SchoolClass (
     encryptedPublicKey varchar(100) NOT NULL,
     teacherSecret varchar(100) NOT NULL,
     privateKey varchar(100) NOT NULL,
-    surveyStatus varchar()
+    surveyStatus varchar(11)
 );
 
 CREATE TABLE Student (

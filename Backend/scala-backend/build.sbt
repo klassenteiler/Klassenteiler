@@ -12,6 +12,10 @@ libraryDependencies ++= Seq(
 guice,
 jdbc,
 "org.postgresql" % "postgresql" % "42.1.0",
+"com.typesafe.play" %% "play-slick" % "5.0.0",
+"com.typesafe.play" %% "play-json" % "2.8.1",
+"com.typesafe.slick" %% "slick-codegen" % "3.3.3",
+"com.typesafe.slick" %% "slick-hikaricp" % "3.3.3",
 "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
 )
 
