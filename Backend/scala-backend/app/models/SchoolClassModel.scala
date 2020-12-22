@@ -26,4 +26,8 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
     ).flatMap(addCount => Future(addCount > 0))
     // translate the return value of the transaction (number of rows affected) into a boolean
   }
+
+  def removeSchoolclass(classId: Int): Future[Boolean] = ???
+
+  def getSchoolClass(classId: Int): Future[SchoolClassCC] = ???
 }

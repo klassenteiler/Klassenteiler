@@ -57,4 +57,12 @@ class SchoolClassController @Inject() (
       case None => Future.successful(BadRequest("Empty Body"))
     }
   }
+
+  // GET /getClass/:id/:classSecret
+  def getSchoolClass() = ???
+
+  // GET /teacherAuth/:id/:classSecret
+
+  // GET /nSingups/:id/:classSecret
+
 }
