@@ -17,6 +17,12 @@ const hashIterations: number  = 3000
 export class EncTools {
   constructor() { }
 
+  static cleanName(name:string ): string{
+    return name.toLowerCase().replace(/\s+/g, ' ').trim().split(' ').map((word)=>{
+      return word[0].toUpperCase() + word.substring(1);
+    }).join(" ")
+  }
+
   static deriveHash(message: string, salt: string): string{
       const hashBits: string = forge.pkcs5.pbkdf2(message, salt, hashIterations, nHashBits)
       const hashHex: string = forge.util.bytesToHex(hashBits)
@@ -116,7 +122,7 @@ export class SchoolClass{
     return `${this.className} - ${this.schoolName}`
   }
 
-  url(): string{
+  get url(): string{
     if (this.id === undefined){
       throw new Error("Cannot get URL of a class that has undefined id")
     }

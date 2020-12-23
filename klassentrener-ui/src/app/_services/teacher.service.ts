@@ -1,6 +1,7 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { ClassTeacherT } from '../models';
 import { ClassTeacher, SchoolClass } from '../_tools/enc-tools.service';
 import { BackendService } from './backend.service';
@@ -26,6 +27,13 @@ export class TeacherService {
 
     sessionStorage.setItem(this.localTeacherKey(teacher.id), teach_string)
     this.knownTeachers.set(teacher.id, teacher)
+  }
+
+  deleteLocalTeacher(clasId: number): boolean {
+
+    sessionStorage.removeItem(this.localTeacherKey(clasId));
+    this.knownTeachers.delete(clasId);
+    return true;
   }
 
   getLocalTeacher(clasId: number){
@@ -64,6 +72,38 @@ export class TeacherService {
      ));
 
      return second
+  }
+
+
+  nSignups(schoolClass: SchoolClass, teacher: ClassTeacher): Observable<number> {
+    const req = this.backendService.nSignups(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret
+      ).pipe(catchError(e=>this.handleTeacherError(schoolClass.id!, e))).pipe(
+        map(data => {
+        console.log(data);
+        if (data.value === undefined){throw new Error("The server response for nSignups does not have a field 'value'")}
+        return data.value
+      }))
+
+    return req
+  }
+
+  closeSurvey(schoolClass: SchoolClass, teacher: ClassTeacher): Observable<string>{
+    return this.backendService.closeSurvey(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
+      catchError(e=>this.handleTeacherError(schoolClass.id!, e))).pipe(
+        map(data=>{
+      if (data.message === undefined){ throw new Error("The server response for ccloseSurvey has no field message")}
+      return data.message
+    }))
+  }
+
+  handleTeacherError(classId: number, error: HttpErrorResponse){
+    if (error.status === 401){
+      console.log('teacher secret wrong error')
+      // TODO how do I get the class id in here
+      this.deleteLocalTeacher(classId)
+      window.location.reload();
+    }
+    return throwError(error);
   }
 
 }

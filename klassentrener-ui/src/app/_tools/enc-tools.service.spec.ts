@@ -25,6 +25,13 @@ describe('EncTools', () => {
     classTeacher = classTeacherTmp;
   });
 
+  it('should clean anems', () => {
+    expect(EncTools.cleanName(" peter   pan ")).toEqual('Peter Pan');
+    expect(EncTools.cleanName(" peTer   pan ")).toEqual('Peter Pan');
+    expect(EncTools.cleanName("lé jessy Müller-turgau van   Plappen")).toEqual('Lé Jessy Müller-turgau Van Plappen');
+
+  })
+
   it('async gen keypair should work', () =>{
     const keypairObs: Observable<forge.pki.rsa.KeyPair> = EncTools.generateKeypairAsync();
     console.log("1: promise declared")

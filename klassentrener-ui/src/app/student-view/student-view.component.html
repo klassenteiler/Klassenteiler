@@ -1,0 +1,59 @@
+<div class='container'>
+    
+<H1>Schüleransicht: {{schoolClass.name()}}</H1>
+
+<div class="alert alert-danger" role="alert" id="error" *ngIf="errorMessage !=='' ">
+    {{errorMessage}}
+</div>
+
+<div class="alert alert-success" role="alert" id="success" *ngIf="successMessage !=='' ">
+    {{successMessage}}
+</div>
+
+<!-- <div class="alert alert-danger" role="alert" id="survey-closed" *ngIf="schoolClass.status !== schoolClassStatus.open">
+    Der/Die LehrerIn hat die Umfrage für diese Klasse bereits beendet. 
+</div> -->
+
+<form [formGroup]="studentSurvey" id="studentSurvey" *ngIf="surveyOpen" (ngSubmit)="onSubmit()">
+<div class='card'>
+    <div class='card-body'>
+
+    <div class="row">
+        <div class="col-9">
+            <label>Dein Name</label>
+            <input type="text" class="form-control" placeholder="Vorname Nachname" formControlName="ownName">
+        </div>
+    </div>
+
+</div></div>
+<div class='card'>
+    <div class='card-body'>
+        <H4> Trage hier deine Freunde ein</H4>
+    <div formArrayName="friendsNames">
+    <div class="row" *ngFor="let friendName of friendsNames.controls; let i = index;">
+        
+        <div class="col-10">
+            <input type="text" class="form-control"  [formControlName]="i">
+          </div>
+          <div class="col-2">
+              <div class='btn-toolbar'>
+            <button type='button' class="btn btn-danger" (click)="delete(i);">
+                <svg class="bi" width="22" height="22" fill="currentColor">
+                    <use xlink:href="assets/bootstrap-icons.svg#trash"/>
+                </svg>
+            </button>
+        </div>
+          </div>          
+    </div>
+            <button type='button' class="btn btn-primary mr-2" (click)="addFriend()" [disabled]="friendsNames.length >= maxFriends">   
+                <svg class="bi" width="22" height="22" fill="currentColor">
+                    <use xlink:href="assets/bootstrap-icons.svg#person-plus-fill"/>
+                </svg>
+            </button>
+        </div>
+</div>
+</div>
+<button class='btn btn-primary' type="submit" [disabled]="!studentSurvey.valid">Abschicken</button>
+</form>
+<!-- <button type='button' (click)="check()"> check</button> -->
+</div>

@@ -1,17 +1,42 @@
 import { Injectable } from '@angular/core';
-import { ClassTeacher, SchoolClass, EncTools } from '../_tools/enc-tools.service';
+import { ClassTeacher, SchoolClass, EncTools, impl } from '../_tools/enc-tools.service';
 import { BackendService } from './backend.service';
 import { concatMap, map, switchMap } from 'rxjs/operators';
-import { ClassTeacherT, SchoolClassT } from '../models';
-import { Observable , from, defer} from 'rxjs';
+import { ClassTeacherT, ClearLocalStudent, SchoolClassT, StudentT } from '../models';
+import { Observable , from, defer, config} from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AppConfigService } from '../app-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SchoolClassService {
 
-  constructor(private backendService: BackendService) { }
+  constructor(private backendService: BackendService, private config: AppConfigService) { }
+
+  submitStudentSurvey(schoolClass: SchoolClass, ownName: string, friendsNames: Array<string>){
+    const payload = this.prepareStudentSurveySubmission(schoolClass, ownName, friendsNames);
+    return this.backendService.submitStudentSurvey(payload, schoolClass.id!, schoolClass.classSecret )
+    // console.log(payload)
+  }
+
+  prepareStudentSurveySubmission(schoolClass: SchoolClass, ownName: string, friendsNames: Array<string>){
+    if( friendsNames.length > this.config.maxFriends){
+      throw new Error("Trying to submit more friends than allowed");
+    }
+
+    const me: ClearLocalStudent = impl<ClearLocalStudent>({
+      decryptedName: ownName, selfReported: true 
+    })
+
+    const friends: Array<ClearLocalStudent> = friendsNames.map((name:string)=>
+      impl<ClearLocalStudent>({decryptedName: name, selfReported: false})
+    );
+
+    const meEnc: StudentT = schoolClass.localStudentToTransport(me);
+    const friendsEnc: Array<StudentT> = friends.map((student: ClearLocalStudent)=> schoolClass.localStudentToTransport(student));
+    return {me: meEnc, friends: friendsEnc}
+  }
 
   getClassFromRoute(route: ActivatedRoute): Observable<SchoolClass> {
     const classId: string | null = route.snapshot.paramMap.get('id')
