@@ -17,3 +17,5 @@ services:
     build: Backend/scala-backend
     ports: 
       - "9000:9000"
+    volumes:
+      - ./Backend/scala-backend/app:/src/app
