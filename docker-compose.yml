@@ -19,3 +19,4 @@ services:
       - "9000:9000"
     volumes:
       - ./Backend/scala-backend/app:/src/app
+      - ./Backend/scala-backend/conf:/src/conf
