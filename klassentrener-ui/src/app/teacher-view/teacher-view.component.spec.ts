@@ -1,23 +1,37 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
+import { SchoolClassStatus } from '../models';
 import { SchoolClassService } from '../_services/school-class.service';
-import { SchoolClass } from '../_tools/enc-tools.service';
+import { TeacherService } from '../_services/teacher.service';
+import { ClassTeacher, EncTools, SchoolClass } from '../_tools/enc-tools.service';
 
 import { TeacherViewComponent } from './teacher-view.component';
 
-class MockSchoolClass{
+class MockTeacher{
 
 }
 
-const MockRoute = {
-  snapshot: {data: { schoolClass: 
-    new MockSchoolClass()
+class MockRoute  {
+  snapshot: any;
+
+  constructor(private cls: SchoolClass){
+    this.snapshot = {data: { schoolClass: 
+      cls
   }}
 }
 
+}
+
 class MockSchoolClassService{
+  constructor(private schoolClass: SchoolClass){}
 
+}
 
+class MockTeacherService{
+  getLocalTeacher(id: number){
+    expect(id).toEqual(23);
+    return new  MockTeacher();
+  }
 }
 
 
@@ -25,12 +39,27 @@ describe('TeacherViewComponent', () => {
   let component: TeacherViewComponent;
   let fixture: ComponentFixture<TeacherViewComponent>;
 
+  let schoolClass: SchoolClass;
+  let teacher: ClassTeacher;
+
+  beforeAll( async () => {
+    await EncTools.makeClass("test school", "test class", "test password").toPromise().then(
+      ([sCls, teeach]: [SchoolClass,  ClassTeacher]) => {
+        sCls.id = 23;
+        sCls.status = SchoolClassStatus.open;
+        schoolClass = sCls;
+        teacher = teeach;
+      }
+    );
+  });
+
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [
-        {provide: SchoolClassService, useClass: MockSchoolClassService},
-        {provide: ActivatedRoute, useValue: MockRoute},
+        {provide: SchoolClassService, useValue: new MockSchoolClassService(schoolClass)},
+        {provide: TeacherService, useClass: MockTeacherService},
+        {provide: ActivatedRoute, useValue: new MockRoute(schoolClass)},
       ],
       declarations: [ TeacherViewComponent ]
     })

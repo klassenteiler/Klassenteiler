@@ -1,0 +1,17 @@
+<div class="card">
+    <div class="card-body">
+        <H4> Bitte Teilen sie den folgenden Link mit den Schülern:</H4>
+        <a href="{{studentUrl}}">{{studentUrl}}</a>
+
+        <qrcode [qrdata]="studentUrl" [width]="256" [errorCorrectionLevel]="'M'"></qrcode>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <H4> Übersicht</H4>
+        <p>Bisher haben sich <mark>{{nSignups}}</mark> Schüler eingetragen. </p>
+
+        Klicken sie den Knopf hier um die Umfrage zu beenden. Dann kann sich kein Schüler mehr eintragen. 
+        <button class="btn btn-warning" (click)="closeSurvey()">Umfrage schliesen!</button>
+    </div>
+</div>

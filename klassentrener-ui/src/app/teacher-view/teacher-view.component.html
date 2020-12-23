@@ -1,4 +1,3 @@
-<p>teacher-view works!</p>
 
 <div class="container container-fluid">
     <H1>Lehreransicht: <mark>{{schoolClass.name()}} </mark></H1>
@@ -10,7 +9,7 @@
           <form class = "form">
             <div>
               <label>Code:</label>
-              <input #teacherPassword placeholder="aBcD1eF2" type="text" class="form-control" style="max-width: 300px;">
+              <input #teacherPassword placeholder="aBcD1eF2" type="text" class="form-control">
             </div>
               <button type='button' class="btn btn-primary btn-sm" (click)="authenticateTeacher(teacherPassword.value)">Bestätigen </button>
           </form>
@@ -19,5 +18,13 @@
           Authentifiziert. 
         </div>
      </div>
+
+     <div id="teacher-dashboard" *ngIf="classTeacher !== null">
+      <app-survey-open *ngIf="schoolClass.status === SchoolClassStatusLocal.open" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-survey-open>
+      <app-teacher-clean-up *ngIf="schoolClass.status === SchoolClassStatusLocal.closed" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-teacher-clean-up>
+      <app-waiting-for-result *ngIf="schoolClass.status === SchoolClassStatusLocal.calculating" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-waiting-for-result>
+      <app-results *ngIf="schoolClass.status === SchoolClassStatusLocal.done" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-results>
+    </div>
+
 </div>
 <!-- {{schoolClass.className}} -->

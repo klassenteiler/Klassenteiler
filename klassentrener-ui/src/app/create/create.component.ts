@@ -46,6 +46,6 @@ export class CreateComponent implements OnInit {
       if( this.generatedSchoolClass === undefined){
         throw new Error("SchoolClass has not been set yet, cant make teacher view link")
       }
-      return `teacher/${this.generatedSchoolClass.url()}`
+      return `teacher/${this.generatedSchoolClass.url}`
     }
 }

@@ -27,3 +27,19 @@ export interface ClearLocalStudent{
     groupBelonging?: number,
     selfReported?: boolean
 }
+
+export interface NumericValueT{
+    value: number
+}
+
+export interface StringMessageT{
+    message: string
+}
+
+export const SchoolClassStatus = {
+    open: "open",
+    closed: "closed",
+    calculating: "calculating",
+    done: "done"
+
+}

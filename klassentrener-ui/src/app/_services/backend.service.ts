@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { ClassTeacherT, SchoolClassT } from '../models';
+import { ClassTeacherT, NumericValueT, SchoolClassT, StringMessageT } from '../models';
 import { SchoolClass } from '../_tools/enc-tools.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AppConfigService } from '../app-config.service';
 import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -19,16 +20,58 @@ export class BackendService {
   }
 
   getClass(classId: string, classSecret: string): Observable<SchoolClassT> {
-     const req = this.http.get<SchoolClassT>(`${this.config.apiBaseUrl}/getClass/${classId}/${classSecret}`) 
-
+     const req = this.http.get<SchoolClassT>(`${this.config.apiBaseUrl}/getClass/${classId}/${classSecret}`).pipe(map(cls =>
+        {
+          if ((cls.id === undefined) || (cls.status === undefined)){
+            throw new Error("Get Class returned a class with missing id or status")
+          }
+          return cls
+        }
+      )) 
      return req
   }
 
-  teacherAuth(classId: number, classSecret: string, teacherSecret: string): Observable<ClassTeacherT> {
+  submitStudentSurvey(payload:any, classId: number, classSecret:string){
+    return this.http.post(`${this.config.apiBaseUrl}/submitStudentSurvey/${classId}/${classSecret}`, payload);
+  }
+
+  prepareTeacherGetRequest<T>(classId: number, classSecret: string, teacherSecret: string, functionName: string): Observable<T> {
     const headers = new HttpHeaders().set("teacherSecret", teacherSecret)
-    const req = this.http.get<ClassTeacherT>(`${this.config.apiBaseUrl}/teacherAuth/${classId}/${classSecret}`, 
+    const url: string = `${this.config.apiBaseUrl}/${functionName}/${classId}/${classSecret}`
+
+    const req = this.http.get<T>(url, 
       {headers: headers}
     )
     return req
   }
+
+  prepareTeacherPutRequest<T>(classId: number, classSecret: string, teacherSecret: string, functionName: string): Observable<T> {
+    console.log('teacher put request')
+    const headers = new HttpHeaders().set("teacherSecret", teacherSecret)
+    const url: string = `${this.config.apiBaseUrl}/${functionName}/${classId}/${classSecret}`
+
+    const req = this.http.put<T>(url, {}, {headers: headers}) // sending an empty body
+    
+    console.log(teacherSecret)
+    console.log(headers)
+    console.log(req)
+    return req
+  }
+
+  teacherAuth(classId: number, classSecret: string, teacherSecret: string): Observable<ClassTeacherT> {
+    // const headers = new HttpHeaders().set("teacherSecret", teacherSecret)
+    // const req = this.http.get<ClassTeacherT>(`${this.config.apiBaseUrl}/teacherAuth/${classId}/${classSecret}`, 
+    //   {headers: headers}
+    // )
+    return this.prepareTeacherGetRequest<ClassTeacherT>(classId, classSecret, teacherSecret, "teacherAuth");
+  }
+
+  nSignups(classId: number, classSecret: string, teacherSecret: string): Observable<NumericValueT> {
+    return this.prepareTeacherGetRequest<NumericValueT>(classId, classSecret, teacherSecret, "nSignups");
+  }
+
+  closeSurvey(classId: number, classSecret: string, teacherSecret: string): Observable<StringMessageT> {
+    return this.prepareTeacherPutRequest<StringMessageT>(classId, classSecret, teacherSecret, "closeSurvey");
+  }
+
 }
