@@ -2,7 +2,7 @@ package models
 
 // turns database configuration into scala code
 // 1. run db on localhost
-// 2. Create Tables in postgres db with code in sql/create_tables.sql
+// 2. Create Tables in postgres db with code in ../database/sql/create_tables.sql
 // 3. run this file with 'sbt runMain models.CodeGen'
 
 object CodeGen extends App {

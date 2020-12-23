@@ -2,6 +2,7 @@ version: '3.1'
 
 services:  
   db:
+    # build: Backend/database
     image: postgres
     restart: always
     environment:
@@ -11,10 +12,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - $HOME/Desktop/postgres-Snippets/test.sql:/test.sql
+      - ./Backend/database/sql:/docker-entrypoint-initdb.d
+      - ./Backend/database/database.sql:/test.sql
 
   backend:
     build: Backend/scala-backend
+    depends_on: 
+      - db
     ports: 
       - "9000:9000"
     volumes:
