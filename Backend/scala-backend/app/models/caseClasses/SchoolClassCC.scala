@@ -7,5 +7,5 @@ final case class SchoolClassCC(
     publicKey: String,
     teacherSecret: String,
     encryptedPrivateKey: String,
-    surveyStatus: Option[String]
+    surveyStatus: Option[Int]
 )

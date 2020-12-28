@@ -25,10 +25,15 @@ class SurveyController @Inject() (
   
 
     // POST /submitStudentSurvey/:id/:classSecret
+    // fügt student zu student table hinzu
+    // fügt friends und student zu relations table hinzu
 
     // PUT /closeSurvey/:id/:classSecret
+    // setzt survey status von schoolclass mit der relevanten id und ruft internen algorithmus auf
+    // ändert alle einträge in der students datenbank
 
     // GET /getResult/:id/:classSecret
+    // checkt ob der status von der relevanten schoolclass korrekt ist und queried die studenttable mit classid == id
     def getResults(): Array[StudentCC] = ??? 
 
 }

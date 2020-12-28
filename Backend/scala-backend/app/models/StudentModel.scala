@@ -14,4 +14,6 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
 
   def getStudent(studentId: Int): Future[StudentCC] = ???
 
+  def getNumberOfStudents(): Future[Int] = ???
+
 }

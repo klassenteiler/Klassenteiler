@@ -57,12 +57,12 @@ trait Tables {
    *  @param encryptedpublickey Database column encryptedpublickey SqlType(varchar), Length(100,true)
    *  @param teachersecret Database column teachersecret SqlType(varchar), Length(100,true)
    *  @param privatekey Database column privatekey SqlType(varchar), Length(100,true)
-   *  @param surveystatus Database column surveystatus SqlType(varchar), Length(11,true), Default(None) */
-  case class SchoolclassRow(id: Int, classname: String, schoolname: Option[String] = None, classsecret: String, encryptedpublickey: String, teachersecret: String, privatekey: String, surveystatus: Option[String] = None)
+   *  @param surveystatus Database column surveystatus SqlType(Integer), Length(11,true), Default(None) */
+  case class SchoolclassRow(id: Int, classname: String, schoolname: Option[String] = None, classsecret: String, encryptedpublickey: String, teachersecret: String, privatekey: String, surveystatus: Option[Int] = None)
   /** GetResult implicit for fetching SchoolclassRow objects using plain SQL queries */
   implicit def GetResultSchoolclassRow(implicit e0: GR[Int], e1: GR[String], e2: GR[Option[String]]): GR[SchoolclassRow] = GR{
     prs => import prs._
-    SchoolclassRow.tupled((<<[Int], <<[String], <<?[String], <<[String], <<[String], <<[String], <<[String], <<?[String]))
+    SchoolclassRow.tupled((<<[Int], <<[String], <<?[String], <<[String], <<[String], <<[String], <<[String], <<?[Int]))
   }
   /** Table description of table schoolclass. Objects of this class serve as prototypes for rows in queries. */
   class Schoolclass(_tableTag: Tag) extends profile.api.Table[SchoolclassRow](_tableTag, "schoolclass") {
@@ -85,7 +85,7 @@ trait Tables {
     /** Database column privatekey SqlType(varchar), Length(100,true) */
     val privatekey: Rep[String] = column[String]("privatekey", O.Length(100,varying=true))
     /** Database column surveystatus SqlType(varchar), Length(11,true), Default(None) */
-    val surveystatus: Rep[Option[String]] = column[Option[String]]("surveystatus", O.Length(11,varying=true), O.Default(None))
+    val surveystatus: Rep[Option[Int]] = column[Option[Int]]("surveystatus", O.Length(11,varying=true), O.Default(None))
   }
   /** Collection-like TableQuery object for table Schoolclass */
   lazy val Schoolclass = new TableQuery(tag => new Schoolclass(tag))

@@ -59,10 +59,13 @@ class SchoolClassController @Inject() (
   }
 
   // GET /getClass/:id/:classSecret
+  // returns schoolclass as json
   def getSchoolClass() = ???
 
   // GET /teacherAuth/:id/:classSecret
+  // returns ClassTeacherT, eine abgespeckte version der schoolclass
 
-  // GET /nSingups/:id/:classSecret
 
+  // GET /nSignups/:id/:classSecret
+  // queries Student Table nach allen einträgen mit classId = id und self-reported == true
 }
