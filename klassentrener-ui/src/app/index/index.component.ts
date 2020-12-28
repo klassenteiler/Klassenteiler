@@ -11,7 +11,7 @@ export class IndexComponent implements OnInit {
 
   configFile: string =""
 
-  constructor(private config : AppConfigService ) { }
+  constructor( ) { }
 
   ngOnInit(): void {
     this.configFile = environment.configPath;

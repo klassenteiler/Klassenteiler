@@ -11,7 +11,7 @@ export class MochTeacherService{
 
     const students: ClearLocalStudent[] = namesAndGroups.map(([nname, group]: [string, number]) => 
       {
-        const s = new ClearLocalStudent(nname, undefined, true, group);
+        const s = new ClearLocalStudent(nname, true, undefined,  group);
         return s
       }
     );
@@ -46,7 +46,7 @@ describe('ResultsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  fit('should set groupA and groupB', () => {
+  it('should set groupA and groupB', () => {
     expect(component.groupA).toBeTruthy()
     
   })

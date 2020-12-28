@@ -19,7 +19,7 @@ export class ClearLocalStudent implements ClearLocalStudentI{
   // selfReported?: boolean | undefined;
   private lastName: string;
 
-  constructor(rawName: string, public id?: number,  public selfReported? :boolean, public groupBelonging?: number ){
+  constructor(rawName: string,  public selfReported :boolean, public id?: number,  public groupBelonging?: number ){
     const cleanedStudentName = EncTools.cleanName(rawName) ;
     this.decryptedName = cleanedStudentName;
 
@@ -268,8 +268,8 @@ export class ClassTeacher{
     
     const out: ClearLocalStudent = new ClearLocalStudent(
        studentName,
-      studentT.id,
        studentT.selfReported,
+      studentT.id,
        studentT.groupBelonging
     )
     return out
