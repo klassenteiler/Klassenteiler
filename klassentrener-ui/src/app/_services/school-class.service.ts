@@ -25,10 +25,10 @@ export class SchoolClassService {
       throw new Error("Trying to submit more friends than allowed");
     }
 
-    const me: ClearLocalStudent = new ClearLocalStudent(ownName, undefined, true, undefined)
+    const me: ClearLocalStudent = new ClearLocalStudent(ownName, true, undefined,  undefined)
 
     const friends: Array<ClearLocalStudent> = friendsNames.map((name:string)=>
-      new ClearLocalStudent(name, undefined, false, undefined)
+      new ClearLocalStudent(name,  false, undefined, undefined)
     );
 
     const meEnc: StudentT = schoolClass.localStudentToTransport(me);

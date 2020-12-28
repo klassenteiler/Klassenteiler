@@ -15,17 +15,17 @@ export interface ClassTeacherT{
 
 export interface StudentT{
     id?: number,
-    hash?: string,
+    hash: string,
     encryptedName: string,
     groupBelonging?: number,
-    selfReported?: boolean
+    selfReported: boolean
 }
 
 export interface ClearLocalStudentI{
     id?: number,
     decryptedName: string,
     groupBelonging?: number,
-    selfReported?: boolean
+    selfReported: boolean
 }
 
 export interface NumericValueT{

@@ -100,9 +100,9 @@ describe('EncTools', () => {
 
   it('studdents should be sorted', ()=> {
     const students: Array<ClearLocalStudent> = [
-      new ClearLocalStudent("Peter dieter"),
-      new ClearLocalStudent("ar  zimiak"),
-      new ClearLocalStudent("Zumu altdorf"),
+      new ClearLocalStudent("Peter dieter", true),
+      new ClearLocalStudent("ar  zimiak", true),
+      new ClearLocalStudent("Zumu altdorf", true),
     ]
 
     const sorted = ClearLocalStudent.sortStudentsByLastName(students);
@@ -116,7 +116,7 @@ describe('EncTools', () => {
   it('should serialize desirialise students', () => {
     const name = "Lé Hans Müller"
 
-    const testStudent = new ClearLocalStudent(name)
+    const testStudent = new ClearLocalStudent(name, true)
 
     var studentTransport = schoolClass!.localStudentToTransport(testStudent)
 
