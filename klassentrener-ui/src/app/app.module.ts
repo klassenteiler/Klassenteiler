@@ -1,4 +1,4 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, Title } from '@angular/platform-browser';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -39,6 +39,7 @@ import { ResultsComponent } from './teacher-view/results/results.component';
     ReactiveFormsModule
   ],
   providers: [
+    Title,
     HttpClientModule,
     {
       provide: APP_INITIALIZER,

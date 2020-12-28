@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as forge from 'node-forge';
-import { ClassTeacherT, ClearLocalStudent, SchoolClassT, StudentT } from '../models';
+import { ClassTeacherT, ClearLocalStudentI, SchoolClassT, StudentT } from '../models';
 import {environment} from '../../environments/environment'
 import { bindCallback, Observable } from 'rxjs';
 import { RSA_NO_PADDING } from 'constants';
@@ -10,6 +10,37 @@ const classSecretLength: number = environment.classSecretLength
 const teacherPasswordLength: number = environment.teacherPasswordLength
 const nHashBits: number = 23
 const hashIterations: number  = 3000
+
+
+export class ClearLocalStudent implements ClearLocalStudentI{
+  // id?: number | undefined;
+  decryptedName: string;
+  // groupBelonging?: number | undefined;
+  // selfReported?: boolean | undefined;
+  private lastName: string;
+
+  constructor(rawName: string, public id?: number,  public selfReported? :boolean, public groupBelonging?: number ){
+    const cleanedStudentName = EncTools.cleanName(rawName) ;
+    this.decryptedName = cleanedStudentName;
+
+
+    this.lastName  = cleanedStudentName.split(" ").slice(-1)[0];
+    // console.log(this.lastName)
+  }
+
+  static sortStudentsByLastName(students: Array<ClearLocalStudent>): Array<ClearLocalStudent>{
+    // this sots INPLACE
+    students.sort((a,b)=>a.lastName.localeCompare(b.lastName))
+    return students
+  }
+  static filterAndSort(students: Array<ClearLocalStudent>, groupValue: number): Array<ClearLocalStudent>{
+    const flteredStudents = students.filter(s => s.groupBelonging === groupValue)
+    const sortedS = ClearLocalStudent.sortStudentsByLastName(flteredStudents);
+    console.log("in sorted")
+    console.log(sortedS)
+    return sortedS
+  }
+}
 
 // @Injectable({
 //   providedIn: 'root'
@@ -137,6 +168,17 @@ export class SchoolClass{
     return EncTools.encrypt(msg, this.publicKey)
   }
 
+  // static makeLocalStudent(decryptedName: string, id?: number, selfReported?: boolean, groupBelonging?:number): ClearLocalStudent{
+  //   const cleanedStudentName = EncTools.cleanName(decryptedName)
+  //   const localStudent: ClearLocalStudent = ClearLocalStudent(
+  //     id: id,
+  //     decryptedName: cleanedStudentName,
+  //     selfReported: selfReported,
+  //     groupBelonging: groupBelonging
+  //   )
+  //   return localStudent
+  // }
+
 
   localStudentToTransport(student: ClearLocalStudent): StudentT {
     const nameHash: string = this.hashStudentName(student.decryptedName)
@@ -224,12 +266,12 @@ export class ClassTeacher{
   clearLocalStudentFromTransport(studentT: StudentT): ClearLocalStudent{
     const studentName = this.decrypt(studentT.encryptedName)
     
-    const out: ClearLocalStudent = impl<ClearLocalStudent>({
-      id: studentT.id,
-      decryptedName: studentName,
-      groupBelonging: studentT.groupBelonging,
-      selfReported: studentT.selfReported
-    })
+    const out: ClearLocalStudent = new ClearLocalStudent(
+       studentName,
+      studentT.id,
+       studentT.selfReported,
+       studentT.groupBelonging
+    )
     return out
   }
 
@@ -257,4 +299,5 @@ export class ClassTeacher{
     return new ClassTeacher(key, teacherStore.teacherSecret, teacherStore.id)
   }
 }
+
 

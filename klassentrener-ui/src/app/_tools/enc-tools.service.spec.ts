@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ClassTeacher, EncTools, impl, SchoolClass } from './enc-tools.service';
+import { ClassTeacher, ClearLocalStudent, EncTools, impl, SchoolClass } from './enc-tools.service';
 import * as forge from 'node-forge';
-import { ClearLocalStudent } from '../models';
 import { title } from 'process';
 import { Observable } from 'rxjs';
+import { ClearLocalStudentI } from '../models';
 
 
 describe('EncTools', () => {
@@ -97,12 +97,26 @@ describe('EncTools', () => {
     // student -> enc -> set id -> dec -> check-same -> end -> check id same
   })
 
+
+  it('studdents should be sorted', ()=> {
+    const students: Array<ClearLocalStudent> = [
+      new ClearLocalStudent("Peter dieter"),
+      new ClearLocalStudent("ar  zimiak"),
+      new ClearLocalStudent("Zumu altdorf"),
+    ]
+
+    const sorted = ClearLocalStudent.sortStudentsByLastName(students);
+
+    expect(sorted[0].decryptedName).toEqual("Zumu Altdorf")
+    expect(sorted[1].decryptedName).toEqual("Peter Dieter")
+    expect(sorted[2].decryptedName).toEqual("Ar Zimiak")
+    console.log(sorted);
+  })
+
   it('should serialize desirialise students', () => {
     const name = "Lé Hans Müller"
 
-    const testStudent = impl<ClearLocalStudent>({
-      decryptedName: name,
-    }) 
+    const testStudent = new ClearLocalStudent(name)
 
     var studentTransport = schoolClass!.localStudentToTransport(testStudent)
 

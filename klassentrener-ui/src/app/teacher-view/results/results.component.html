@@ -1,1 +1,27 @@
-<p>results works!</p>
+<div class='card'>
+    <!-- <button (click)="click()">me</button> -->
+    <div class='card-body'>
+        <div class='row' *ngIf="(groupA !== undefined) && (groupB !== undefined)">
+    <div class="col-sm mt-3">
+        <H3>Gruppe 1</H3>
+        <ul class="list-group">
+            <li *ngFor="let studentA of groupA" class="list-group-item d-flex justify-content-between align-items-center">
+              {{studentA.decryptedName}} 
+              <span class="badge rounded-pill bg-primary">
+                Gruppe {{studentA.groupBelonging}}
+              </span>
+            </li>
+        </ul>
+    </div>
+    <div class="col-sm mt-3">
+        <H3>Gruppe 2</H3>
+        <ul class="list-group">
+            <li *ngFor="let studentB of groupB" class="list-group-item d-flex justify-content-between align-items-center">
+              {{studentB.decryptedName}}
+              <span class="badge rounded-pill bg-warning text-dark">Gruppe {{studentB.groupBelonging}}</span>
+            </li>
+          </ul>
+    </div>
+    </div>
+</div>
+</div>

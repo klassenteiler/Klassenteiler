@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ClassTeacherT, NumericValueT, SchoolClassT, StringMessageT } from '../models';
+import { ClassTeacherT, NumericValueT, SchoolClassT, StringMessageT, StudentT } from '../models';
 import { SchoolClass } from '../_tools/enc-tools.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AppConfigService } from '../app-config.service';
@@ -72,6 +72,10 @@ export class BackendService {
 
   closeSurvey(classId: number, classSecret: string, teacherSecret: string): Observable<StringMessageT> {
     return this.prepareTeacherPutRequest<StringMessageT>(classId, classSecret, teacherSecret, "closeSurvey");
+  }
+
+  getResults(classId: number, classSecret:string, teacherSecret: string): Observable<Array<StudentT>> {
+    return this.prepareTeacherGetRequest<Array<StudentT>>(classId, classSecret, teacherSecret, "getResult");
   }
 
 }

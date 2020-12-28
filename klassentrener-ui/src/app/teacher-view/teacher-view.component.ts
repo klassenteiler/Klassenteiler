@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SchoolClassStatus } from '../models';
@@ -19,7 +20,11 @@ export class TeacherViewComponent implements OnInit {
 
   classTeacher: ClassTeacher | null = null ; 
 
-  constructor(private classService: SchoolClassService, private teacherService: TeacherService, private route: ActivatedRoute) {
+  constructor(private classService: SchoolClassService, 
+    private teacherService: TeacherService,
+     private route: ActivatedRoute,
+     private title: Title,
+     ) {
     const tmpClass: SchoolClass = this.route.snapshot.data.schoolClass as SchoolClass;
     this.schoolClass = tmpClass
     if (this.schoolClass.id === undefined){
@@ -29,6 +34,8 @@ export class TeacherViewComponent implements OnInit {
 
   ngOnInit(): void {
     this.classTeacher = this.teacherService.getLocalTeacher(this.schoolClass.id!)
+
+    this.title.setTitle(`${this.schoolClass.name()} - LehrerIn`)
 
     console.log(this.schoolClass)
   }
