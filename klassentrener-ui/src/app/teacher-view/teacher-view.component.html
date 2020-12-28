@@ -5,13 +5,19 @@
 
     <div class="card">
         <div *ngIf="classTeacher === null" class="card-body">
-          Sie sind noch nicht authentifiziert. Bitte Geben sie den Code für diese Klasse:
-          <form class = "form">
-            <div>
-              <label>Code:</label>
-              <input #teacherPassword placeholder="aBcD1eF2" type="text" class="form-control">
+          Sie sind noch nicht authentifiziert. Bitte Geben sie den 8-stelligen Code für diese Klasse ein:
+          <form class = "form mt-2" >
+            <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <label class="col-form-label">Klassencode:</label>
             </div>
+            <div class="col-auto">
+              <input #teacherPassword placeholder="z.B. aBcD1eF2" type="text" class='form-control'>
+            </div>
+            <div class="col-auto">
               <button type='button' class="btn btn-primary btn-sm" (click)="authenticateTeacher(teacherPassword.value)">Bestätigen </button>
+            </div>
+          </div>
           </form>
         </div>
         <div *ngIf="classTeacher !== null" class="card-body">

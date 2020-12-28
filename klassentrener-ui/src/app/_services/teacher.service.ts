@@ -2,8 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { ClassTeacherT } from '../models';
-import { ClassTeacher, SchoolClass } from '../_tools/enc-tools.service';
+import { ClassTeacherT, StudentT } from '../models';
+import { ClassTeacher, ClearLocalStudent, SchoolClass } from '../_tools/enc-tools.service';
 import { BackendService } from './backend.service';
 
 @Injectable({
@@ -94,6 +94,16 @@ export class TeacherService {
       if (data.message === undefined){ throw new Error("The server response for ccloseSurvey has no field message")}
       return data.message
     }))
+  }
+
+  getResults(schoolClass: SchoolClass, teacher:ClassTeacher): Observable<Array<ClearLocalStudent>>{
+    const req: Observable<Array<ClearLocalStudent>> = this.backendService.getResults(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
+      catchError(e=> this.handleTeacherError(schoolClass.id!, e))
+    ).pipe(map((data: Array<StudentT>) => 
+      data.map(s => teacher.clearLocalStudentFromTransport(s))
+    ))
+    
+    return req
   }
 
   handleTeacherError(classId: number, error: HttpErrorResponse){

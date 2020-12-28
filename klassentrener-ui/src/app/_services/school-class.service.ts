@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { ClassTeacher, SchoolClass, EncTools, impl } from '../_tools/enc-tools.service';
+import { ClassTeacher, ClearLocalStudent, SchoolClass, EncTools, impl } from '../_tools/enc-tools.service';
 import { BackendService } from './backend.service';
 import { concatMap, map, switchMap } from 'rxjs/operators';
-import { ClassTeacherT, ClearLocalStudent, SchoolClassT, StudentT } from '../models';
+import { ClassTeacherT, SchoolClassT, StudentT } from '../models';
 import { Observable , from, defer, config} from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppConfigService } from '../app-config.service';
@@ -25,12 +25,10 @@ export class SchoolClassService {
       throw new Error("Trying to submit more friends than allowed");
     }
 
-    const me: ClearLocalStudent = impl<ClearLocalStudent>({
-      decryptedName: ownName, selfReported: true 
-    })
+    const me: ClearLocalStudent = new ClearLocalStudent(ownName, undefined, true, undefined)
 
     const friends: Array<ClearLocalStudent> = friendsNames.map((name:string)=>
-      impl<ClearLocalStudent>({decryptedName: name, selfReported: false})
+      new ClearLocalStudent(name, undefined, false, undefined)
     );
 
     const meEnc: StudentT = schoolClass.localStudentToTransport(me);

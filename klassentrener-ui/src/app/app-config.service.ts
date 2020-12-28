@@ -44,6 +44,11 @@ export class MockAppConfigService {
       return this.appConfig.maxFriends;
     }
 
+    get appConfigFile(){
+      this.check();
+      return this.appConfig
+    }
+
     get frontendUrl() {
       if (!this.appConfig) {
         throw Error('Config file not loaded!');

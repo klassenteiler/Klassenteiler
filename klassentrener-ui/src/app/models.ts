@@ -21,7 +21,7 @@ export interface StudentT{
     selfReported?: boolean
 }
 
-export interface ClearLocalStudent{
+export interface ClearLocalStudentI{
     id?: number,
     decryptedName: string,
     groupBelonging?: number,
