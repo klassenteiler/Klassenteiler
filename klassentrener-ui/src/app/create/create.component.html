@@ -28,7 +28,7 @@
         </button>
 </div>
 </div>
-<div class="card mt-1 text-center" *ngIf = "(( password !==undefined ) && (generatedSchoolClass !== undefined ))">
+<div id="created-overview" class="card mt-1 text-center" *ngIf = "(( password !==undefined ) && (generatedSchoolClass !== undefined ))">
     <div class="card-body">
       Die Schulklasse <mark>{{generatedSchoolClass.name()}}</mark>wurde erfolgreich erstellt. Bitte schreiben sie sich den folgenden Klassencode umbeding auf. <br/>
       <div class="mt-2">
@@ -36,9 +36,20 @@
         {{password}}
       </div>
       </div>
-      Wenn der Code verloren geht kann aus Datenschutgründen niemand die Ergebnisse der Klassenteilung sehen. Bitte bestätigen Sie mit dem Knopf. 
+      Wenn der Code verloren geht kann aus Datenschutgründen niemand die Ergebnisse der Klassenteilung sehen. 
+
+      Mit diesem Code können Sie die Klasse unter <a href={{getTeacherViewLink(false)}}>{{getTeacherViewLink(true)}}</a> verwalten. 
+      
+      Bitte bestätigen Sie mit dem Knopf. 
       <div> 
-      <a class="btn btn-success mt-2" href={{getTeacherViewLink()}}>Ich habe mir das Passwort notiert.</a>
+        <div class="row text-center">
+          <div class="col-sm">
+        <button class="btn btn-primary mt-2" (click)="savePDFsummary()"> PDF übersicht speichern</button>
+          </div>
+          <div class="col-sm">
+        <a class="btn btn-success mt-2" href={{getTeacherViewLink(false)}}>Ich habe mir das Passwort notiert.</a>
+          </div>
+      </div>
     </div> 
     </div>
   </div>

@@ -150,7 +150,7 @@ export class SchoolClass{
   }
 
   name(): string{
-    return `${this.className} - ${this.schoolName}`
+    return `${this.schoolName} - ${this.className}`
   }
 
   get url(): string{

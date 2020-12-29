@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { SchoolClassService } from '../_services/school-class.service';
 import { ClassTeacher, SchoolClass } from '../_tools/enc-tools.service';
+import { Location} from '@angular/common';
+import { AppConfigService } from '../app-config.service';
+
+import * as jspdf from 'jspdf';  
+import html2canvas from 'html2canvas'; 
+import { PdfTools } from '../_tools/pdf-tools';
 
 @Component({
   selector: 'app-create',
@@ -15,9 +21,12 @@ export class CreateComponent implements OnInit {
 
   password: string| undefined;
   generatedSchoolClass: SchoolClass | undefined;
-  // teacherViewLinkStr: string | undefined;
+  teacherViewLinkStr: string | undefined;
 
-  constructor(private schoolClassService: SchoolClassService) { }
+  constructor(
+    private config: AppConfigService,
+    private schoolClassService: SchoolClassService, 
+    private location: Location) { }
 
   ngOnInit(): void {
   }
@@ -38,14 +47,26 @@ export class CreateComponent implements OnInit {
         this.password = password
         this.generatedSchoolClass = schoolCls
         // this.teacherViewLinkStr = this.getTeacherViewLink()
+        this.location.go(this.getTeacherViewLink(false));
       }
      );
     }
 
-    getTeacherViewLink(){
+    getTeacherViewLink( full: boolean){
       if( this.generatedSchoolClass === undefined){
         throw new Error("SchoolClass has not been set yet, cant make teacher view link")
       }
-      return `teacher/${this.generatedSchoolClass.url}`
+      if (full){
+        return `${this.config.frontendUrl}/teacher/${this.generatedSchoolClass.url}`
+      }
+      else{
+        return `teacher/${this.generatedSchoolClass.url}`
+      }
     }
+
+    savePDFsummary(){
+      if((this.generatedSchoolClass === undefined) || (this.password === undefined)){throw new Error("Cant make PDF cause class is not yet generated")}
+        PdfTools.teacherSummaryPDF(this.generatedSchoolClass.name(), this.password, this.getTeacherViewLink(true));
+    }
+
 }
