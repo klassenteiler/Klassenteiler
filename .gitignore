@@ -7,3 +7,8 @@ project/target
 target
 .scalafmt.conf
 .metals
+project/.bloop/
+.bloop
+project/metals.sbt
+project/project/metals.sbt
+
