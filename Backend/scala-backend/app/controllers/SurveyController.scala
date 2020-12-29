@@ -27,13 +27,31 @@ class SurveyController @Inject() (
     // POST /submitStudentSurvey/:id/:classSecret
     // fügt student zu student table hinzu
     // fügt friends und student zu relations table hinzu
+    def submitSurvey(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
+        Ok("todo")
+    }
 
     // PUT /closeSurvey/:id/:classSecret
-    // setzt survey status von schoolclass mit der relevanten id und ruft internen algorithmus auf
-    // ändert alle einträge in der students datenbank
+    // setzt survey status von schoolclass mit der relevanten id und 
+    def closeSurvey(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
+        Ok("todo")
+    }
+
+    // PUT
+    // setzt survey status auf 2 ('calculating') 
+    // ruft alle relationships auf
+    // ruft internen algorithmus auf
+    // ändert alle groupbelonging einträge in der students datenbank
+    // setzt survey status auf 3 (done)
+    def startCalculating(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
+        Ok("todo")
+    }
 
     // GET /getResult/:id/:classSecret
     // checkt ob der status von der relevanten schoolclass korrekt ist und queried die studenttable mit classid == id
-    def getResults(): Array[StudentCC] = ??? 
+    // returns Array[StudentCC] 
+    def getResults(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
+        Ok("todo")
+    } 
 
 }

@@ -26,6 +26,7 @@ class SchoolClassController @Inject() (
 
   // this is a deserializer needed to convert Json to SchoolClass case class
   implicit val schoolClassReads = Json.reads[SchoolClassCC]
+  implicit val schoolClassWrites = Json.writes[SchoolClassCC]
 
   private val model = new SchoolClassModel(db)
 
@@ -35,37 +36,32 @@ class SchoolClassController @Inject() (
     * will be called when the application receives a `POST` request with
     * a path of `/createClass`.
     */
-  def createSchoolClass() = Action.async { implicit request =>
+  def createSchoolClass() =  Action.async { implicit request =>
     request.body.asJson match {
       // since this returns an option we need to cover the case that 
       // the json contains something and the case that it is empty
       case Some(x) =>
         // this parses the json into a Schoolclass case class
         Json.fromJson[SchoolClassCC](x) match {
-          case JsSuccess(schoolclass, path) =>
-            // calls the SchoolClass model and returns either true or false
-            model.createSchoolClass(schoolclass).map{ creationSuccess =>
-              if (creationSuccess){
-                  Ok(Json.toJson(true))
-              }else{
-                  Conflict(Json.toJson("Creation failed"))
-              }
-            }
+          case JsSuccess(schoolclass, path) => 
+            model.createSchoolClass(schoolclass).map(insertedClass => Ok(Json.toJson(insertedClass)))
           case e  @ JsError(_) => Future.successful(UnsupportedMediaType(Json.toJson("Wrong format")))
         }
-        
       case None => Future.successful(BadRequest("Empty Body"))
     }
   }
 
+
+
   // GET /getClass/:id/:classSecret
   // returns schoolclass as json
-  def getSchoolClass() = ???
-
+  def getSchoolClass(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
+    Ok("todo")
+  }
   // GET /teacherAuth/:id/:classSecret
   // returns ClassTeacherT, eine abgespeckte version der schoolclass
+  def authenticateTeacher(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
+    Ok("todo")
+  }
 
-
-  // GET /nSignups/:id/:classSecret
-  // queries Student Table nach allen einträgen mit classId = id und self-reported == true
 }

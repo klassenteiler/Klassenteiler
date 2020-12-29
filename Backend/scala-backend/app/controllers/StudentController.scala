@@ -16,15 +16,16 @@ import scala.concurrent.Future
 
 
 @Singleton
-class StudentController @Inject() (
-    protected val dbConfigProvider: DatabaseConfigProvider,
-    val cc: ControllerComponents
-)(implicit ec: ExecutionContext)
+class StudentController @Inject() (protected val dbConfigProvider: DatabaseConfigProvider, val cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends AbstractController(cc)
     with HasDatabaseConfigProvider[JdbcProfile] {
   
 
 
-
+  // GET /nSignups/:id/:classSecret
+  // queries Student Table nach allen einträgen mit classId = id und self-reported == true
+  def getSignups(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
+    Ok("todo")
+  }
 
 }
