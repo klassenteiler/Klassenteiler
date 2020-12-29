@@ -3,3 +3,12 @@
 Backend/scala-backend/.gitignore
 .metals/metals.lock.db
 .metals/metals.h2.db
+project/target
+target
+.scalafmt.conf
+.metals
+project/.bloop/
+.bloop
+project/metals.sbt
+project/project/metals.sbt
+
