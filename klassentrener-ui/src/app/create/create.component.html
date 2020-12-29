@@ -1,0 +1,56 @@
+
+<div class = "container container-fluid">
+<div class= "card mx-auto mt-3">
+    <div class="card-title mx-auto">
+        <H2>Neue Schulklasse erstellen</H2>
+    </div>
+<div id="classDetailsForm" class="card-body">
+    <fieldset [disabled]="!formIsOpen">
+    <form>
+        <div class="form-group">
+          <label for="inputSchoolName">Wie heist ihre Schule?</label>
+          <input #inputSchoolName type="text" class="form-control" id="inputSchoolName" placeholder="z.b. Albertus Magnus Gymnasium">
+          <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+        </div>
+        <div class="form-group mt-1 mb-1">
+          <label for="inputClassName">Wie heißt die Klasse?</label>
+          <input #inputClassName type="text" class="form-control" id="inputClassName" placeholder="z.b. 9a">
+        </div>
+        <!-- <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="exampleCheck1">
+          <label class="form-check-label" for="exampleCheck1">Check me out</label>
+        </div> -->
+      </form>
+    </fieldset>
+      <button class="btn btn-primary" type="submit" [disabled]="!formIsOpen" (click)="createClass(inputSchoolName.value, inputClassName.value)">
+        <span [hidden]="!creatingClass" class="spinner-border spinner-border-sm mr-3" role="status"></span>
+        {{buttonText}}
+        </button>
+</div>
+</div>
+<div id="created-overview" class="card mt-1 text-center" *ngIf = "(( password !==undefined ) && (generatedSchoolClass !== undefined ))">
+    <div class="card-body">
+      Die Schulklasse <mark>{{generatedSchoolClass.name()}}</mark>wurde erfolgreich erstellt. Bitte schreiben sie sich den folgenden Klassencode umbeding auf. <br/>
+      <div class="mt-2">
+      <div id="passwordDisplay" class="alert alert-danger mx-auto" role="alert">
+        {{password}}
+      </div>
+      </div>
+      Wenn der Code verloren geht kann aus Datenschutgründen niemand die Ergebnisse der Klassenteilung sehen. 
+
+      Mit diesem Code können Sie die Klasse unter <a href={{getTeacherViewLink(false)}}>{{getTeacherViewLink(true)}}</a> verwalten. 
+      
+      Bitte bestätigen Sie mit dem Knopf. 
+      <div> 
+        <div class="row text-center">
+          <div class="col-sm">
+        <button class="btn btn-primary mt-2" (click)="savePDFsummary()"> PDF übersicht speichern</button>
+          </div>
+          <div class="col-sm">
+        <a class="btn btn-success mt-2" href={{getTeacherViewLink(false)}}>Ich habe mir das Passwort notiert.</a>
+          </div>
+      </div>
+    </div> 
+    </div>
+  </div>
+ <div></div>

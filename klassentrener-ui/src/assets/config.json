@@ -1,0 +1,5 @@
+{
+    "apiBaseUrl": "http://localhost:5000",
+    "frontendUrl": "http://localhost:4200",
+    "maxFriends": 5
+}

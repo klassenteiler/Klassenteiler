@@ -25,3 +25,9 @@ Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protrac
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+
+
+## TODO 
+* fix 404 page URL  
+* catch a server error if a teacher error when some operation is prohibited, and remove that teacher information from the local storage
