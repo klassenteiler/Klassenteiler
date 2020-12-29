@@ -1,7 +1,7 @@
 package models
 
 final case class SchoolClassCC(
-    id: Int,
+    id: Option[Int],
     className: String,
     schoolName: Option[String],
     classSecret: String,
