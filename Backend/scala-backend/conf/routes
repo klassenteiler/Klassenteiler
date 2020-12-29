@@ -3,9 +3,21 @@
 # https://www.playframework.com/documentation/latest/ScalaRouting
 # ~~~~
 
+
 # An example controller showing a sample home page
-GET     /       controllers.HomeController.index
-GET     /check  controllers.ScalaControllerInject.check
+GET     /                                       controllers.HomeController.index
+
+POST    /createClass                            controllers.SchoolClassController.createSchoolClass
+GET     /getClass/:id/:classSecret              controllers.SchoolClassController.getSchoolClass(id: Int, classSecret: String)
+GET     /teacherAuth/:id/:classSecret           controllers.SchoolClassController.authenticateTeacher(id: Int, classSecret: String)
+POST    /submitStudentSurvey/:id/:classSecret   controllers.SurveyController.submitSurvey(id: Int, classSecret: String)
+PUT     /closeSurvey/:id/:classSecret           controllers.SurveyController.closeSurvey(id: Int, classSecret: String)
+PUT     /startCalculating/:id/:classSecret      controllers.SurveyController.startCalculating(id: Int, classSecret: String)
+GET     /getResult/:id/:classSecret             controllers.SurveyController.getResults(id: Int, classSecret: String)
+
+GET     /nSignups/:id/:classSecret              controllers.StudentController.getSignups(id: Int, classSecret: String)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
