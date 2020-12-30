@@ -86,15 +86,38 @@ class SchoolClassController @Inject() (
 
   // GET /getClass/:id/:classSecret
   // returns schoolclass as json
-  def getSchoolClass(id: Int, classSecret: String) = Action {
-    implicit request: Request[AnyContent] =>
-      Ok("todo")
+  def getSchoolClass(id: Int, classSecret: String) = Action.async { implicit request =>
+      val accepted: Future[Boolean] = model.validateAccess(id, classSecret)
+      accepted.flatMap(a => {
+        if(a) {
+          model.getSchoolClass(id).map(returnedClass => Ok(Json.toJson(returnedClass)))
+        }else{
+          Future.successful(NotFound("Schoolclass with that id not found or wrong classSecret"))
+        }
+      })
+      
   }
   // GET /teacherAuth/:id/:classSecret
   // returns ClassTeacherT, eine abgespeckte version der schoolclass
-  def authenticateTeacher(id: Int, classSecret: String) = Action {
-    implicit request: Request[AnyContent] =>
-      Ok("todo")
+  def authenticateTeacher(id: Int, classSecret: String) = Action.async { implicit request =>
+    val accepted: Future[Boolean] = model.validateAccess(id, classSecret)
+    accepted.flatMap(a => {
+        if(a) {
+          request.headers.get("teacherSecret") match {
+            case Some(teacherSecret) => {
+                model.getTeacher(id, teacherSecret).map(result => result match {
+                  case Some(teacher) => Ok(Json.toJson(teacher))
+                  case None => Forbidden("Wrong teacherSecret")
+                })
+            }
+            case None => Future.successful(BadRequest("No teacherSecret provided"))
+          }
+        }else{
+          Future.successful(NotFound("Schoolclass with that id not found or wrong classSecret"))
+        }
+     })
+    
+
   }
 
 }

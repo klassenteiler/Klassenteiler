@@ -32,9 +32,29 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
     db.run(Schoolclass.filter(_.id === classId).delete).map(count => count > 0) 
   }
 
-  def getSchoolClass(classId: Int): Future[SchoolClassCC] = ???
+  def getSchoolClass(classId: Int): Future[SchoolClassCC] = {
+    val q = Schoolclass.filter(_.id === classId)
+    val action = q.result
+    val result: Future[SchoolclassRow] = db.run(action).map(r => r.head)
+    
+    result.map(entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.surveystatus))
+    // result.map(r => println(r.length))
+  }
 
-  def validateAccess(classId: Int, classSecret: String) = ???
+  def validateAccess(classId: Int, classSecret: String): Future[Boolean] = {
+    // we check whether there is exactly one schoolclass with the relevant id and classsecret
+    db.run(Schoolclass.filter(x => (x.id === classId && x.classsecret === classSecret)).result).map(rows => rows.length == 1)
+  }
+
+  def getTeacher(classId: Int, teacherSecret: String): Future[Option[ClassTeacherCC]] = {
+    val schoolClassOption: Future[Option[SchoolclassRow]] = db.run(Schoolclass.filter(x => (x.id === classId && x.teachersecret === teacherSecret)).result).map(rows => rows.headOption)
+    
+    schoolClassOption.map(sc => sc match {
+      case Some(x) =>
+        Some(ClassTeacherCC(Some(x.id), x.encryptedprivatekey, x.teachersecret))
+      case None => None
+    })
+  }
 
   def updateStatus(classId: Int, status: Int) = ???
 }
