@@ -9,7 +9,7 @@ import scala.concurrent.Future
 class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
   
   def createSchoolClass(
-      schoolClassCC: SchoolClassCC
+      schoolClassCC: SchoolClassDB
   ): Future[SchoolClassCC] =  {   
     db.run(
       // this is the table schoolclass and we add another entry | with keyword 'returning' we specify that we want to get the id of the inserted object and the object 
@@ -24,7 +24,7 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
         schoolClassCC.encryptedPrivateKey
         // surveystatus is not set and initialized to Some(0)
       )
-    ).map{entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.teachersecret, entry.encryptedprivatekey,entry.surveystatus)}
+    ).map{entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.surveystatus)}
   }
 
   def removeSchoolclass(classId: Int): Future[Boolean] = {
