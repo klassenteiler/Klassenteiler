@@ -4,7 +4,7 @@ export interface SchoolClassT{
     schoolName: string,
     classSecret: string,
     publicKey: string,
-    status?: string
+    surveyStatus?: string
 }
 
 export interface ClassTeacherT{
@@ -36,7 +36,7 @@ export interface StringMessageT{
     message: string
 }
 
-export const SchoolClassStatus = {
+export const SchoolClassSurveyStatus = {
     open: "open",
     closed: "closed",
     calculating: "calculating",

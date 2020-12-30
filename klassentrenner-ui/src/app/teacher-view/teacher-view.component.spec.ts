@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { SchoolClassStatus } from '../models';
+import { SchoolClassSurveyStatus } from '../models';
 import { SchoolClassService } from '../_services/school-class.service';
 import { TeacherService } from '../_services/teacher.service';
 import { ClassTeacher, EncTools, SchoolClass } from '../_tools/enc-tools.service';
@@ -46,7 +46,7 @@ describe('TeacherViewComponent', () => {
     await EncTools.makeClass("test school", "test class", "test password").toPromise().then(
       ([sCls, teeach]: [SchoolClass,  ClassTeacher]) => {
         sCls.id = 23;
-        sCls.status = SchoolClassStatus.open;
+        sCls.surveyStatus = SchoolClassSurveyStatus.open;
         schoolClass = sCls;
         teacher = teeach;
       }

@@ -21,8 +21,8 @@ export class BackendService {
 
   getClass(classId: string, classSecret: string): Observable<SchoolClassT> {
      const req = this.http.get<SchoolClassT>(`${this.config.apiBaseUrl}/getClass/${classId}/${classSecret}`).pipe(map(cls =>
-        {
-          if ((cls.id === undefined) || (cls.status === undefined)){
+        { 
+          if ((cls.id === undefined) || (cls.surveyStatus === undefined)){
             throw new Error("Get Class returned a class with missing id or status")
           }
           return cls

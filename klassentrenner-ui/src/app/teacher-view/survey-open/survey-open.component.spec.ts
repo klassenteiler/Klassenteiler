@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { AppConfigService, MockAppConfigService } from 'src/app/app-config.service';
-import { SchoolClassStatus } from 'src/app/models';
+import { SchoolClassSurveyStatus } from 'src/app/models';
 import { SchoolClassResolver } from 'src/app/_resolvers/school-class.resolver';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, EncTools, SchoolClass } from 'src/app/_tools/enc-tools.service';
@@ -26,7 +26,7 @@ describe('SurveyOpenComponent', () => {
     await EncTools.makeClass("test school", "test class", "test password").toPromise().then(
       ([sCls, teeach]: [SchoolClass,  ClassTeacher]) => {
         sCls.id = 23;
-        sCls.status = SchoolClassStatus.open;
+        sCls.surveyStatus = SchoolClassSurveyStatus.open;
         schoolClass = sCls;
         teacher = teeach;
       }

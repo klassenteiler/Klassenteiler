@@ -137,7 +137,7 @@ export class SchoolClass{
     public classSecret: string,
     public publicKey: forge.pki.rsa.PublicKey,
     public id?: number,
-    public status?: string
+    public surveyStatus?: string
   ) {};
 
   hashForClass(msg: string): string{
@@ -208,7 +208,7 @@ export class SchoolClass{
       transportObject.classSecret,
       key,
       transportObject.id,
-      transportObject.status
+      transportObject.surveyStatus
       );
 
     return sClass
@@ -222,7 +222,7 @@ export class SchoolClass{
       className: this.className,
       classSecret: this.classSecret,
       publicKey: keyString,
-      status: this.status
+      surveyStatus: this.surveyStatus
     })
     return schoolT
   }

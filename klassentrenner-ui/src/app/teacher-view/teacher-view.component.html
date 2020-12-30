@@ -26,10 +26,10 @@
      </div>
 
      <div id="teacher-dashboard" *ngIf="classTeacher !== null">
-      <app-survey-open *ngIf="schoolClass.status === SchoolClassStatusLocal.open" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-survey-open>
-      <app-teacher-clean-up *ngIf="schoolClass.status === SchoolClassStatusLocal.closed" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-teacher-clean-up>
-      <app-waiting-for-result *ngIf="schoolClass.status === SchoolClassStatusLocal.calculating" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-waiting-for-result>
-      <app-results *ngIf="schoolClass.status === SchoolClassStatusLocal.done" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-results>
+      <app-survey-open *ngIf="schoolClass.surveyStatus === SchoolClassSurveyStatusLocal.open" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-survey-open>
+      <app-teacher-clean-up *ngIf="schoolClass.surveyStatus === SchoolClassSurveyStatusLocal.closed" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-teacher-clean-up>
+      <app-waiting-for-result *ngIf="schoolClass.surveyStatus === SchoolClassSurveyStatusLocal.calculating" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-waiting-for-result>
+      <app-results *ngIf="schoolClass.surveyStatus === SchoolClassSurveyStatusLocal.done" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-results>
     </div>
 
 </div>

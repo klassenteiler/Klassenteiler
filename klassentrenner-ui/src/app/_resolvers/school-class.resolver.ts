@@ -7,7 +7,7 @@ import {
 } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { SchoolClassStatus, SchoolClassT } from '../models';
+import { SchoolClassSurveyStatus, SchoolClassT } from '../models';
 import { BackendService } from '../_services/backend.service';
 import { impl, SchoolClass } from '../_tools/enc-tools.service';
 import { Location} from '@angular/common';

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
-import { SchoolClassStatus } from '../models';
+import { SchoolClassSurveyStatus } from '../models';
 import { SchoolClassService } from '../_services/school-class.service';
 import { TeacherService } from '../_services/teacher.service';
 import { ClassTeacher, SchoolClass } from '../_tools/enc-tools.service';
@@ -14,7 +14,7 @@ import { ClassTeacher, SchoolClass } from '../_tools/enc-tools.service';
 })
 export class TeacherViewComponent implements OnInit {
 
-  readonly  SchoolClassStatusLocal = SchoolClassStatus
+  readonly  SchoolClassSurveyStatusLocal = SchoolClassSurveyStatus
 
   schoolClass: SchoolClass;
 
