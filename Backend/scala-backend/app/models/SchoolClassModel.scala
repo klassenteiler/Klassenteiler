@@ -9,22 +9,22 @@ import scala.concurrent.Future
 class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
   
   def createSchoolClass(
-      schoolClassCC: SchoolClassDB
+      schoolClassDB: SchoolClassDB
   ): Future[SchoolClassCC] =  {   
     db.run(
       // this is the table schoolclass and we add another entry | with keyword 'returning' we specify that we want to get the id of the inserted object and the object 
       // back and we update the object with the new id
       Schoolclass returning Schoolclass.map(_.id) into ((schoolclass,id) => schoolclass.copy(id=id)) += SchoolclassRow(
         -1, // this is a flag that tells the db to autoincrement the id
-        schoolClassCC.className,
-        schoolClassCC.schoolName,
-        schoolClassCC.classSecret,
-        schoolClassCC.publicKey,
-        schoolClassCC.teacherSecret,
-        schoolClassCC.encryptedPrivateKey
+        schoolClassDB.className,
+        schoolClassDB.schoolName,
+        schoolClassDB.classSecret,
+        schoolClassDB.publicKey,
+        schoolClassDB.teacherSecret,
+        schoolClassDB.encryptedPrivateKey
         // surveystatus is not set and initialized to Some(0)
       )
-    ).map{entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.surveystatus)}
+    ).map{entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.surveystatus)} // return
   }
 
   def removeSchoolclass(classId: Int): Future[Boolean] = {
@@ -33,12 +33,14 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
   }
 
   def getSchoolClass(classId: Int): Future[SchoolClassCC] = {
-    val q = Schoolclass.filter(_.id === classId)
-    val action = q.result
-    val result: Future[SchoolclassRow] = db.run(action).map(r => r.head)
+    // for this easy query we split the code up into its individual chunks and provide all types to understand whats going on
+    val q: slick.lifted.Query[Schoolclass,SchoolclassRow,Seq] = Schoolclass.filter(_.id === classId)
+    val action: slick.sql.FixedSqlStreamingAction[Seq[SchoolclassRow],SchoolclassRow,slick.dbio.Effect.Read] = q.result
+    val intermediateResult: Future[Seq[models.Tables.SchoolclassRow]] = db.run(action)
+    val result: Future[SchoolclassRow] = intermediateResult.map(r => r.head)
     
-    result.map(entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.surveystatus))
-    // result.map(r => println(r.length))
+    val schoolClass: Future[SchoolClassCC] = result.map(entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.surveystatus))
+    schoolClass // return
   }
 
   def validateAccess(classId: Int, classSecret: String): Future[Boolean] = {
@@ -51,8 +53,8 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
     
     schoolClassOption.map(sc => sc match {
       case Some(x) =>
-        Some(ClassTeacherCC(Some(x.id), x.encryptedprivatekey, x.teachersecret))
-      case None => None
+        Some(ClassTeacherCC(Some(x.id), x.encryptedprivatekey, x.teachersecret)) // return
+      case None => None // return
     })
   }
 
