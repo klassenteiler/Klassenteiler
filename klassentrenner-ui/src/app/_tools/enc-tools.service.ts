@@ -137,7 +137,7 @@ export class SchoolClass{
     public classSecret: string,
     public publicKey: forge.pki.rsa.PublicKey,
     public id?: number,
-    public surveyStatus?: string
+    public surveyStatus?: number
   ) {};
 
   hashForClass(msg: string): string{
