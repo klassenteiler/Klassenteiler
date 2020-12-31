@@ -23,7 +23,7 @@
       </form>
     </fieldset>
       <button class="btn btn-primary" type="submit" [disabled]="!formIsOpen" (click)="createClass(inputSchoolName.value, inputClassName.value)">
-        <span [hidden]="!creatingClass" class="spinner-border spinner-border-sm mr-3" role="surveyStatus"></span>
+        <span [hidden]="!creatingClass" class="spinner-border spinner-border-sm mr-3" role="status"></span>
         {{buttonText}}
         </button>
 </div>
