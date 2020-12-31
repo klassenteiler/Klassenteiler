@@ -14,6 +14,8 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
 
   def getStudent(studentId: Int): Future[StudentCC] = ???
 
-  def getNumberOfStudents(): Future[Int] = ???
+  def getNumberOfStudents(classId: Int): Future[Int] = {
+    db.run(Student.filter(x => (x.classid === classId && x.selfreported === true)).result).map(rows => rows.length)
+  }
 
 }
