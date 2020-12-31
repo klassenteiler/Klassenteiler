@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { config, of, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { AppConfigService } from '../app-config.service';
-import { SchoolClassStatus } from '../models';
+import { SchoolClassSurveyStatus } from '../models';
 import { SchoolClassService } from '../_services/school-class.service';
 import { SchoolClass } from '../_tools/enc-tools.service';
 
@@ -16,7 +16,7 @@ import { SchoolClass } from '../_tools/enc-tools.service';
 })
 export class StudentViewComponent implements OnInit {
   schoolClass! : SchoolClass;
-  schoolClassStatus = SchoolClassStatus;
+  schoolClassSurveyStatus = SchoolClassSurveyStatus;
   maxFriends = this.config.maxFriends;
 
   errorMessage:string = "";
@@ -38,7 +38,7 @@ export class StudentViewComponent implements OnInit {
     if (this.schoolClass.id === undefined){
       throw new Error("undefined schoolClass.id in teacherView")
     }
-    if (this.schoolClass.status !== this.schoolClassStatus.open){
+    if (this.schoolClass.surveyStatus !== this.schoolClassSurveyStatus.open){
       this.errorAlreadyClosed();
     } else {
       this.surveyOpen = true;

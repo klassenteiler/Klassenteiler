@@ -3,7 +3,7 @@ import { FormBuilder } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { AppConfigService, MockAppConfigService } from '../app-config.service';
-import { SchoolClassStatus } from '../models';
+import { SchoolClassSurveyStatus } from '../models';
 import { SchoolClassService } from '../_services/school-class.service';
 import { ClassTeacher, EncTools, SchoolClass } from '../_tools/enc-tools.service';
 
@@ -36,7 +36,7 @@ describe('StudentViewComponent', () => {
     await EncTools.makeClass("test school", "test class", "test password").toPromise().then(
       ([sCls, teeach]: [SchoolClass,  ClassTeacher]) => {
         sCls.id = 23;
-        sCls.status = SchoolClassStatus.open;
+        sCls.surveyStatus = SchoolClassSurveyStatus.open;
         schoolClass = sCls;
         teacher = teeach;
       }
@@ -67,7 +67,7 @@ describe('StudentViewComponent', () => {
   }); 
 
   it('should NOT render form when closed', () => {
-    schoolClass.status = SchoolClassStatus.closed;
+    schoolClass.surveyStatus = SchoolClassSurveyStatus.closed;
     const fixture = TestBed.createComponent(StudentViewComponent);
     fixture.detectChanges();
     const element = fixture.debugElement.query(By.css('#studentSurvey'));
@@ -80,7 +80,7 @@ describe('StudentViewComponent', () => {
   });
 
   it('should render form when open', () => {
-    schoolClass.status = SchoolClassStatus.open;
+    schoolClass.surveyStatus = SchoolClassSurveyStatus.open;
     const fixture = TestBed.createComponent(StudentViewComponent);
     fixture.detectChanges();
     const element = fixture.debugElement.query(By.css('#studentSurvey'));

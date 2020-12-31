@@ -1,7 +1,7 @@
 package models
 
 final case class ClassTeacherCC(
-    id: Int,
+    id: Option[Int], //this is the classId
     encryptedPrivateKey: String,
     teacherSecret: String
 )

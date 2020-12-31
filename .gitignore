@@ -12,3 +12,4 @@ project/.bloop/
 .bloop
 project/metals.sbt
 project/project/metals.sbt
+project/build.properties
