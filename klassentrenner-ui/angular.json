@@ -96,8 +96,7 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": [
-            ]
+            "scripts": []
           }
         },
         "lint": {
@@ -128,5 +127,8 @@
       }
     }
   },
-  "defaultProject": "klassentrener-ui"
+  "defaultProject": "klassentrener-ui",
+  "cli": {
+    "analytics": "64d717a4-ac6c-4f2c-a40d-d4440f1308f0"
+  }
 }
