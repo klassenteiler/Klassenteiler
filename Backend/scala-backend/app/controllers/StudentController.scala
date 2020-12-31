@@ -24,25 +24,22 @@ class StudentController @Inject() (
   private val scModel: SchoolClassModel = new SchoolClassModel(db)
   private val model: StudentModel = new StudentModel(db)
 
-  // GET /nSignups/:id/:classSecret
-  // queries Student Table nach allen einträgen mit classId = id und self-reported == true
-  def getSignups(
-      id: Int,
-      classSecret: String
-  ): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
-    implicit request: Request[AnyContent] =>
-      val accepted: Future[Boolean] = scModel.validateAccess(id, classSecret)
+  // wrapper that takes in two parameters and a function and returns a Future[mvc.Result]
+                                        // needs the request implicitly                     //I would like to pass the 
+                                                                                            //id and secret here, but the compiler didnt like that...
+  def withAuthentication(id: Int, classSecret: String, f: Any => Future[mvc.Result])(implicit request: Request[AnyContent]) = { 
+    val accepted: Future[Boolean] = scModel.validateAccess(id, classSecret)
       accepted.flatMap(a => {
         if (a) {
           request.headers.get("teacherSecret") match {
             case Some(teacherSecret) => {
               scModel.getTeacher(id, teacherSecret).flatMap(result =>
-                  result match {
-                    case Some(teacher) =>
-                      model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number))) //return
-                    case None => Future.successful(Forbidden("Wrong teacherSecret")) //return
-                  }
-                )
+                result match {
+                  case Some(teacher) =>
+                    f("you can put in here whatever you want") //return
+                  case None => Future.successful(Forbidden("Wrong teacherSecret")) //return
+                }
+              )
             }
             case None =>
               Future.successful(
@@ -57,4 +54,20 @@ class StudentController @Inject() (
       })
   }
 
+
+    def getSignups(id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
+    implicit request: Request[AnyContent] =>
+
+    // sorry for the weird format but I couldn't get it to compile otherwise
+    // I would like to call the wrapper like this:
+
+    // withAuthentication {_ => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))}
+    // and pass the id and classSecret implicitly but that was somehow not possible :(
+    
+    // this is the actual body of this method
+    val body = {_:Any => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))} //return
+
+    // this calls the wrapper method
+    withAuthentication(id, classSecret, body)
+  }
 }
