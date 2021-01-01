@@ -16,51 +16,22 @@ import scala.concurrent.Future
 @Singleton
 class StudentController @Inject() (
     protected val dbConfigProvider: DatabaseConfigProvider,
-    val cc: ControllerComponents
+    val cc: ControllerComponents,
+    val auth: AuthenticationController
 )(implicit ec: ExecutionContext)
     extends AbstractController(cc)
     with HasDatabaseConfigProvider[JdbcProfile] {
 
-  private val scModel: SchoolClassModel = new SchoolClassModel(db)
   private val model: StudentModel = new StudentModel(db)
-
-  // wrapper that takes in a null function and returns a Future[mvc.Result]
-                                                      // needs the request and other parameters implicitly
-  def withAuthentication(f: () => Future[mvc.Result])(implicit request: Request[AnyContent], id: Int, classSecret: String) = { 
-    val accepted: Future[Boolean] = scModel.validateAccess(id, classSecret)
-      accepted.flatMap(a => {
-        if (a) {
-          request.headers.get("teacherSecret") match {
-            case Some(teacherSecret) => {
-              scModel.getTeacher(id, teacherSecret).flatMap(result =>
-                result match {
-                  case Some(teacher) =>
-                    f() //return whatever the passed function returns
-                  case None => Future.successful(Forbidden("Wrong teacherSecret")) //return
-                }
-              )
-            }
-            case None =>
-              Future.successful(
-                BadRequest("No teacherSecret provided")
-              ) //return
-          }
-        } else {
-          Future.successful(
-            NotFound("Schoolclass with that id not found or wrong classSecret")
-          ) //return
-        }
-      })
-  }
-
-
-    def getSignups(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
+  
+  def getSignups(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
    
-    // this is the body of this method put into a null function which is then passed to the authentication wrapper method
-    val body = {() => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))} //return
+    // this is the body of this method put into a function which is then passed to the authentication wrapper method
+    // the function must take a classTeacher as input but we do not use it
+    val body = {_:ClassTeacherCC => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))} //return
 
-    // this calls the wrapper method
-    withAuthentication(body)
+    // this calls the teacher authentication wrapper method, because the teacher needs to submit the correct teachersecret in order to get access to the student count
+    auth.withTeacherAuthentication(body)
   }
 }
