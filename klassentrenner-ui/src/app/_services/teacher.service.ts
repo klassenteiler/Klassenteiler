@@ -96,6 +96,17 @@ export class TeacherService {
     }))
   }
 
+
+  getSelfReported(schoolClass: SchoolClass, teacher:ClassTeacher): Observable<Array<ClearLocalStudent>>{
+    const req: Observable<Array<ClearLocalStudent>> = this.backendService.getSelfReported(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
+      catchError(e=> this.handleTeacherError(schoolClass.id!, e))
+    ).pipe(map((data: Array<StudentT>) => 
+      data.map(s => teacher.clearLocalStudentFromTransport(s))
+    ))
+    
+    return req
+  }
+
   getResults(schoolClass: SchoolClass, teacher:ClassTeacher): Observable<Array<ClearLocalStudent>>{
     const req: Observable<Array<ClearLocalStudent>> = this.backendService.getResults(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
       catchError(e=> this.handleTeacherError(schoolClass.id!, e))
