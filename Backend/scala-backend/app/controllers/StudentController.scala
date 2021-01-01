@@ -24,10 +24,9 @@ class StudentController @Inject() (
   private val scModel: SchoolClassModel = new SchoolClassModel(db)
   private val model: StudentModel = new StudentModel(db)
 
-  // wrapper that takes in two parameters and a function and returns a Future[mvc.Result]
-                                        // needs the request implicitly                     //I would like to pass the 
-                                                                                            //id and secret here, but the compiler didnt like that...
-  def withAuthentication(id: Int, classSecret: String, f: Any => Future[mvc.Result])(implicit request: Request[AnyContent]) = { 
+  // wrapper that takes in a null function and returns a Future[mvc.Result]
+                                                      // needs the request and other parameters implicitly
+  def withAuthentication(f: () => Future[mvc.Result])(implicit request: Request[AnyContent], id: Int, classSecret: String) = { 
     val accepted: Future[Boolean] = scModel.validateAccess(id, classSecret)
       accepted.flatMap(a => {
         if (a) {
@@ -36,7 +35,7 @@ class StudentController @Inject() (
               scModel.getTeacher(id, teacherSecret).flatMap(result =>
                 result match {
                   case Some(teacher) =>
-                    f("you can put in here whatever you want") //return
+                    f() //return whatever the passed function returns
                   case None => Future.successful(Forbidden("Wrong teacherSecret")) //return
                 }
               )
@@ -55,19 +54,13 @@ class StudentController @Inject() (
   }
 
 
-    def getSignups(id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
+    def getSignups(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
-
-    // sorry for the weird format but I couldn't get it to compile otherwise
-    // I would like to call the wrapper like this:
-
-    // withAuthentication {_ => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))}
-    // and pass the id and classSecret implicitly but that was somehow not possible :(
-    
-    // this is the actual body of this method
-    val body = {_:Any => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))} //return
+   
+    // this is the body of this method put into a null function which is the passed to the authentication wrapper method
+    val body = {() => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))} //return
 
     // this calls the wrapper method
-    withAuthentication(id, classSecret, body)
+    withAuthentication(body)
   }
 }
