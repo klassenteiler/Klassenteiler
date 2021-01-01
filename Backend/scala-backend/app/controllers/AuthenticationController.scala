@@ -16,6 +16,7 @@ import slick.jdbc.PostgresProfile.api._
 
 // the AuthenticationController provides authentication wrapper methods for the other controllers to use
 // it can be used via dependency injection
+// id and classSecret have to be passed implicitly
 @Singleton
 class AuthenticationController @Inject() (
     protected val dbConfigProvider: DatabaseConfigProvider,
@@ -32,9 +33,8 @@ class AuthenticationController @Inject() (
     // wrapper that takes in a function and returns a Future[mvc.Result]
                                                       // needs the request and other parameters implicitly
   def withTeacherAuthentication(f: ClassTeacherCC => Future[mvc.Result])(implicit request: Request[AnyContent], id: Int, classSecret: String) = { 
-    val accepted: Future[Boolean] = scModel.validateAccess(id, classSecret)
-    accepted.flatMap(a => {
-        if (a) {
+    // this wrapper method uses another wrapper method itself
+    val body = {() => 
             request.headers.get("teacherSecret") match {
             case Some(teacherSecret) => {
                 scModel.getTeacher(id, teacherSecret).flatMap(result =>
@@ -50,7 +50,18 @@ class AuthenticationController @Inject() (
                 BadRequest("No teacherSecret provided")
                 ) //return
             }
-        } else {
+        }
+    // before checking whether the teacherSecret is correct, we check whether the classSecret is correct
+    withClassAuthentication(body)
+  }
+
+   // wrapper method for checking whether the class secret is correct for a given class id
+  def withClassAuthentication (f: () => Future[mvc.Result])(implicit request: Request[AnyContent], id: Int, classSecret: String) = {
+    val accepted: Future[Boolean] = scModel.validateAccess(id, classSecret)
+    accepted.flatMap(a => {
+        if (a) { // if the authentication succeeded we call the input function
+            f() // and return the output of that function (a Future[mvc.Result])
+    } else {
             Future.successful(
             NotFound("Schoolclass with that id not found or wrong classSecret")
             ) //return
@@ -58,8 +69,9 @@ class AuthenticationController @Inject() (
     })
   }
 
+
   // GET /teacherAuth/:id/:classSecret
-  // returns ClassTeacherT, eine abgespeckte version der schoolclass
+  // returns ClassTeacherT
   def authenticateTeacher(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val accepted: Future[Boolean] = scModel.validateAccess(id, classSecret)
 

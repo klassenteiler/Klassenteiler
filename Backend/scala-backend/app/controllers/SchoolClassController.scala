@@ -21,7 +21,8 @@ import scala.concurrent.Future
 @Singleton
 class SchoolClassController @Inject() (
     protected val dbConfigProvider: DatabaseConfigProvider,
-    val cc: ControllerComponents
+    val cc: ControllerComponents,
+    auth: AuthenticationController
 )(implicit ec: ExecutionContext)
     extends AbstractController(cc)
     with HasDatabaseConfigProvider[JdbcProfile] {
@@ -85,15 +86,12 @@ class SchoolClassController @Inject() (
 
   // GET /getClass/:id/:classSecret
   // returns schoolclass as json
-  def getSchoolClass(id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-      val accepted: Future[Boolean] = model.validateAccess(id, classSecret)
-      accepted.flatMap(a => {
-        if(a) {
-          model.getSchoolClass(id).map(returnedClass => Ok(Json.toJson(returnedClass))) //return
-        }else{
-          Future.successful(NotFound("Schoolclass with that id not found or wrong classSecret")) //return
-        }
-      })
-      
+  def getSchoolClass(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    
+    val body = {() => model.getSchoolClass(id).map(returnedClass => Ok(Json.toJson(returnedClass)))}
+
+    // before returning the schoolclass we need to check whether the classSecret is correct
+    auth.withClassAuthentication(body)
+
   }
 }
