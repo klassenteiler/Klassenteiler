@@ -21,7 +21,8 @@ import scala.concurrent.Future
 @Singleton
 class SchoolClassController @Inject() (
     protected val dbConfigProvider: DatabaseConfigProvider,
-    val cc: ControllerComponents
+    val cc: ControllerComponents,
+    auth: AuthenticationController
 )(implicit ec: ExecutionContext)
     extends AbstractController(cc)
     with HasDatabaseConfigProvider[JdbcProfile] {
@@ -32,7 +33,6 @@ class SchoolClassController @Inject() (
   implicit val schoolClassWrites = Json.writes[SchoolClassCC]
 
   implicit val classTeacherReads = Json.reads[ClassTeacherCC]
-  implicit val classTeacherWrites = Json.writes[ClassTeacherCC]
 
   private val model = new SchoolClassModel(db)
 
@@ -86,38 +86,12 @@ class SchoolClassController @Inject() (
 
   // GET /getClass/:id/:classSecret
   // returns schoolclass as json
-  def getSchoolClass(id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-      val accepted: Future[Boolean] = model.validateAccess(id, classSecret)
-      accepted.flatMap(a => {
-        if(a) {
-          model.getSchoolClass(id).map(returnedClass => Ok(Json.toJson(returnedClass))) //return
-        }else{
-          Future.successful(NotFound("Schoolclass with that id not found or wrong classSecret")) //return
-        }
-      })
-      
-  }
-  // GET /teacherAuth/:id/:classSecret
-  // returns ClassTeacherT, eine abgespeckte version der schoolclass
-  def authenticateTeacher(id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    val accepted: Future[Boolean] = model.validateAccess(id, classSecret)
-    accepted.flatMap(a => {
-        if(a) {
-          request.headers.get("teacherSecret") match {
-            case Some(teacherSecret) => {
-                model.getTeacher(id, teacherSecret).map(result => result match {
-                  case Some(teacher) => Ok(Json.toJson(teacher)) //return
-                  case None => Forbidden("Wrong teacherSecret") //return
-                })
-            }
-            case None => Future.successful(BadRequest("No teacherSecret provided")) //return
-          }
-        }else{
-          Future.successful(NotFound("Schoolclass with that id not found or wrong classSecret")) //return
-        }
-     })
+  def getSchoolClass(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     
+    val body = {() => model.getSchoolClass(id).map(returnedClass => Ok(Json.toJson(returnedClass)))}
+
+    // before returning the schoolclass we need to check whether the classSecret is correct
+    auth.withClassAuthentication(body)
 
   }
-
 }
