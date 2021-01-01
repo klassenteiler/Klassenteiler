@@ -57,7 +57,7 @@ class StudentController @Inject() (
     def getSignups(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
    
-    // this is the body of this method put into a null function which is the passed to the authentication wrapper method
+    // this is the body of this method put into a null function which is then passed to the authentication wrapper method
     val body = {() => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))} //return
 
     // this calls the wrapper method
