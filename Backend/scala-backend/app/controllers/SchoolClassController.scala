@@ -77,7 +77,7 @@ class SchoolClassController @Inject() (
             .map(insertedClass => Ok(Json.toJson(insertedClass))) //return
         } else
           Future.successful(
-            UnsupportedMediaType(Json.toJson("Wrong JSON format")) //return
+            UnsupportedMediaType("Wrong JSON format") //return
           )
 
       case None => Future.successful(BadRequest("Empty Body")) //return
