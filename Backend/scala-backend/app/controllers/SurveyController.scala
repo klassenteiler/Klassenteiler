@@ -29,6 +29,7 @@ class SurveyController @Inject() (
 
     private val classModel = new SchoolClassModel(db)
     private val studentModel = new StudentModel(db)
+    private val relModel = new RelationshipModel(db)
     // POST /submitStudentSurvey/:id/:classSecret
     // fügt student zu student table hinzu
     // fügt friends und student zu relations table hinzu
@@ -54,15 +55,22 @@ class SurveyController @Inject() (
 
                                 if (alters.length <= 5){
                                     val sourceId: Future[Option[Int]] = studentModel.createStudent(ego, id)
-                                    sourceId.map(sId => sId match {
+                                    sourceId.flatMap(sId => sId match {
                                         case Some(sId) => {
+                                            // enter each alter and store the id of the student objects
                                             val targetIds: Seq[Future[Option[Int]]] = alters.map(alter => studentModel.createStudent(alter, id))
-                                            // todo create relations for each alter 
-                                            Ok(sId.toString)
+                                            // create a new relationship with the alter as target and ego as source
+                                            targetIds.foreach(targetId => {
+                                                targetId.map(tId => {
+                                                    val relationship = RelationshipCC(classId=id, sourceId=sId, targetId=tId.get) //tId is an option
+                                                    relModel.createRelationship(relationship)
+                                                })
+                                            })
+                                            Future.successful(Created(Json.obj("message" -> "success")))
                                        
                                         }
                                         case None => {
-                                            Unauthorized("Student with this name already submitted survey")
+                                            Future.successful(Unauthorized("Student with this name already submitted survey"))
                                         }
                                     })
                                 }else {
