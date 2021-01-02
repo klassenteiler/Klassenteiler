@@ -186,7 +186,7 @@ export class SchoolClass{
 
     const out: StudentT = impl<StudentT>({
       id: student.id,
-      hash: nameHash,
+      hashedName: nameHash,
       encryptedName: encryptedName,
       groupBelonging: student.groupBelonging,
       selfReported: student.selfReported
