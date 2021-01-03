@@ -1,11 +1,11 @@
 import { query } from '@angular/animations';
 import { Injectable } from '@angular/core';
 import { stat } from 'fs';
-import { Observable } from 'rxjs';
+import { Observable, zip } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, ClearLocalStudent, EncTools, SchoolClass } from 'src/app/_tools/enc-tools.service';
-import { StudentInEdit } from './teacher-clean-up.models';
+import { FriendReported2Match, SelfReportedInEdit } from './teacher-clean-up.models';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +17,10 @@ export class MergeService {
 
   classListKey(schoolClass: SchoolClass): string{
     return `mCL${schoolClass.id!}`
+  }
+
+  friendRListKey(schoolClass: SchoolClass): string{
+    return `mFR${schoolClass.id!}`
   }
 
   stateHashKey(schoolClass: SchoolClass): string{
@@ -40,15 +44,27 @@ export class MergeService {
     return stateOK
   }
 
-  saveState2local(schoolClass: SchoolClass, queryHash: string, classList: Array<StudentInEdit>): boolean {
+  saveState2local(schoolClass: SchoolClass, queryHash: string, classList: Array<SelfReportedInEdit>|null, students2Match: FriendReported2Match[]|null): boolean {
     // queryHash is the starting state that the caller believes is current, if it is outdated no saving will happen
     const stateIsNotOutdated: boolean = this.checkStateHash(schoolClass, queryHash)
 
     if(stateIsNotOutdated){
+      var somethingWasSaved = false;
       // its ok to save
-      const classListS: string = StudentInEdit.students2JSON(classList);
 
-      localStorage.setItem(this.classListKey(schoolClass), classListS)
+      if(classList !== null){
+        const classListS: string = SelfReportedInEdit.students2JSON(classList);
+        localStorage.setItem(this.classListKey(schoolClass), classListS)
+        somethingWasSaved = true;
+      }
+      if(students2Match !== null){
+        const students2MatchS: string = FriendReported2Match.array2JSON(students2Match);
+        localStorage.setItem(this.friendRListKey(schoolClass), students2MatchS)
+        somethingWasSaved = true;
+      }
+
+      if(!somethingWasSaved){throw new Error("saveState2local was called without any data to save")}
+
       return true;
     }
     else {
@@ -65,52 +81,73 @@ export class MergeService {
     window.location.reload();
   }
 
-  getStateFromLocal(schoolClass: SchoolClass): Array<StudentInEdit>|null {
+  getStateFromLocal(schoolClass: SchoolClass): [Array<SelfReportedInEdit>, FriendReported2Match[]]{
     const classListS: string | null = localStorage.getItem(this.classListKey(schoolClass));
-    const classList: Array<StudentInEdit>|null = classListS ? StudentInEdit.json2Students(classListS) : null
+    if(classListS === null){ throw new Error("Can not get ClassList because it does not exist in local storage")}
+    const classList: Array<SelfReportedInEdit> = SelfReportedInEdit.json2Students(classListS) 
 
-    return classList
+    const toMatchListS: string | null = localStorage.getItem(this.friendRListKey(schoolClass));
+    if(toMatchListS === null){ throw new Error("Can not get FriendReportedList because it does not exist in local storage")}
+    const matchList: FriendReported2Match[] = FriendReported2Match.json2array(toMatchListS)
+
+    return [classList, matchList]
   }
 
 
   // get current state of merging, i.e. [Array<studentsInEdit>, Array<Students2Match>]
   // also return the state hash, (the state hash summarises which backend state (expressed by list of self reported students) the current merging intermediate result is valid for)
-  getMergeState(schoolClass: SchoolClass, classTeacher: ClassTeacher): Observable<[string, StudentInEdit[]]>{
+  getMergeState(schoolClass: SchoolClass, classTeacher: ClassTeacher): Observable<[string, SelfReportedInEdit[], FriendReported2Match[]]>{
     const selfReportedStudentsObs: Observable<ClearLocalStudent[]> = this.teacherService.getSelfReported(schoolClass, classTeacher);
+    const friendReportedStudentsObs: Observable<ClearLocalStudent[]> = this.teacherService.getFriendReported(schoolClass, classTeacher);
 
-    return selfReportedStudentsObs.pipe(map( (students: Array<ClearLocalStudent>) => {
-      const summary: string = JSON.stringify(students)
+    const allStudentsObs: Observable<[ClearLocalStudent[], ClearLocalStudent[]]> = zip(selfReportedStudentsObs, friendReportedStudentsObs)
+
+    return allStudentsObs.pipe(map( ([selfRstudents, friendRstudents]: [Array<ClearLocalStudent>, ClearLocalStudent[]]) => {
+      const summary: string = JSON.stringify(selfRstudents) + JSON.stringify(friendRstudents)
       const stateHash: string = EncTools.sha256(summary)
 
       const stateIsValid: boolean = this.checkStateHash(schoolClass, stateHash)
 
-      let finalResultStudents: StudentInEdit[];
+      let finalResultSelfReportedStudents2Edit: SelfReportedInEdit[];
+      let finalResultFriendReportedStudents2Match: FriendReported2Match[]
 
       if(stateIsValid){
-        const editStudentsRecovered: StudentInEdit[]| null = this.getStateFromLocal(schoolClass);
-        if(editStudentsRecovered === null){throw new Error("Could not read state from localStorage even though the hash was present and correct")}
-        finalResultStudents = editStudentsRecovered;
+        const [editStudentsRecovered, matchStudentsRecovered]: [SelfReportedInEdit[], FriendReported2Match[]] = this.getStateFromLocal(schoolClass);
+
+        finalResultSelfReportedStudents2Edit = editStudentsRecovered;
+        finalResultFriendReportedStudents2Match = matchStudentsRecovered;
       }
       else{
         // state is not valid. make a new state
 
-        const editStudentsNew = this.studentsToStudentEdit(students)
-        finalResultStudents = editStudentsNew
+        const editStudentsNew = this.selfRstudentsToStudentEdit(selfRstudents)
+        const matchStudents = this.friendRstudents2edit(friendRstudents)
+        finalResultSelfReportedStudents2Edit = editStudentsNew
+        finalResultFriendReportedStudents2Match = matchStudents
         // here I have to set the state
 
         this.setStateHash(schoolClass, stateHash)
-        this.saveState2local(schoolClass, stateHash, finalResultStudents)
+        this.saveState2local(schoolClass, stateHash, finalResultSelfReportedStudents2Edit, finalResultFriendReportedStudents2Match)
       }
-      return [stateHash, finalResultStudents]
+      return [stateHash, finalResultSelfReportedStudents2Edit, finalResultFriendReportedStudents2Match]
     }
     ))
   }
 
-  studentsToStudentEdit(students: Array<ClearLocalStudent>): Array<StudentInEdit>{
-      const editStudents: Array<StudentInEdit>  = students.map(s => 
-        StudentInEdit.makeSelfReported(s.decryptedName, s.id!)
+  selfRstudentsToStudentEdit(students: Array<ClearLocalStudent>): Array<SelfReportedInEdit>{
+      const editStudents: Array<SelfReportedInEdit>  = students.map(s => {
+        if (!s.selfReported){ throw new Error("tried to make a student edit out of a student that is not self reported")}
+        return SelfReportedInEdit.makeSelfReported(s.decryptedName, s.id!)
+      }
       )
       return editStudents
+   }
+
+   friendRstudents2edit(students: Array<ClearLocalStudent>): Array<FriendReported2Match>{
+     return students.map(s=>{
+       if(s.selfReported){ throw new Error("tried to make a matching student ouf of a self reported student")}
+       return FriendReported2Match.makeFriendReported2Match(s.decryptedName, s.id!)
+     })
    }
 
 }

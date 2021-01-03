@@ -6,9 +6,18 @@ import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, ClearLocalStudent, EncTools, SchoolClass } from 'src/app/_tools/enc-tools.service';
 
 import { MergeService } from './merge.service';
-import { StudentInEdit } from './teacher-clean-up.models';
+import { SelfReportedInEdit } from './teacher-clean-up.models';
 
 class MockTeacherService{
+  static makeFriendRBackendStudents(){
+    const studentsFromBackend: Array<ClearLocalStudent> = [
+      // TODO These are the wrong type of studens. the get teacher service should return ClearLocalStudent instances
+      new ClearLocalStudent( "Friend One", false, 3),
+      new ClearLocalStudent( "FRiend Two ", false, 4),
+      new ClearLocalStudent( "Friend Three ", false, 5),
+    ]
+  return studentsFromBackend
+  }
 
   static makeBackendStudents(){
     const studentsFromBackend: Array<ClearLocalStudent> = [
@@ -25,7 +34,7 @@ class MockTeacherService{
 
 describe('MergeService', () => {
   let service: MergeService;
-  var teacherServiceSpy = jasmine.createSpyObj('TeacherService', ['getSelfReported'])
+  var teacherServiceSpy = jasmine.createSpyObj('TeacherService', ['getSelfReported', 'getFriendReported'])
 
 
 
@@ -67,27 +76,28 @@ beforeEach(async () => {
 
   it('should recover partial edit state if and only if backend state has not changed', async () => {
     teacherServiceSpy.getSelfReported.and.returnValue(of(MockTeacherService.makeBackendStudents()));
+    teacherServiceSpy.getFriendReported.and.returnValue(of(MockTeacherService.makeFriendRBackendStudents()))
 
     const [mergeHash, firstState] = await service.getMergeState(schoolClass!, classTeacher!).toPromise()
 
-    const firstClasslist: StudentInEdit[] = firstState;
+    const firstClasslist: SelfReportedInEdit[] = firstState;
 
     expect(firstClasslist.map(s=>s.name)).toEqual(MockTeacherService.makeBackendStudents().map(s=>s.decryptedName)) // start with state same as students
     console.log(mergeHash)
 
-    var secondClasslist  = StudentInEdit.copyStudents(firstClasslist)
+    var secondClasslist  = SelfReportedInEdit.copyStudents(firstClasslist)
     // Do some changes
 
     secondClasslist[0].delete()
     secondClasslist[1].name = "changed name"
     // save second state, which was derived with the same hash
-    service.saveState2local(schoolClass!, mergeHash, secondClasslist)
+    service.saveState2local(schoolClass!, mergeHash, secondClasslist, null)
 
 
     // now we assume the teacher reloaded, so we get the state again
     // the backend still returns the same original class list
     const [thirdHash, thirdState] = await service.getMergeState(schoolClass!, classTeacher!).toPromise()
-    const thirdClassList: StudentInEdit[] = thirdState
+    const thirdClassList: SelfReportedInEdit[] = thirdState
 
     expect(thirdHash).toEqual(mergeHash);
 
@@ -115,7 +125,7 @@ beforeEach(async () => {
     console.log("about to try illegal save")
 
     spyOn(service, 'windowReload').and.callFake(function(){});
-    service.saveState2local(schoolClass!, thirdHash, thirdClassList)
+    service.saveState2local(schoolClass!, thirdHash, thirdClassList, null)
     expect(service.windowReload).toHaveBeenCalled()
     console.log('done')
 

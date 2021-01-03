@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { StudentInEdit } from '../../teacher-clean-up.models';
+import { SelfReportedInEdit } from '../../teacher-clean-up.models';
 
 @Component({
   selector: 'app-student-detail',
@@ -9,7 +9,7 @@ import { StudentInEdit } from '../../teacher-clean-up.models';
 })
 export class StudentDetailComponent implements OnInit {
 
-  @Input() studentEntity!: StudentInEdit;
+  @Input() studentEntity!: SelfReportedInEdit;
   @Output() shouldBeDeleted  = new EventEmitter<boolean>();
 
   @Output() classListChanged = new EventEmitter<void>();

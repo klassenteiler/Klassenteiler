@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { TeacherService } from 'src/app/_services/teacher.service';
-import {  StudentInEdit } from '../teacher-clean-up.models';
+import {  SelfReportedInEdit } from '../teacher-clean-up.models';
 
 @Component({
   selector: 'app-correct-classlist',
@@ -10,7 +10,7 @@ import {  StudentInEdit } from '../teacher-clean-up.models';
 })
 export class CorrectClasslistComponent implements OnInit {
 
-  @Input() classList!: Array<StudentInEdit>;
+  @Input() classList!: Array<SelfReportedInEdit>;
   @Output() classListChanged = new EventEmitter<void>()
 
   newStudentControl = new FormControl("", Validators.required);
@@ -28,7 +28,7 @@ export class CorrectClasslistComponent implements OnInit {
 
   add(){
     if(this.newStudentControl.valid){
-      const newStudent: StudentInEdit = StudentInEdit.makeTeacherAdded(this.newStudentControl.value)
+      const newStudent: SelfReportedInEdit = SelfReportedInEdit.makeTeacherAdded(this.newStudentControl.value)
       this.newStudentControl.setValue("")
 
       this.classList.push(newStudent);

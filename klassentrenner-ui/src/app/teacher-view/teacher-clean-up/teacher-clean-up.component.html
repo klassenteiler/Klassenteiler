@@ -6,19 +6,24 @@
             <li [ngbNavItem]="1">
               <a ngbNavLink>1) Klassenliste Korregieren</a>
               <ng-template ngbNavContent>
-                <app-correct-classlist [classList]="classList" (classListChanged)="saveState()"></app-correct-classlist>
+                <app-correct-classlist [classList]="classList" (classListChanged)="saveClassList()"></app-correct-classlist>
               </ng-template>
             </li>
             <li [ngbNavItem]="2">
               <a ngbNavLink>2) Namen Zuordnen</a>
               <ng-template ngbNavContent>
-                  <p>matching step</p>
+                  <app-match-students 
+                    [friendReportedList]="friendRstudents" 
+                    [classList]="getCurrentClasslist()"
+                    (friendReportedChanged)="saveFriendReportedMatching()"
+                    >
+                  </app-match-students>
               </ng-template>
             </li>
             <li [ngbNavItem]="3">
               <a ngbNavLink>3) Zusammenfassung</a>
               <ng-template ngbNavContent>
-                  <p>summary</p>
+                <app-summary [classList]="classList" [friendReportedList]="friendRstudents"></app-summary>
               </ng-template>
             </li>
           </ul>

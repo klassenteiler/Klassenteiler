@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StudentInEdit } from '../../teacher-clean-up.models';
+import { SelfReportedInEdit } from '../../teacher-clean-up.models';
 
 import { StudentDetailComponent } from './student-detail.component';
 
@@ -17,7 +17,7 @@ describe('StudentDetailComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(StudentDetailComponent);
     component = fixture.componentInstance;
-    component.studentEntity = StudentInEdit.makeTeacherAdded("Tim K")
+    component.studentEntity = SelfReportedInEdit.makeTeacherAdded("Tim K")
     fixture.detectChanges();
   });
 

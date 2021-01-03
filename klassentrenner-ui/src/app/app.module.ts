@@ -19,6 +19,8 @@ import { ResultsComponent } from './teacher-view/results/results.component';
 import { CorrectClasslistComponent } from './teacher-view/teacher-clean-up/correct-classlist/correct-classlist.component';
 import { StudentDetailComponent } from './teacher-view/teacher-clean-up/correct-classlist/student-detail/student-detail.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { MatchStudentsComponent } from './teacher-view/teacher-clean-up/match-students/match-students.component';
+import { SummaryComponent } from './teacher-view/teacher-clean-up/summary/summary.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +35,9 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     WaitingForResultComponent,
     ResultsComponent,
     CorrectClasslistComponent,
-    StudentDetailComponent
+    StudentDetailComponent,
+    MatchStudentsComponent,
+    SummaryComponent
   ],
   imports: [
     BrowserModule,

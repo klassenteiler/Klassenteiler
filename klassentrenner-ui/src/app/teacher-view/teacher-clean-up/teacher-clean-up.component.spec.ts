@@ -5,17 +5,17 @@ import { ClassTeacher, SchoolClass } from 'src/app/_tools/enc-tools.service';
 import { MergeService } from './merge.service';
 
 import { TeacherCleanUpComponent } from './teacher-clean-up.component';
-import { StudentInEdit } from './teacher-clean-up.models';
+import { SelfReportedInEdit } from './teacher-clean-up.models';
 
 
 class MockMergeService{
 
-  getMergeState(schoolClass:SchoolClass, classTeacher: ClassTeacher): Observable<[string, StudentInEdit[]]>{
-    const students: Array<StudentInEdit> = [
-      StudentInEdit.makeSelfReported( "Max Müller", 23),
-      StudentInEdit.makeSelfReported( "Peter Was", 24),
-      StudentInEdit.makeSelfReported( "Maria Dieter", 25),
-      StudentInEdit.makeTeacherAdded("Teacher Added")
+  getMergeState(schoolClass:SchoolClass, classTeacher: ClassTeacher): Observable<[string, SelfReportedInEdit[]]>{
+    const students: Array<SelfReportedInEdit> = [
+      SelfReportedInEdit.makeSelfReported( "Max Müller", 23),
+      SelfReportedInEdit.makeSelfReported( "Peter Was", 24),
+      SelfReportedInEdit.makeSelfReported( "Maria Dieter", 25),
+      SelfReportedInEdit.makeTeacherAdded("Teacher Added")
     ]
 
     students[2].name = "changed Name"
