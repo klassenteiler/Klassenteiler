@@ -18,17 +18,80 @@ import scala.concurrent.Future
 @Singleton
 class SurveyController @Inject() (
     protected val dbConfigProvider: DatabaseConfigProvider,
-    val cc: ControllerComponents
+    val cc: ControllerComponents,
+    val auth: AuthenticationController
 )(implicit ec: ExecutionContext)
     extends AbstractController(cc)
     with HasDatabaseConfigProvider[JdbcProfile] {
   
+    implicit val studentReads = Json.reads[StudentCC]
+    implicit val studentWrites = Json.writes[StudentCC]
 
+    private val classModel = new SchoolClassModel(db)
+    private val studentModel = new StudentModel(db)
+    private val relModel = new RelationshipModel(db)
     // POST /submitStudentSurvey/:id/:classSecret
     // fügt student zu student table hinzu
     // fügt friends und student zu relations table hinzu
-    def submitSurvey(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
-        Ok("todo")
+    def submitSurvey(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+        val body = {() => {
+            // if the survey is not open anymore we return 410
+            classModel.getStatus(id).flatMap(status => {
+                if (status == 0){
+                    request.body.asJson match {
+                        case Some(content) => {
+                            // extract json values from JsObject
+                            val egoJs: JsValue = content("me")
+                            val altersJs: JsValue = content("friends")      
+
+                            // parse the Json Values
+                            val egoOption: JsResult[StudentCC] = Json.fromJson[StudentCC](egoJs)
+                            val altersOption: JsResult[Seq[StudentCC]] = Json.fromJson[Seq[StudentCC]](altersJs)
+                            
+                            // if the parsing was successful
+                            if (egoOption.isSuccess && altersOption.isSuccess) {
+                                val ego: StudentCC = egoOption.get
+                                val alters: Seq[StudentCC] = altersOption.get
+                                // we read the Friend limit from the .env or set it to 5 if no value is provided
+                                val limit: Int = sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
+                                if (alters.length <= limit){
+                                    val sourceId: Future[Option[Int]] = studentModel.createStudent(ego, id)
+                                    sourceId.flatMap(sId => sId match {
+                                        case Some(sId) => {
+                                            // enter each alter and store the id of the student objects
+                                            val targetIds: Seq[Future[Option[Int]]] = alters.map(alter => studentModel.createStudent(alter, id))
+                                            // create a new relationship with the alter as target and ego as source
+                                            targetIds.foreach(targetId => {
+                                                targetId.map(tId => {
+                                                    val relationship = RelationshipCC(classId=id, sourceId=sId, targetId=tId.get) //tId is an option
+                                                    relModel.createRelationship(relationship)
+                                                })
+                                            })
+                                            Future.successful(Created(Json.obj("message" -> "success")))
+                                       
+                                        }
+                                        case None => {
+                                            Future.successful(Unauthorized("Student with this name already submitted survey"))
+                                        }
+                                    })
+                                }else {
+                                    Future.successful(BadRequest("Over friend limit (5)"))
+                                }
+                                
+                            }else {
+                                Future.successful(UnsupportedMediaType("Wrong JSON format"))
+                            }
+                        }
+                        case None => Future.successful(BadRequest("Empty Body"))
+                    }
+                }else Future.successful(Gone("Survey is already closed"))
+
+            })
+            
+        }}
+
+        // check whether classSecret is correct
+        auth.withClassAuthentication(body)
     }
 
     // PUT /closeSurvey/:id/:classSecret

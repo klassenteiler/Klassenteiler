@@ -7,8 +7,44 @@ import scala.concurrent.Future
 
 class StudentModel(db: Database)(implicit ec: ExecutionContext) {
 
-  def createStudent(studentCC: StudentCC
-  ): Future[Boolean] = ???
+  // returns the id of the student inserted
+  def createStudent(studentCC: StudentCC, classId: Int): Future[Option[Int]] = {
+    
+    val resultRows: Future[Seq[StudentRow]] = db.run(Student.filter(_.hashedname === studentCC.hashedName).result)
+
+    
+    resultRows.flatMap(rows => {
+      val userExists: Boolean = rows.length != 0
+      // if the student already exists we need to differentiate between two cases
+      if (userExists) {
+        val studentId: Int = rows.head.id
+        val alreadySelfReported: Boolean = rows.head.selfreported
+        // if the existing student was already self reported and the current one is too
+        // we return None to signal a wrong input
+        if (alreadySelfReported && studentCC.selfReported) Future.successful(None)//return None because student already exists
+        // if the new entry is self reported but the old one is not, we need to update the value
+        else if (!alreadySelfReported && studentCC.selfReported) {
+          // update selfreported of student
+          db.run(Student.filter(_.id === studentId).map(row => (row.selfreported)).update((true)))
+          Future.successful(Some(studentId))  //return
+        // else we don't need to do anything and just return the id
+        }else Future.successful(Some(studentId))
+
+      // if the student with that name didn exist yet, we need to insert the student
+      }else { 
+        val studentId: Future[Int] = db.run(Student returning Student.map(_.id) += StudentRow(
+          -1, // id is automatically set
+          Some(classId), 
+          studentCC.hashedName,
+          studentCC.encryptedName,
+          studentCC.selfReported,
+          studentCC.groupBelonging
+        ))
+        studentId.map(x => Some(x)) // return
+      }
+
+    })
+  }
 
   def removeStudent(studentId: Int): Future[Boolean] = ???
 

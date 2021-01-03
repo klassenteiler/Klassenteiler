@@ -58,6 +58,11 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
     })
   }
 
+  // returns surveystatus
+  def getStatus(classId: Int): Future[Int] = {
+    db.run(Schoolclass.filter(_.id === classId).result).map(r => r.head.surveystatus.get) 
+  }
+
   def updateStatus(classId: Int, status: Int) = ???
 }
 

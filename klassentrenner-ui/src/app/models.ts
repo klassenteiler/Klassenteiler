@@ -15,7 +15,7 @@ export interface ClassTeacherT{
 
 export interface StudentT{
     id?: number,
-    hash: string,
+    hashedName: string,
     encryptedName: string,
     groupBelonging?: number,
     selfReported: boolean

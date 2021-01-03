@@ -120,7 +120,7 @@ describe('EncTools', () => {
 
     var studentTransport = schoolClass!.localStudentToTransport(testStudent)
 
-    expect(studentTransport.hash).toBeTruthy()
+    expect(studentTransport.hashedName).toBeTruthy()
     expect(studentTransport.encryptedName === name).toBeFalse()
 
     // set ids and stuff
@@ -138,7 +138,7 @@ describe('EncTools', () => {
 
     // check the two transports are equal
     expect(transportTwo.id).toEqual(studentTransport.id)
-    expect(transportTwo.hash).toEqual(studentTransport.hash)
+    expect(transportTwo.hashedName).toEqual(studentTransport.hashedName)
     expect(transportTwo.groupBelonging).toEqual(studentTransport.groupBelonging)
     expect(transportTwo.selfReported).toEqual(studentTransport.selfReported)
     expect(transportTwo.encryptedName).not.toEqual(studentTransport.encryptedName)
