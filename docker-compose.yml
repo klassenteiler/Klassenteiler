@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.4'
 
 services:  
   db:
@@ -15,7 +15,9 @@ services:
       - ./Backend/database/database:/var/lib/postgresql/data
 
   backend:
-    build: Backend/scala-backend
+    build: 
+      context: Backend/scala-backend
+      target: dev
     depends_on: 
       - db
     ports: 
