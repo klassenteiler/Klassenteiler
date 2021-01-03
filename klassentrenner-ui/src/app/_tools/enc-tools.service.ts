@@ -48,10 +48,17 @@ export class ClearLocalStudent implements ClearLocalStudentI{
 export class EncTools {
   constructor() { }
 
+  static sha256(msg: string): string{
+    var md = forge.md.sha256.create();
+    md.update(msg);
+    return md.digest().toHex();
+  }
+
   static cleanName(name:string ): string{
-    return name.toLowerCase().replace(/\s+/g, ' ').trim().split(' ').map((word)=>{
-      return word[0].toUpperCase() + word.substring(1);
-    }).join(" ")
+    return name.replace(/\s+/g, ' ').trim()
+    // .split(' ').map((word)=>{
+    //   return word[0].toUpperCase() + word.substring(1);
+    // }).join(" ")
   }
 
   static deriveHash(message: string, salt: string): string{
@@ -298,6 +305,8 @@ export class ClassTeacher{
 
     return new ClassTeacher(key, teacherStore.teacherSecret, teacherStore.id)
   }
+
+
 }
 
 

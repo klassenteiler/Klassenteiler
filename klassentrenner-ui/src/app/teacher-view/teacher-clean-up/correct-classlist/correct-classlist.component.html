@@ -1,6 +1,6 @@
 
 <ul class="list-group" *ngFor="let thisStudent of classList; index as index">
-    <app-student-detail [studentEntity]="thisStudent" (shouldBeDeleted)="delete(index)"></app-student-detail>
+    <app-student-detail [studentEntity]="thisStudent" (shouldBeDeleted)="delete(index)" (classListChanged)="triggerClassListChanged()"></app-student-detail>
 </ul>
 
 <div class='row mt-3'>

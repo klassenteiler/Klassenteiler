@@ -1,7 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { TeacherService } from 'src/app/_services/teacher.service';
-import { Student4Edit, TeacherAddedStudent } from '../teacher-clean-up.models';
+import {  StudentInEdit } from '../teacher-clean-up.models';
 
 @Component({
   selector: 'app-correct-classlist',
@@ -10,7 +10,9 @@ import { Student4Edit, TeacherAddedStudent } from '../teacher-clean-up.models';
 })
 export class CorrectClasslistComponent implements OnInit {
 
-  @Input() classList!: Array<Student4Edit>;
+  @Input() classList!: Array<StudentInEdit>;
+  @Output() classListChanged = new EventEmitter<void>()
+
   newStudentControl = new FormControl("", Validators.required);
 
   constructor() { }
@@ -21,15 +23,21 @@ export class CorrectClasslistComponent implements OnInit {
 
   delete(i: number){
     this.classList.splice(i, 1)
+    this.triggerClassListChanged();
   }
 
   add(){
     if(this.newStudentControl.valid){
-      const newStudent: Student4Edit = new TeacherAddedStudent(this.newStudentControl.value)
+      const newStudent: StudentInEdit = StudentInEdit.makeTeacherAdded(this.newStudentControl.value)
       this.newStudentControl.setValue("")
 
       this.classList.push(newStudent);
+      this.triggerClassListChanged();
     }
+  }
+
+  triggerClassListChanged(){
+    this.classListChanged.emit()
   }
 
 }

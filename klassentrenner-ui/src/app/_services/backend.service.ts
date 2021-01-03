@@ -81,4 +81,8 @@ export class BackendService {
   getSelfReported(classId: number, classSecret:string, teacherSecret: string): Observable<Array<StudentT>> {
     return this.prepareTeacherGetRequest<Array<StudentT>>(classId, classSecret, teacherSecret, "getSelfReported");
   }
+  
+  getFriendReported(classId: number, classSecret:string, teacherSecret: string): Observable<Array<StudentT>> {
+    return this.prepareTeacherGetRequest<Array<StudentT>>(classId, classSecret, teacherSecret, "getFriendReported");
+  }
 }

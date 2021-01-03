@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { Student4Edit } from '../../teacher-clean-up.models';
+import { StudentInEdit } from '../../teacher-clean-up.models';
 
 @Component({
   selector: 'app-student-detail',
@@ -9,8 +9,10 @@ import { Student4Edit } from '../../teacher-clean-up.models';
 })
 export class StudentDetailComponent implements OnInit {
 
-  @Input() studentEntity!: Student4Edit;
+  @Input() studentEntity!: StudentInEdit;
   @Output() shouldBeDeleted  = new EventEmitter<boolean>();
+
+  @Output() classListChanged = new EventEmitter<void>();
 
   editMode: boolean = false;
 
@@ -33,6 +35,7 @@ export class StudentDetailComponent implements OnInit {
     if(this.editMode){
       if(this.formControl.valid){
         this.studentEntity.name = this.formControl.value;
+        this.classListChanged.emit();
       }
       this.editMode = false;
     }
@@ -50,10 +53,12 @@ export class StudentDetailComponent implements OnInit {
     if(shouldBeDestructed){
       this.shouldBeDeleted.emit(true);
     }
+    this.classListChanged.emit();
   }
 
   recover(){
     this.studentEntity.recover();
+    this.classListChanged.emit();
   }
 
 }
