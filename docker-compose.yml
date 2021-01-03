@@ -12,7 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - ./Backend/database/sql:/docker-entrypoint-initdb.d
-      - ./Backend/database/database.sql:/test.sql
+      - ./Backend/database/database:/var/lib/postgresql/data
 
   backend:
     build: Backend/scala-backend
