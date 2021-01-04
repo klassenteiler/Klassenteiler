@@ -95,18 +95,57 @@ class SurveyController @Inject() (
 
     // PUT /closeSurvey/:id/:classSecret
     // setzt survey status von schoolclass mit der relevanten id und 
-    def closeSurvey(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
-        Ok("todo")
+    def closeSurvey(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
+        val body = {_: ClassTeacherCC => {
+            classModel.getStatus(id).flatMap(status => {
+                if (status == 0) {
+                    classModel.updateStatus(id, 1)
+
+                    Future.successful(Ok("status: closeSurvey (1)"))
+                } else Future.successful(Gone("Survey has wrong status"))
+            })
+        }}
+        auth.withTeacherAuthentication(body)
     }
 
     // PUT
     // setzt survey status auf 2 ('calculating') 
     // ruft alle relationships auf
+    // ruft alle students auf (nicht alle students in relationships enthalten)
     // ruft internen algorithmus auf
     // ändert alle groupbelonging einträge in der students datenbank
     // setzt survey status auf 3 (done)
-    def startCalculating(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
-        Ok("todo")
+    def startCalculating(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
+        val body = {_: ClassTeacherCC => {
+            classModel.getStatus(id).flatMap(status => {
+                if (status == 1) {
+                    val studentsOfClass: Future[Seq[Int]] = studentModel.getAllStudentsOfClass(id)
+                    println("Students:")
+                    studentsOfClass.map(f => println(f.mkString(" ")))
+
+                    val relationsOfClass: Future[Seq[(Int, Int)]] = relModel.getAllRelationsOfClass(id)
+                    println("Relations:")
+                    relationsOfClass.map(f => println(f.mkString(" ")))
+                    for{
+                        f1 <- studentsOfClass
+                        f2 <- relationsOfClass
+                    } yield (f1, f2)
+
+                    val partition = studentsOfClass.zip(relationsOfClass).map{
+                        case ((f1,f2)) => PartitioningAlgo.computePartition(f1.toArray, f2.toArray, 10000)
+                    }
+
+                    partition.map(f => println("first group: " + f._1.mkString(" ")))
+
+                    partition.map(f => )
+
+                    classModel.updateStatus(id, 1) // TODO: (id, 2)
+                    Future.successful(Ok("status: startCalculating (2)"))
+                } else Future.successful(Gone("Survey has wrong status"))
+            })
+        }}
+        //Future.successful(Ok("todo"))
+        auth.withTeacherAuthentication(body)
     }
 
     // GET /getResult/:id/:classSecret
@@ -114,6 +153,5 @@ class SurveyController @Inject() (
     // returns Array[StudentCC] 
     def getResults(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
         Ok("todo")
-    } 
-
+    }
 }
