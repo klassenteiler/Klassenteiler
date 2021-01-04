@@ -29,7 +29,7 @@ class StudentController @Inject() (
    
     // this is the body of this method put into a function which is then passed to the authentication wrapper method
     // the function must take a classTeacher as input but we do not use it
-    val body = {_:ClassTeacherCC => model.getNumberOfStudents(id).map(number => Ok(Json.toJson(number)))} //return
+    val body = {_:ClassTeacherCC => model.getNumberOfStudents(id).map(number => Ok(Json.obj("value" -> number)))} //return
 
     // this calls the teacher authentication wrapper method, because the teacher needs to submit the correct teachersecret in order to get access to the student count
     auth.withTeacherAuthentication(body)

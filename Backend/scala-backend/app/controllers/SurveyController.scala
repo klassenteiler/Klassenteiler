@@ -52,8 +52,9 @@ class SurveyController @Inject() (
                             if (egoOption.isSuccess && altersOption.isSuccess) {
                                 val ego: StudentCC = egoOption.get
                                 val alters: Seq[StudentCC] = altersOption.get
-
-                                if (alters.length <= 5){
+                                // we read the Friend limit from the .env or set it to 5 if no value is provided
+                                val limit: Int = sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
+                                if (alters.length <= limit){
                                     val sourceId: Future[Option[Int]] = studentModel.createStudent(ego, id)
                                     sourceId.flatMap(sId => sId match {
                                         case Some(sId) => {

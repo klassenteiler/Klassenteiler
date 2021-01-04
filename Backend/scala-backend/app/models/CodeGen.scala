@@ -10,7 +10,7 @@ object CodeGen extends App {
         "slick.jdbc.PostgresProfile",
         "org.postgresql.Driver",
         "jdbc:postgresql://localhost/test_db?user=root&password=test_password",
-        "/home/anton/Desktop/Klassentrenner/Backend/scala-backend/app/", 
+        "app", 
         "models", None, None, true, false
     )
 }
