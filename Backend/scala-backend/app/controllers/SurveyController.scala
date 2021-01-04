@@ -95,23 +95,13 @@ class SurveyController @Inject() (
 
     // PUT /closeSurvey/:id/:classSecret
     // setzt survey status von schoolclass mit der relevanten id und 
-    def closeSurvey(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
-        val body = {_: ClassTeacherCC => {
-            classModel.getStatus(id).flatMap(status => {
-                if (status == 0) {
-                    classModel.updateStatus(id, 1)
-
-                    Future.successful(Ok("status: closeSurvey (1)"))
-                } else Future.successful(Gone("Survey has wrong status"))
-            })
-        }}
-        auth.withTeacherAuthentication(body)
+    def closeSurvey(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
+        Ok("todo")
     }
 
     // PUT
     // setzt survey status auf 2 ('calculating') 
     // ruft alle relationships auf
-    // ruft alle students auf (nicht alle students in relationships enthalten)
     // ruft internen algorithmus auf
     // ändert alle groupbelonging einträge in der students datenbank
     // setzt survey status auf 3 (done)
@@ -120,26 +110,21 @@ class SurveyController @Inject() (
             classModel.getStatus(id).flatMap(status => {
                 if (status == 1) {
                     val studentsOfClass: Future[Seq[Int]] = studentModel.getAllStudentsOfClass(id)
-                    println("Students:")
-                    studentsOfClass.map(f => println(f.mkString(" ")))
-
                     val relationsOfClass: Future[Seq[(Int, Int)]] = relModel.getAllRelationsOfClass(id)
-                    println("Relations:")
-                    relationsOfClass.map(f => println(f.mkString(" ")))
+
                     for{
                         f1 <- studentsOfClass
                         f2 <- relationsOfClass
                     } yield (f1, f2)
 
-                    val partition = studentsOfClass.zip(relationsOfClass).map{
-                        case ((f1,f2)) => PartitioningAlgo.computePartition(f1.toArray, f2.toArray, 10000)
+                    val partition: Future[(Array[Int], Array[Int])] = studentsOfClass.zip(relationsOfClass).map{
+                        case ((f1,f2)) => IterativeAlgo.computePartition(f1.toArray, f2.toArray)
                     }
 
-                    partition.map(f => println("first group: " + f._1.mkString(" ")))
+                    partition.map(p => p._1.map(id => studentModel.updateGroupBelonging(id, 1)))
+                    partition.map(p => p._2.map(id => studentModel.updateGroupBelonging(id, 2)))
 
-                    partition.map(f => )
-
-                    classModel.updateStatus(id, 1) // TODO: (id, 2)
+                    classModel.updateStatus(id, 2)
                     Future.successful(Ok("status: startCalculating (2)"))
                 } else Future.successful(Gone("Survey has wrong status"))
             })
@@ -153,5 +138,6 @@ class SurveyController @Inject() (
     // returns Array[StudentCC] 
     def getResults(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
         Ok("todo")
-    }
+    } 
+
 }
