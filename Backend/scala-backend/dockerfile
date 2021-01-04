@@ -44,5 +44,6 @@ RUN apt-get update -y
 RUN apt-get install -y unzip
 COPY --from=preprod /src/target/universal/klassenteiler-1.0.zip klassenteiler-1.0.zip 
 RUN unzip klassenteiler-1.0.zip
+RUN rm klassenteiler-1.0.zip
 
 ENTRYPOINT [ "bash", "klassenteiler-1.0/bin/klassenteiler", "-Dplay.http.secret.key='Vd=iSgvwzT=Q;<PKfEjx<4n:V:jQ0xo/6Z?`3ti<b_ZtuuJUbagfi>fPWAY68<`k'" ]
