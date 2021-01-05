@@ -7,7 +7,6 @@ import scala.collection.mutable.ListBuffer
 
 class PartitioningAlgoTest extends PlaySpec {
   "Partitioning algorithm" should {
-    /*
    "8 SuS to [19, 24, 27, 31] and [33, 34, 35, 41] " in {
      val nrSus = 8
      var susSet = Array(34, 19, 24, 41, 27, 35, 31, 33)
@@ -72,7 +71,6 @@ class PartitioningAlgoTest extends PlaySpec {
 
       true mustBe true
     }
-*/
     // Tests the function sumEdgesForPartition of the iterative algorithm
     "sum edges  " in {
       var edges = Array(
@@ -87,6 +85,12 @@ class PartitioningAlgoTest extends PlaySpec {
       IterativeAlgo.sumEdgesForPartition(Array(19, 24, 27, 33), Array(31, 34, 35, 41), edges) mustBe 3
       IterativeAlgo.sumEdgesForPartition(Array(19, 24, 35, 31), Array(33, 34, 27, 41), edges) mustBe 6
 
+    }
+
+    "test emtpy class (0 students) " in {
+      var partition: (Array[Int], Array[Int]) = IterativeAlgo.computePartition(Array(), Array())
+      partition._1.length mustBe 0
+      partition._2.length mustBe 0
     }
   }
   // Helper method to compute a random

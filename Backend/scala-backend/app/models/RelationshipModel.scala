@@ -21,7 +21,7 @@ class RelationshipModel(db: Database)(implicit ec: ExecutionContext) {
 
   def getRelationship(relationshipId: Int): Future[RelationshipCC] = ???
 
-  def getAllRelationsOfClass(classId: Int): Future[Seq[(Int, Int)]] = {
+  def getAllRelationIdsOfClass(classId: Int): Future[Seq[(Int, Int)]] = {
     db.run(Relationship.filter(x => (x.classid === classId)).result).map(rows =>
       rows.map(row => (row.sourceid.get, row.targetid.get)))
   }

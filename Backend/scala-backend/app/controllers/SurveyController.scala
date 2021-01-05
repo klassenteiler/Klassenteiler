@@ -110,8 +110,8 @@ class SurveyController @Inject() (
         val body = {_: ClassTeacherCC => {
             classModel.getStatus(id).flatMap(status => {
                 if (status == 1) {
-                    val studentsOfClass: Future[Seq[Int]] = studentModel.getAllStudentsOfClass(id)
-                    val relationsOfClass: Future[Seq[(Int, Int)]] = relModel.getAllRelationsOfClass(id)
+                    val studentsOfClass: Future[Seq[Int]] = studentModel.getAllSelfReportedStudentIDs(id)
+                    val relationsOfClass: Future[Seq[(Int, Int)]] = relModel.getAllRelationIdsOfClass(id)
 
                     for{
                         f1 <- studentsOfClass
