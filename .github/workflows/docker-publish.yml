@@ -1,0 +1,29 @@
+name: Publish Docker image
+on:
+  release:
+    types: [published]
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Push Backend to Docker Hub
+        uses: docker/build-push-action@v1
+        with:
+          context: ./Backend/scala-backend
+          file: ./Backend/scala-backend/dockerfile
+          username: klassenteilen
+          password: secrets.dockerhubpassword
+          repository: klassenteilen/klassenteiler-backend
+          tag_with_ref: true
+      - name: Push Frontend to Docker Hub
+        uses: docker/build-push-action@v1
+        with:
+          context: ./klassentrenner-ui
+          file: ./klassentrenner-ui/Dockerfile
+          username: klassenteilen
+          password: secrets.dockerhubpassword
+          repository: klassenteilen/klassenteiler-frontend
+          tag_with_ref: true
