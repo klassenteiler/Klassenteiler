@@ -48,7 +48,18 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
 
   def removeStudent(studentId: Int): Future[Boolean] = ???
 
-  def getStudent(studentId: Int): Future[StudentCC] = ???
+   def getStudents(classId: Int): Future[Seq[StudentCC]] = {
+    db.run(Student.filter(_.classid === classId).result).map(rows => rows.map(entry => {
+        StudentCC(
+          Some(entry.id),
+          entry.hashedname,
+          entry.encryptedname,
+          entry.selfreported,
+          entry.groupbelonging
+        )
+      })
+    )
+  }
 
   def getNumberOfStudents(classId: Int): Future[Int] = {
     db.run(Student.filter(x => (x.classid === classId && x.selfreported === true)).result).map(rows => rows.length)
