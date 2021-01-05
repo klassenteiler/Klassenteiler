@@ -67,7 +67,7 @@ class SurveyController @Inject() (
                                                     relModel.createRelationship(relationship)
                                                 })
                                             })
-                                            Future.successful(Created(Json.obj("message" -> "success")))
+                                            Future.successful(Created(Json.obj("message" -> "success - created")))
                                        
                                         }
                                         case None => {
@@ -96,9 +96,17 @@ class SurveyController @Inject() (
 
     // PUT /closeSurvey/:id/:classSecret
     // setzt survey status von schoolclass mit der relevanten id und 
-    def closeSurvey(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
-        Ok("todo")
-    }
+    def closeSurvey(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
+        val body = {_: ClassTeacherCC => {
+            classModel.getStatus(id).flatMap(status => {
+                if (status == 0) {
+                    classModel.updateStatus(id, 1)
+
+                    Future.successful(Ok(Json.obj("message" -> "success - survey closed")))
+                } else Future.successful(Gone("Survey has wrong status"))
+            })
+        }}
+        auth.withTeacherAuthentication(body)
 
     // PUT
     // setzt survey status auf 2 ('calculating') 
@@ -126,7 +134,7 @@ class SurveyController @Inject() (
                     partition.map(p => p._2.map(id => studentModel.updateGroupBelonging(id, 2)))
 
                     classModel.updateStatus(id, 2)
-                    Future.successful(Ok("status: startCalculating (2)"))
+                    Future.successful(Ok(Json.obj("message" -> "success - started calculating")))
                 } else Future.successful(Gone("Survey has wrong status"))
             })
         }}
