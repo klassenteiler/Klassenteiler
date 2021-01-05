@@ -19,8 +19,12 @@ export class SurveyOpenComponent implements OnInit {
   constructor(private configService: AppConfigService, private teacherService: TeacherService) { 
   }
 
+  get studentURLhttp():string {
+    return `http://${this.studentUrl}`
+  }
+
   ngOnInit(): void {
-    this.studentUrl = `${this.configService.frontendUrl}/student/${this.schoolClass.url}`
+    this.studentUrl = `${this.configService.frontendUrl}/${this.schoolClass.studentURL}`
 
     this.teacherService.nSignups(this.schoolClass, this.classTeacher).subscribe(n => {
       console.log(`nSignups = ${n}`)

@@ -14,7 +14,7 @@ export class TeacherCleanUpComponent implements OnInit {
   @Input() schoolClass!: SchoolClass;
   @Input() classTeacher!: ClassTeacher;
 
-  activeStep: number = 2;
+  activeStep: number = 1;
   readonly lastStep: number = 3;
 
   classList: Array<SelfReportedInEdit>| null = null;

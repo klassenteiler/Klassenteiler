@@ -45,7 +45,7 @@ const passwordG:string = "testPassword"
 beforeEach(async () => {
 
   const promise : Promise<[SchoolClass, ClassTeacher]> = EncTools.makeClass(
-    "test school", "test class", passwordG
+    "test school", "test class", passwordG, 8
   ).toPromise();
 
   const [schoolClassTmp, classTeacherTmp]  = await promise;

@@ -10,12 +10,16 @@ import { PdfTools } from '../_tools/pdf-tools';
 })
 export class IndexComponent implements OnInit {
 
-  configFile: string =""
+  configFileDescription: string =""
 
-  constructor( ) { }
+  news: string = ""
+
+  constructor( private configService: AppConfigService) { }
 
   ngOnInit(): void {
-    this.configFile = environment.configPath;
+    this.configFileDescription = this.configService.configDescription;
+    this.news = this.configService.news;
+    console.log(this.configFileDescription)
   }
 
   makeTestPDF(){

@@ -58,9 +58,9 @@ export class SchoolClassService {
   makeSchoolClass(schoolName: string, className:string): Observable<[string, SchoolClass, ClassTeacher]>{
     // let password: string;
 
-    const pw = EncTools.createTeacherPassword()
+    const pw = EncTools.createTeacherPassword(this.config.teacherPasswordLength)
 
-    const pre1: Observable<[SchoolClass, ClassTeacher]> =  EncTools.makeClass(schoolName, className, pw)
+    const pre1: Observable<[SchoolClass, ClassTeacher]> =  EncTools.makeClass(schoolName, className, pw, this.config.classSecretLength)
 
     const pre2 : Observable<[string, SchoolClass, ClassTeacher]> = pre1.pipe(concatMap(
       ([schoolClassLocal, clsTeach]:[SchoolClass, ClassTeacher]) =>

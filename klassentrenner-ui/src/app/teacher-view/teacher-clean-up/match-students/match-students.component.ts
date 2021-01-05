@@ -18,7 +18,7 @@ export class MatchStudentsComponent implements OnInit {
 
   // City: string[] = ['Florida', 'South Dakota', 'Tennessee', 'Michigan']
 
-  constructor(public fb: FormBuilder) { }
+  constructor() { }
 
   ngOnInit(): void {
     if(this.friendReportedList===null){throw new Error("no list of students ot match was provided")}

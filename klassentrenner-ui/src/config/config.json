@@ -1,0 +1,9 @@
+{
+    "apiBaseUrl": "http://localhost:9000",
+    "frontendUrl": "localhost:4200",
+    "maxFriends": 5,
+    "classSecretLength": 8,
+    "teacherPasswordLength": 8,
+    "description": "config json test",
+    "news": "dev news"
+}

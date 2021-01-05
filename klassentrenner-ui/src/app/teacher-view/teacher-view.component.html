@@ -1,22 +1,32 @@
 
-<div class="container container-fluid">
-    <H1>Lehreransicht: <mark>{{schoolClass.name()}} </mark></H1>
+<div class="container container-fluid mt-4">
+    <H1 style="color: navy;">Lehreransicht: <mark>{{schoolClass.name()}} </mark></H1>
 
 
     <div class="card">
         <div *ngIf="classTeacher === null" class="card-body">
-          Sie sind noch nicht authentifiziert. Bitte Geben sie den 8-stelligen Code für diese Klasse ein:
+          Sie sind noch nicht authentifiziert. Bitte Geben sie das {{pwLength}}-stelligen Passwort für diese Klasse ein:
           <form class = "form mt-2" >
             <div class="row g-3 align-items-center">
             <div class="col-auto">
-              <label class="col-form-label">Klassencode:</label>
+              <label class="col-form-label">Klassenpasswort:</label>
             </div>
             <div class="col-auto">
-              <input #teacherPassword placeholder="z.B. aBcD1eF2" type="text" class='form-control'>
+              <input #teacherPassword 
+              (keyup.enter)="authenticateTeacher(teacherPassword.value);"
+              placeholder="z.B. aBcD1eF2" 
+              type="text" 
+              class='form-control'>
             </div>
             <div class="col-auto">
               <button type='button' class="btn btn-primary btn-sm" (click)="authenticateTeacher(teacherPassword.value)">Bestätigen </button>
             </div>
+          </div>
+          <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert" *ngIf="errorString !== ''">
+            {{errorString}}
+            <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close" (click)="errorString=''">
+              <span aria-hidden="true"></span>
+            </button>
           </div>
           </form>
         </div>
@@ -32,5 +42,6 @@
       <app-results *ngIf="schoolClass.surveyStatus === SchoolClassSurveyStatusLocal.done" [schoolClass]="schoolClass" [classTeacher]="classTeacher"></app-results>
     </div>
 
+<a href="http://{{getStudentURL()}}">Ich bin SchülerIn in dieser Klasse.</a>
 </div>
 <!-- {{schoolClass.className}} -->

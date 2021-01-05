@@ -44,16 +44,37 @@ export class MockAppConfigService {
       return this.appConfig.maxFriends;
     }
 
+    get configDescription(): string{
+      this.check();
+      return this.appConfig.description
+    }
+
     get appConfigFile(){
       this.check();
       return this.appConfig
     }
 
+    get classSecretLength():number{
+      this.check();
+      return this.appConfig.classSecretLength
+    }
+    get teacherPasswordLength():number{
+      this.check();
+      return this.appConfig.teacherPasswordLength
+    }
+
     get frontendUrl() {
-      if (!this.appConfig) {
-        throw Error('Config file not loaded!');
+      this.check()
+      const url: string = this.appConfig.frontendUrl;
+      if (url.startsWith("http")) {
+        throw Error('Froentend URL in config should not start with http..');
       }
   
       return this.appConfig.frontendUrl;
+    }
+
+    get news(): string{
+      this.check()
+      return this.appConfig.news
     }
   }

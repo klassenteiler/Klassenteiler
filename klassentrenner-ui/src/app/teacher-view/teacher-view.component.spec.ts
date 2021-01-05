@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
+import { AppConfigService, MockAppConfigService } from '../app-config.service';
 import { SchoolClassSurveyStatus } from '../models';
 import { SchoolClassService } from '../_services/school-class.service';
 import { TeacherService } from '../_services/teacher.service';
@@ -42,8 +43,11 @@ describe('TeacherViewComponent', () => {
   let schoolClass: SchoolClass;
   let teacher: ClassTeacher;
 
+  const clsSecretL = 8;
+  const pwL=8;
+
   beforeAll( async () => {
-    await EncTools.makeClass("test school", "test class", "test password").toPromise().then(
+    await EncTools.makeClass("test school", "test class", "test password", clsSecretL).toPromise().then(
       ([sCls, teeach]: [SchoolClass,  ClassTeacher]) => {
         sCls.id = 23;
         sCls.surveyStatus = SchoolClassSurveyStatus.open;
@@ -60,6 +64,7 @@ describe('TeacherViewComponent', () => {
         {provide: SchoolClassService, useValue: new MockSchoolClassService(schoolClass)},
         {provide: TeacherService, useClass: MockTeacherService},
         {provide: ActivatedRoute, useValue: new MockRoute(schoolClass)},
+        {provide: AppConfigService, useClass: MockAppConfigService}
       ],
       declarations: [ TeacherViewComponent ]
     })

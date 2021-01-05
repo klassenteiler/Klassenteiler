@@ -5,9 +5,10 @@ import {environment} from '../../environments/environment'
 import { bindCallback, Observable } from 'rxjs';
 import { RSA_NO_PADDING } from 'constants';
 import { map } from 'rxjs/operators';
+import { AppConfigService } from '../app-config.service';
 
-const classSecretLength: number = environment.classSecretLength
-const teacherPasswordLength: number = environment.teacherPasswordLength
+// const classSecretLength: number = environment.classSecretLength
+// const teacherPasswordLength: number = environment.teacherPasswordLength
 const nHashBits: number = 23
 const hashIterations: number  = 3000
 
@@ -42,11 +43,11 @@ export class ClearLocalStudent implements ClearLocalStudentI{
   }
 }
 
-// @Injectable({
-//   providedIn: 'root'
-// })
+@Injectable({
+  providedIn: 'root'
+})
 export class EncTools {
-  constructor() { }
+  constructor(private config: AppConfigService) { }
 
   static sha256(msg: string): string{
     var md = forge.md.sha256.create();
@@ -95,16 +96,16 @@ export class EncTools {
     return  password
   }
 
-  static createTeacherPassword(): string {
+  static createTeacherPassword(passwordLength: number): string {
     console.log(">>create teacher password<<")
-    return EncTools.createRandomString(teacherPasswordLength)
+    return EncTools.createRandomString(passwordLength)
   }
 
-  static makeClass(schoolName: string, className: string, password: string): Observable<[SchoolClass, ClassTeacher]>{
+  static makeClass(schoolName: string, className: string, password: string, clsSecretLength: number): Observable<[SchoolClass, ClassTeacher]>{
     // console.log(">>Executing slow make class<<")
     const keysObs: Observable<forge.pki.rsa.KeyPair> = EncTools.generateKeypairAsync();
 
-    const class_secret = EncTools.createRandomString(classSecretLength)
+    const class_secret = EncTools.createRandomString(clsSecretLength)
 
     const finalObs: Observable<[SchoolClass, ClassTeacher]> = keysObs.pipe(map(keys => {
       const schoolClass: SchoolClass = new SchoolClass(schoolName, className, class_secret, keys.publicKey)
@@ -165,6 +166,13 @@ export class SchoolClass{
       throw new Error("Cannot get URL of a class that has undefined id")
     }
     return `${this.id}/${this.classSecret}`
+  }
+
+  get teacherURL(): string{
+    return `teacher/${this.url}`
+  }
+  get studentURL(): string{
+    return `student/${this.url}`
   }
 
   hashStudentName(studentName: string): string {

@@ -69,6 +69,10 @@ export class StudentViewComponent implements OnInit {
     this.surveyOpen = false;
   }
 
+  getTeacherURL(): string{
+    return `${this.config.frontendUrl}/${this.schoolClass.teacherURL}`
+  }
+
   errorHandler(error: HttpErrorResponse){
     console.log("in error handler")
     console.log(error.error)

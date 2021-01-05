@@ -14,10 +14,13 @@ describe('EncTools', () => {
   let schoolClass: SchoolClass|null =null;
   let classTeacher: ClassTeacher|null =null;
 
+  const clsSecretL = 8;
+  const pwL=8;
+
   beforeEach(async () => {
 
     const promise : Promise<[SchoolClass, ClassTeacher]> = EncTools.makeClass(
-      "test school", "test class", passwordG
+      "test school", "test class", passwordG, clsSecretL
     ).toPromise();
 
     const [schoolClassTmp, classTeacherTmp]  = await promise;

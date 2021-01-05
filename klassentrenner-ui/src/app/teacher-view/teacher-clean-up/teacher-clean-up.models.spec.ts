@@ -60,6 +60,6 @@ describe("teacher-clean-up models", ()=>{
 
         expect(students).toEqual(recon)
         expect(recon[1].matchedSelfReportedName).toBeTruthy()
-        expect(recon[0].matchedSelfReportedName).toBeFalsy()
+        expect(recon[0].wasMatched).toBeFalsy()
     })
 });

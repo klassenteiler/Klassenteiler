@@ -21,6 +21,7 @@ import { StudentDetailComponent } from './teacher-view/teacher-clean-up/correct-
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatchStudentsComponent } from './teacher-view/teacher-clean-up/match-students/match-students.component';
 import { SummaryComponent } from './teacher-view/teacher-clean-up/summary/summary.component';
+import { FooterComponent } from './footer/footer.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { SummaryComponent } from './teacher-view/teacher-clean-up/summary/summar
     CorrectClasslistComponent,
     StudentDetailComponent,
     MatchStudentsComponent,
-    SummaryComponent
+    SummaryComponent,
+    FooterComponent
   ],
   imports: [
     BrowserModule,
