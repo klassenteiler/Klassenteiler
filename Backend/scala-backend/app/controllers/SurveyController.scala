@@ -107,6 +107,7 @@ class SurveyController @Inject() (
             })
         }}
         auth.withTeacherAuthentication(body)
+    }
 
     // PUT
     // setzt survey status auf 2 ('calculating') 
