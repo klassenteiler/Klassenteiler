@@ -113,8 +113,20 @@ class SurveyController @Inject() (
     // GET /getResult/:id/:classSecret
     // checkt ob der status von der relevanten schoolclass korrekt ist und queried die studenttable mit classid == id
     // returns Array[StudentCC] 
-    def getResults(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
-        Ok("todo")
+    def getResults(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
+        val body = {_:ClassTeacherCC =>
+            classModel.getStatus(id).flatMap(status => {
+                if(id != 3){
+                    val allStudents: Future[Seq[StudentCC]] = studentModel.getStudents(id)
+                    allStudents.map(students =>{
+                        Ok(Json.toJson(students))
+                    })
+                    
+                }else Future.successful(Gone("Results are not ready yet"))
+            })
+        }
+
+        auth.withTeacherAuthentication(body)
     } 
 
 }
