@@ -41,8 +41,6 @@ object IterativeAlgo extends PartitionAlgo {
 
       // check if the current partition is better than the best found partition so far
       val cuts :Int = sumEdgesForPartition(firstHalfOfPartition.toArray, secondHalfOfPartition.toArray, uniqueEdges)
-      println("Combination: " + firstHalfOfPartition.mkString(" "))
-      println("cuts: " + cuts)
 
       if(cuts < minimumCuts) {
         minimumCuts = cuts
@@ -63,12 +61,10 @@ object IterativeAlgo extends PartitionAlgo {
   // It computes the number of crossing edges (cuts) for the given partition.
   def sumEdgesForPartition(firstHalfOfPartition: Array[Int], secondHalfOfPartition: Array[Int], edges: Array[(Int, Int)]) : Int = {
     var cuts :Int = 0
-    println(edges.mkString(", "))
     for (edge <- edges) {
       if ((firstHalfOfPartition.contains(edge._1) && secondHalfOfPartition.contains(edge._2)) ||
         (firstHalfOfPartition.contains(edge._2) && secondHalfOfPartition.contains(edge._1))) {
         cuts += 1
-        println("++")
       }
     }
     cuts

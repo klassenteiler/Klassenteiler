@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 
 class PartitioningAlgoTest extends PlaySpec {
   "Partitioning algorithm" should {
-
+    /*
    "8 SuS to [19, 24, 27, 31] and [33, 34, 35, 41] " in {
      val nrSus = 8
      var susSet = Array(34, 19, 24, 41, 27, 35, 31, 33)
@@ -70,12 +70,28 @@ class PartitioningAlgoTest extends PlaySpec {
       var edges :Array[(Int, Int)] = createEdges(adjacentMatrix, nrSus)
       var partition = IterativeAlgo.computePartition(susSet, edges.toArray)
 
-      true mustBe true // Adjust for your purpose!
+      true mustBe true
+    }
+*/
+    // Tests the function sumEdgesForPartition of the iterative algorithm
+    "sum edges  " in {
+      var edges = Array(
+        (19, 24), (19, 27), (19, 31),
+        (27, 31),
+        (31, 27),
+        (34, 35),
+        (35, 34),
+        (41, 35))
+
+      IterativeAlgo.sumEdgesForPartition(Array(19, 24, 27, 31), Array(33, 34, 35, 41), edges) mustBe 0
+      IterativeAlgo.sumEdgesForPartition(Array(19, 24, 27, 33), Array(31, 34, 35, 41), edges) mustBe 3
+      IterativeAlgo.sumEdgesForPartition(Array(19, 24, 35, 31), Array(33, 34, 27, 41), edges) mustBe 6
+
     }
   }
   // Helper method to compute a random
   def computeRandomCellValue(i: Int, j: Int): Boolean =
-    (math.random < 0.25)
+    (math.random < 0.25) // 0.25 for 20 students (~5 Friends per student)
 
   // Helper method to create edges based on a adjacency matrix
   def createEdges(adjacencyMatrix :Array[Array[Boolean]], nrSus :Int): Array[(Int, Int)] = {
