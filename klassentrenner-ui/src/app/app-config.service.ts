@@ -77,4 +77,10 @@ export class MockAppConfigService {
       this.check()
       return this.appConfig.news
     }
+
+    get skipMerging(): boolean{
+      this.check()
+
+      return this.appConfig.skipMerging
+    }
   }

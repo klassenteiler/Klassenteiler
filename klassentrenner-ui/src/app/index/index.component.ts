@@ -13,12 +13,14 @@ export class IndexComponent implements OnInit {
   configFileDescription: string =""
 
   news: string = ""
+  nFriends: number = 4;
 
   constructor( private configService: AppConfigService) { }
 
   ngOnInit(): void {
     this.configFileDescription = this.configService.configDescription;
     this.news = this.configService.news;
+    this.nFriends = this.configService.maxFriends;
     console.log(this.configFileDescription)
   }
 

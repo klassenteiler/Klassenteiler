@@ -1,4 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { mergeMap , map} from 'rxjs/operators';
 import { AppConfigService } from 'src/app/app-config.service';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, SchoolClass } from 'src/app/_tools/enc-tools.service';
@@ -33,7 +35,21 @@ export class SurveyOpenComponent implements OnInit {
   }
 
   closeSurvey(): void {
-    this.teacherService.closeSurvey(this.schoolClass, this.classTeacher).subscribe(msg => {
+    const closeObs = this.teacherService.closeSurvey(this.schoolClass, this.classTeacher)
+    
+    let finalObs: Observable<string>;
+
+    if(this.configService.skipMerging){
+      finalObs = closeObs.pipe(mergeMap((msg:string) => {
+        console.log(msg)
+        return this.teacherService.startCalculatingWithMerge(this.schoolClass, this.classTeacher, {});
+      }))
+    }
+    else{
+      finalObs = closeObs
+    }
+    
+    finalObs.subscribe(msg => {
       console.log(msg);
       window.location.reload();
     })

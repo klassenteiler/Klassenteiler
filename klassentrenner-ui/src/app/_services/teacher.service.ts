@@ -96,6 +96,15 @@ export class TeacherService {
     }))
   }
 
+  startCalculatingWithMerge(schoolClass: SchoolClass, teacher: ClassTeacher, mergeBody: any): Observable<string>{
+    return this.backendService.startCalculatingWithMerge(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret, mergeBody).pipe(
+      catchError(e=>this.handleTeacherError(schoolClass.id!, e))).pipe(
+        map(data=>{
+      if (data.message === undefined){ throw new Error("The server response for ccloseSurvey has no field message")}
+      return data.message
+    }))
+  }
+
   getFriendReported(schoolClass: SchoolClass, teacher:ClassTeacher): Observable<Array<ClearLocalStudent>>{
     const req: Observable<Array<ClearLocalStudent>> = this.backendService.getFriendReported(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
       catchError(e=> this.handleTeacherError(schoolClass.id!, e))

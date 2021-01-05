@@ -23,6 +23,10 @@ export class CreateComponent implements OnInit {
   generatedSchoolClass: SchoolClass | undefined;
   teacherViewLinkStr: string | undefined;
 
+  get classIsCreated() : boolean{
+    return ( this.password !==undefined ) && (this.generatedSchoolClass !== undefined )
+  }
+
   constructor(
     private config: AppConfigService,
     private schoolClassService: SchoolClassService, 
