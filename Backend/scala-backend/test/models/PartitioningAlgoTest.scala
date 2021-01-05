@@ -8,27 +8,27 @@ import scala.collection.mutable.ListBuffer
 class PartitioningAlgoTest extends PlaySpec {
   "Partitioning algorithm" should {
 
-   "8 SuS to [0,1,2,3] and [4,5,6,7] " in {
+   "8 SuS to [19, 24, 27, 31] and [33, 34, 35, 41] " in {
      val nrSus = 8
-     var susSet = (0 until nrSus).toArray
+     var susSet = Array(34, 19, 24, 41, 27, 35, 31, 33)
      var edges = Array(
-       (0, 1), (0, 2), (0, 3),
-       (2, 3),
-       (3, 2),
-       (5, 6),
-       (6, 5),
-       (7, 6)
+       (19, 24), (19, 27), (19, 31),
+       (27, 31),
+       (31, 27),
+       (34, 35),
+       (35, 34),
+       (41, 35)
      )
      var partition = IterativeAlgo.computePartition(susSet, edges.toArray)
      println("first group: " + partition._1.mkString(" "))
      println("second group: " + partition._2.mkString(" "))
-     println("(One Group should be [0, 1, 2, 3])")
+     println("(One Group should be [19, 24, 27, 31])")
 
-     val firstMatches :Boolean = (partition._1.contains(0) && partition._1.contains(1)
-       && partition._1.contains(2) && partition._1.contains(3))
+     val firstMatches :Boolean = (partition._1.contains(19) && partition._1.contains(24)
+       && partition._1.contains(27) && partition._1.contains(31))
 
-     val secondMatches :Boolean = (partition._2.contains(0) && partition._2.contains(1)
-       && partition._2.contains(2) && partition._2.contains(3))
+     val secondMatches :Boolean = (partition._2.contains(33) && partition._2.contains(34)
+       && partition._2.contains(35) && partition._2.contains(41))
 
      (firstMatches || secondMatches) mustBe true
    }
@@ -73,7 +73,6 @@ class PartitioningAlgoTest extends PlaySpec {
       true mustBe true // Adjust for your purpose!
     }
   }
-
   // Helper method to compute a random
   def computeRandomCellValue(i: Int, j: Int): Boolean =
     (math.random < 0.25)
