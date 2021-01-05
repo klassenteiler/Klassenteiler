@@ -65,4 +65,11 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
     db.run(Student.filter(x => (x.classid === classId && x.selfreported === true)).result).map(rows => rows.length)
   }
 
+  def getAllSelfReportedStudentIDs(classId: Int): Future[Seq[Int]] = {
+    db.run(Student.filter(x => (x.classid === classId && x.selfreported === true)).result).map(rows => rows.map(_.id))
+  }
+
+  def updateGroupBelonging(studentId: Int, group: Int) = {
+    db.run(Student.filter(_.id === studentId).map(row => (row.groupbelonging)).update((Some(group))))
+  }
 }

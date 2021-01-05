@@ -106,8 +106,32 @@ class SurveyController @Inject() (
     // ruft internen algorithmus auf
     // ändert alle groupbelonging einträge in der students datenbank
     // setzt survey status auf 3 (done)
-    def startCalculating(id: Int, classSecret: String) = Action { implicit request: Request[AnyContent] =>
-        Ok("todo")
+    def startCalculating(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
+        val body = {_: ClassTeacherCC => {
+            classModel.getStatus(id).flatMap(status => {
+                if (status == 1) {
+                    val studentsOfClass: Future[Seq[Int]] = studentModel.getAllSelfReportedStudentIDs(id)
+                    val relationsOfClass: Future[Seq[(Int, Int)]] = relModel.getAllRelationIdsOfClass(id)
+
+                    for{
+                        f1 <- studentsOfClass
+                        f2 <- relationsOfClass
+                    } yield (f1, f2)
+
+                    val partition: Future[(Array[Int], Array[Int])] = studentsOfClass.zip(relationsOfClass).map{
+                        case ((f1,f2)) => IterativeAlgo.computePartition(f1.toArray, f2.toArray)
+                    }
+
+                    partition.map(p => p._1.map(id => studentModel.updateGroupBelonging(id, 1)))
+                    partition.map(p => p._2.map(id => studentModel.updateGroupBelonging(id, 2)))
+
+                    classModel.updateStatus(id, 2)
+                    Future.successful(Ok("status: startCalculating (2)"))
+                } else Future.successful(Gone("Survey has wrong status"))
+            })
+        }}
+        //Future.successful(Ok("todo"))
+        auth.withTeacherAuthentication(body)
     }
 
     // GET /getResult/:id/:classSecret

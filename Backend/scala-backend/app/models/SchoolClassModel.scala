@@ -63,6 +63,8 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
     db.run(Schoolclass.filter(_.id === classId).result).map(r => r.head.surveystatus.get) 
   }
 
-  def updateStatus(classId: Int, status: Int) = ???
+  def updateStatus(classId: Int, status: Int) = {
+    db.run(Schoolclass.filter(_.id === classId).map(row => (row.surveystatus)).update((Some(status))))
+  }
 }
 
