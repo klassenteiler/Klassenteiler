@@ -1,10 +1,10 @@
 {
     "apiBaseUrl": "http://localhost:9000",
-    "frontendUrl": "http://localhost",
+    "frontendUrl": "localhost",
     "maxFriends": 5,
     "classSecretLength": 8,
     "teacherPasswordLength": 8,
     "description": "config prod json",
-    "news": "",
+    "news": "prod news",
     "skipMerging": true
 }

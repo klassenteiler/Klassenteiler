@@ -67,7 +67,7 @@ export class MockAppConfigService {
       this.check()
       const url: string = this.appConfig.frontendUrl;
       if (url.startsWith("http")) {
-        throw Error('Froentend URL in config should not start with http..');
+        throw Error(`Froentend URL (${url}) in config should not start with http..`);
       }
   
       return this.appConfig.frontendUrl;
