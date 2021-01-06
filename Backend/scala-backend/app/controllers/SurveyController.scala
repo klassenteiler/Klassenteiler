@@ -124,12 +124,13 @@ class SurveyController @Inject() (
                     val studentsOfClass: Future[Seq[Int]] = studentModel.getAllSelfReportedStudentIDs(id)
                     val relationsOfClass: Future[Seq[(Int, Int)]] = relModel.getAllRelationIdsOfClass(id)
 
-                    for{
+                    val suSAndRelations: Future[(Seq[Int], Seq[(Int, Int)])] = for{
                         f1 <- studentsOfClass
                         f2 <- relationsOfClass
                     } yield (f1, f2)
 
-                    val partition: Future[(Array[Int], Array[Int])] = studentsOfClass.zip(relationsOfClass).map{
+                    // studentsOfClass.zip(relationsOfClass)
+                    val partition: Future[(Array[Int], Array[Int])] = suSAndRelations.map{
                         case ((f1,f2)) => {
                             this.logger.info(s"starting to compute the partition for students ${f1.mkString(" ")}")
                             IterativeAlgo.computePartition(f1.toArray, f2.toArray)
