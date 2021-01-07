@@ -37,7 +37,7 @@ class SurveyController @Inject() (
         val body = {() => {
             // if the survey is not open anymore we return 410
             classModel.getStatus(id).flatMap(status => {
-                if (status == 0){
+                if (status == SurveyStatus.Open){
                     request.body.asJson match {
                         case Some(content) => {
                             // extract json values from JsObject
@@ -99,15 +99,15 @@ class SurveyController @Inject() (
     def closeSurvey(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
         val body = {_: ClassTeacherCC => {
             classModel.getStatus(id).flatMap(status => {
-                if (status == 0) {
-                    classModel.updateStatus(id, 1)
+                if (status == SurveyStatus.Open) {
+                    classModel.updateStatus(id, SurveyStatus.Closed)
 
                     Future.successful(Ok(Json.obj("message" -> "success - survey closed")))
                 } else Future.successful(Gone("Survey has wrong status"))
             })
         }}
         auth.withTeacherAuthentication(body)
-
+    }
     // PUT
     // setzt survey status auf 2 ('calculating') 
     // ruft alle relationships auf
@@ -117,7 +117,7 @@ class SurveyController @Inject() (
     def startCalculating(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
         val body = {_: ClassTeacherCC => {
             classModel.getStatus(id).flatMap(status => {
-                if (status == 1) {
+                if (status == SurveyStatus.Closed) {
                     val studentsOfClass: Future[Seq[Int]] = studentModel.getAllSelfReportedStudentIDs(id)
                     val relationsOfClass: Future[Seq[(Int, Int)]] = relModel.getAllRelationIdsOfClass(id)
 
@@ -133,7 +133,7 @@ class SurveyController @Inject() (
                     partition.map(p => p._1.map(id => studentModel.updateGroupBelonging(id, 1)))
                     partition.map(p => p._2.map(id => studentModel.updateGroupBelonging(id, 2)))
 
-                    classModel.updateStatus(id, 2)
+                    classModel.updateStatus(id, SurveyStatus.Calculating)
                     Future.successful(Ok(Json.obj("message" -> "success - started calculating")))
                 } else Future.successful(Gone("Survey has wrong status"))
             })
@@ -148,7 +148,7 @@ class SurveyController @Inject() (
     def getResults(implicit id: Int, classSecret: String) = Action.async { implicit request: Request[AnyContent] =>
         val body = {_:ClassTeacherCC =>
             classModel.getStatus(id).flatMap(status => {
-                if(id != 3){
+                if(status == SurveyStatus.Done){
                     val allStudents: Future[Seq[StudentCC]] = studentModel.getStudents(id)
                     allStudents.map(students =>{
                         Ok(Json.toJson(students))
@@ -160,5 +160,4 @@ class SurveyController @Inject() (
 
         auth.withTeacherAuthentication(body)
     } 
-
 }
