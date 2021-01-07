@@ -41,5 +41,4 @@ export const SchoolClassSurveyStatus = {
     closed: 1,
     calculating: 2,
     done: 3
-
 }

@@ -1,7 +1,11 @@
-<p>index works!</p>
-<a routerLink="create">go to create</a>
-
-<button (click)="makeTestPDF()">makePDF</button>
-
-<H3>Config Path</H3>
-{{configFile}}
+<div class='container container-fluid mt-4'>
+    <H1>Schulklassen sinnvoll aufteilen gegen Corona!</H1>
+    <div class="alert alert-warning" role="alert" *ngIf="news !== ''">
+        {{news}}
+    </div>
+    <p>In der aktuellen Corona Pandemie stellen Schulklassen ein Infektionsrisiko dar. Dieses kann verringert werden indem immer nur die halbe Schulklasse Präsenzunterricht hat. Allerdings sollte die Aufteilung der Klasse in zwei Hälften nicht willkürlich erfolgen da sonst Freizeit-Kontakte der Schüler die Infektion von der einen Hälfte der Klasse in die andere tragen können.</p>
+    <p> 
+        Mit diesem Online-Tool wollen wir es ermöglichen eine Schulklasse optimal aufzuteilen. Der Lehrer erstellt eine neue Schulklasse (mit dem Button unten) und erhält einen personalisierten Klassenlink den er den Schülern (z.b. per Email) schickt. Diese klicken auf den Link und tragen ihren eigenen Namen, sowie den Namen von bis zu {{nFriends}} Freunden ein. Sobald sich alle Schüler eingegtragen haben beendet der Lehrer die Umfrage und unser Server berechnet die optimale Aufteilung der Klasse. Dabei achten wir auf Datenschutz und speichern nur Pseudonyme der Schüler. Einzig der Lehrer kann sehen welche Schüler sich eingetragen haben.
+    </p>
+<a routerLink="create" class='btn btn-primary'>Jetzt eine neue Klasse erstellen</a>
+</div>

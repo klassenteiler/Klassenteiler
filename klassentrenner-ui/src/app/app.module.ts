@@ -16,6 +16,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TeacherCleanUpComponent } from './teacher-view/teacher-clean-up/teacher-clean-up.component';
 import { WaitingForResultComponent } from './teacher-view/waiting-for-result/waiting-for-result.component';
 import { ResultsComponent } from './teacher-view/results/results.component';
+import { CorrectClasslistComponent } from './teacher-view/teacher-clean-up/correct-classlist/correct-classlist.component';
+import { StudentDetailComponent } from './teacher-view/teacher-clean-up/correct-classlist/student-detail/student-detail.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { MatchStudentsComponent } from './teacher-view/teacher-clean-up/match-students/match-students.component';
+import { SummaryComponent } from './teacher-view/teacher-clean-up/summary/summary.component';
+import { FooterComponent } from './footer/footer.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +34,12 @@ import { ResultsComponent } from './teacher-view/results/results.component';
     StudentViewComponent,
     TeacherCleanUpComponent,
     WaitingForResultComponent,
-    ResultsComponent
+    ResultsComponent,
+    CorrectClasslistComponent,
+    StudentDetailComponent,
+    MatchStudentsComponent,
+    SummaryComponent,
+    FooterComponent
   ],
   imports: [
     BrowserModule,
@@ -36,7 +47,8 @@ import { ResultsComponent } from './teacher-view/results/results.component';
     AppRoutingModule,
     QRCodeModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgbModule
   ],
   providers: [
     Title,

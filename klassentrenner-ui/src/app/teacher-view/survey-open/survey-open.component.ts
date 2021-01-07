@@ -1,4 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { mergeMap , map} from 'rxjs/operators';
 import { AppConfigService } from 'src/app/app-config.service';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, SchoolClass } from 'src/app/_tools/enc-tools.service';
@@ -19,8 +21,12 @@ export class SurveyOpenComponent implements OnInit {
   constructor(private configService: AppConfigService, private teacherService: TeacherService) { 
   }
 
+  get studentURLhttp():string {
+    return `http://${this.studentUrl}`
+  }
+
   ngOnInit(): void {
-    this.studentUrl = `${this.configService.frontendUrl}/student/${this.schoolClass.url}`
+    this.studentUrl = `${this.configService.frontendUrl}/${this.schoolClass.studentURL}`
 
     this.teacherService.nSignups(this.schoolClass, this.classTeacher).subscribe(n => {
       console.log(`nSignups = ${n}`)
@@ -29,7 +35,21 @@ export class SurveyOpenComponent implements OnInit {
   }
 
   closeSurvey(): void {
-    this.teacherService.closeSurvey(this.schoolClass, this.classTeacher).subscribe(msg => {
+    const closeObs = this.teacherService.closeSurvey(this.schoolClass, this.classTeacher)
+    
+    let finalObs: Observable<string>;
+
+    if(this.configService.skipMerging){
+      finalObs = closeObs.pipe(mergeMap((msg:string) => {
+        console.log(msg)
+        return this.teacherService.startCalculatingWithMerge(this.schoolClass, this.classTeacher, {});
+      }))
+    }
+    else{
+      finalObs = closeObs
+    }
+    
+    finalObs.subscribe(msg => {
       console.log(msg);
       window.location.reload();
     })

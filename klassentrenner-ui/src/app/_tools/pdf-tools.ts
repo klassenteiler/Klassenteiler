@@ -18,13 +18,16 @@ export class PdfTools{
         doc.setTextColor(0, 0, 0)
         doc.text("Link zur Verwaltungsseite für die Klasse:", 20, 60)
         doc.setTextColor(0, 0, 255)
-        doc.textWithLink(teacherURL, 20, 70, { url: teacherURL });
+
+        const fullURL = `http://${teacherURL}`
+
+        doc.textWithLink(teacherURL, 20, 70, { url: fullURL });
 
 
         doc.setTextColor(0,0,0)
-        doc.text("Klassencode:", 20, 100)
+        doc.text("Klassenpasswort:", 20, 100)
         doc.setTextColor(193, 0, 0);
-        doc.text(password, 60, 100 )
+        doc.text(password, 80, 100 )
 
 
 

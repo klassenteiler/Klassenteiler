@@ -45,16 +45,23 @@ export class BackendService {
     return req
   }
 
-  prepareTeacherPutRequest<T>(classId: number, classSecret: string, teacherSecret: string, functionName: string): Observable<T> {
+  prepareTeacherPutRequest<T>(classId: number, classSecret: string, teacherSecret: string, functionName: string, body: any={}): Observable<T> {
     console.log('teacher put request')
     const headers = new HttpHeaders().set("teacherSecret", teacherSecret)
     const url: string = `${this.config.apiBaseUrl}/${functionName}/${classId}/${classSecret}`
 
-    const req = this.http.put<T>(url, {}, {headers: headers}) // sending an empty body
+    const req = this.http.put<T>(url, body, {headers: headers}) 
     
-    console.log(teacherSecret)
-    console.log(headers)
-    console.log(req)
+    return req
+  }
+
+  prepareTeacherPostRequest<T>(classId: number, classSecret: string, teacherSecret: string, functionName: string, body: any={}): Observable<T> {
+    console.log('teacher put request')
+    const headers = new HttpHeaders().set("teacherSecret", teacherSecret)
+    const url: string = `${this.config.apiBaseUrl}/${functionName}/${classId}/${classSecret}`
+
+    const req = this.http.post<T>(url, body, {headers: headers}) 
+    
     return req
   }
 
@@ -74,8 +81,19 @@ export class BackendService {
     return this.prepareTeacherPutRequest<StringMessageT>(classId, classSecret, teacherSecret, "closeSurvey");
   }
 
+  startCalculatingWithMerge(classId: number, classSecret: string, teacherSecret: string, mergeBody: any): Observable<StringMessageT> {
+    return this.prepareTeacherPostRequest<StringMessageT>(classId, classSecret, teacherSecret, "startCalculating", mergeBody);
+  }
+
   getResults(classId: number, classSecret:string, teacherSecret: string): Observable<Array<StudentT>> {
     return this.prepareTeacherGetRequest<Array<StudentT>>(classId, classSecret, teacherSecret, "getResult");
   }
 
+  getSelfReported(classId: number, classSecret:string, teacherSecret: string): Observable<Array<StudentT>> {
+    return this.prepareTeacherGetRequest<Array<StudentT>>(classId, classSecret, teacherSecret, "getSelfReported");
+  }
+  
+  getFriendReported(classId: number, classSecret:string, teacherSecret: string): Observable<Array<StudentT>> {
+    return this.prepareTeacherGetRequest<Array<StudentT>>(classId, classSecret, teacherSecret, "getFriendReported");
+  }
 }

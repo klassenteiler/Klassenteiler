@@ -23,6 +23,10 @@ export class CreateComponent implements OnInit {
   generatedSchoolClass: SchoolClass | undefined;
   teacherViewLinkStr: string | undefined;
 
+  get classIsCreated() : boolean{
+    return ( this.password !==undefined ) && (this.generatedSchoolClass !== undefined )
+  }
+
   constructor(
     private config: AppConfigService,
     private schoolClassService: SchoolClassService, 
@@ -57,7 +61,7 @@ export class CreateComponent implements OnInit {
         throw new Error("SchoolClass has not been set yet, cant make teacher view link")
       }
       if (full){
-        return `${this.config.frontendUrl}/teacher/${this.generatedSchoolClass.url}`
+        return `${this.config.frontendUrl}/${this.generatedSchoolClass.teacherURL}`
       }
       else{
         return `teacher/${this.generatedSchoolClass.url}`

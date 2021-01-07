@@ -4,9 +4,9 @@
 
 export const environment = {
   production: false,
-  teacherPasswordLength: 8,
-  classSecretLength: 8,
-  configPath: "/assets/config.json"
+  // teacherPasswordLength: 8,
+  // classSecretLength: 8,
+  configPath: "/config/config.json"
 };
 
 /*
