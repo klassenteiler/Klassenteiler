@@ -171,8 +171,7 @@ class SurveyController @Inject() (
                             }
                             else {
                                 classModel.updateStatus(id, 3).map(v => {
-                                    assert(v==3)
-                                    this.logger.info("class status was updated")
+                                    this.logger.info("class surveyStatus was updated")
                                     })
                             }
                         })
