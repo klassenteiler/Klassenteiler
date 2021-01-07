@@ -71,7 +71,7 @@ class SurveyController @Inject() (
                                        
                                         }
                                         case None => {
-                                            Future.successful(Unauthorized("Student with this name already submitted survey"))
+                                            Future.successful(Forbidden("Student with this name already submitted survey"))
                                         }
                                     })
                                 }else {
@@ -154,7 +154,7 @@ class SurveyController @Inject() (
                         Ok(Json.toJson(students))
                     })
                     
-                }else Future.successful(Gone("Results are not ready yet"))
+                }else Future.successful(Conflict("Results are not ready yet"))
             })
         }
 
