@@ -41,7 +41,7 @@ export class TeacherViewComponent implements OnInit {
     this.pwLength = this.config.teacherPasswordLength;
     this.classTeacher = this.teacherService.getLocalTeacher(this.schoolClass.id!)
 
-    this.title.setTitle(`${this.schoolClass.name()} - LehrerIn`)
+    this.title.setTitle(`${this.schoolClass.name()} - Lehrer:in`)
 
     console.log(this.schoolClass)
   }
