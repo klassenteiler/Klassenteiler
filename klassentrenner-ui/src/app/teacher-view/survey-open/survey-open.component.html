@@ -1,9 +1,16 @@
 <div class="card">
     <div class="card-body">
-        <H4> Bitte Teilen sie den folgenden Link mit den Schülern:</H4>
-        <a href="{{studentUrl}}">{{studentUrl}}</a>
+        <H2>Wie geht es weiter?</H2>
+        <p>
+        Senden Sie den folgenden Link oder QR code den Schülern. Z.b. können sie den Link in eine email Kopieren und allen Schülern bzw. Eltern schicken. Sie können auch diese Seite ausdrucken und als Kopie verteilen. 
+        </p>
 
-        <qrcode [qrdata]="studentUrl" [width]="256" [errorCorrectionLevel]="'M'"></qrcode>
+        <div class="alert alert-secondary" role="alert">
+            <H5>Umfrage zu Kontakten für die Klasse '{{schoolClass.name()}}'</H5>
+            Jeder Schüler muss die folgende URL aufrufen und dort seine/ihre Kontakte eintragen.
+            <p><a href="http://{{studentUrl}}">{{studentUrl}}</a></p>
+            <qrcode [qrdata]="studentURLhttp" [width]="256" [errorCorrectionLevel]="'M'"></qrcode>
+        </div>
     </div>
 </div>
 <div class="card">
@@ -11,7 +18,7 @@
         <H4> Übersicht</H4>
         <p>Bisher haben sich <mark>{{nSignups}}</mark> Schüler eingetragen. </p>
 
-        Klicken sie den Knopf hier um die Umfrage zu beenden. Dann kann sich kein Schüler mehr eintragen. 
+        Sie können die Umfrage beenden. Dann kann sich kein Schüler mehr eintragen. 
         <button class="btn btn-warning" (click)="closeSurvey()">Umfrage schliesen!</button>
     </div>
 </div>

@@ -12,6 +12,7 @@ import play.api.db.slick.HasDatabaseConfigProvider
 import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.Future
+import play.api.Logger
 
 
 
@@ -30,6 +31,8 @@ class SurveyController @Inject() (
     private val classModel = new SchoolClassModel(db)
     private val studentModel = new StudentModel(db)
     private val relModel = new RelationshipModel(db)
+
+    private val logger: Logger = Logger(this.getClass())
     // POST /submitStudentSurvey/:id/:classSecret
     // fügt student zu student table hinzu
     // fügt friends und student zu relations table hinzu
@@ -67,7 +70,7 @@ class SurveyController @Inject() (
                                                     relModel.createRelationship(relationship)
                                                 })
                                             })
-                                            Future.successful(Created(Json.obj("message" -> "success - created")))
+                                            Future.successful(Created(Json.obj("message" -> "success - created"))) //TODO maybe only report success once it is created
                                        
                                         }
                                         case None => {
@@ -100,13 +103,13 @@ class SurveyController @Inject() (
         val body = {_: ClassTeacherCC => {
             classModel.getStatus(id).flatMap(status => {
                 if (status == 0) {
-                    classModel.updateStatus(id, 1)
-
-                    Future.successful(Ok(Json.obj("message" -> "success - survey closed")))
+                    classModel.updateStatus(id, 1).map(_ => Ok(Json.obj("message" -> "success - survey closed")))
+                    // Future.successful(Ok(Json.obj("message" -> "success - survey closed")))
                 } else Future.successful(Gone("Survey has wrong status"))
             })
         }}
         auth.withTeacherAuthentication(body)
+    }
 
     // PUT
     // setzt survey status auf 2 ('calculating') 
@@ -121,17 +124,58 @@ class SurveyController @Inject() (
                     val studentsOfClass: Future[Seq[Int]] = studentModel.getAllSelfReportedStudentIDs(id)
                     val relationsOfClass: Future[Seq[(Int, Int)]] = relModel.getAllRelationIdsOfClass(id)
 
-                    for{
+                    val suSAndRelations: Future[(Seq[Int], Seq[(Int, Int)])] = for{
                         f1 <- studentsOfClass
                         f2 <- relationsOfClass
                     } yield (f1, f2)
 
-                    val partition: Future[(Array[Int], Array[Int])] = studentsOfClass.zip(relationsOfClass).map{
-                        case ((f1,f2)) => IterativeAlgo.computePartition(f1.toArray, f2.toArray)
+                    // studentsOfClass.zip(relationsOfClass)
+                    val partition: Future[(Array[Int], Array[Int])] = suSAndRelations.map{
+                        case ((f1,f2)) => {
+                            this.logger.info(s"starting to compute the partition for students ${f1.mkString(" ")}")
+                            IterativeAlgo.computePartition(f1.toArray, f2.toArray)
+                            }
                     }
 
-                    partition.map(p => p._1.map(id => studentModel.updateGroupBelonging(id, 1)))
-                    partition.map(p => p._2.map(id => studentModel.updateGroupBelonging(id, 2)))
+                    partition.map(p => {
+                        this.logger.info(s"partition was computed: p1=[${p._1.mkString(" ")}] p2=[${p._2.mkString(" ")}]")
+                        val futureGroupOneSet: List[Future[Int]] = p._1.toList.map(id => studentModel.updateGroupBelonging(id, 1))
+                        val futureGroupTwoSet: List[Future[Int]] = p._2.toList.map(id => studentModel.updateGroupBelonging(id, 2))
+
+                        val futureAllGroupOne: Future[Seq[Int]] = Future.sequence(futureGroupOneSet)
+                        val futureAllGroupTwo: Future[Seq[Int]] = Future.sequence(futureGroupTwoSet)
+
+                        // these are just sanity checks and get rid of the sequence
+                        val checkedFutureOne: Future[Boolean] = futureAllGroupOne.map((arr: Seq[Int])=>{
+                            // this.logger.warn(s"group one set ${arr.mkString(" ")} ")
+                            arr.forall(_==1) // one seems to mean successful
+                        }
+                        )
+                        val checkedFutureTwo: Future[Boolean] = futureAllGroupTwo.map((arr: Seq[Int])=>{
+                            // this.logger.warn(s"group two set ${arr.mkString(" ")} ")
+                            arr.forall(_==1) // one seems to mean successful
+                        }
+                        )
+
+                        val allUpdateComplete: Future[Boolean] = for {
+                            oneOK <- checkedFutureOne
+                            twoOK <- checkedFutureTwo
+                        } yield (oneOK && twoOK)
+                        // val allUpdateComplete: Future[Tuple2[Boolean, Boolean]] = checkedFutureOne.zipWith(checkedFutureTwo)
+
+                        val classStatusUpdateFuture: Future[Unit] = allUpdateComplete.flatMap((ok:Boolean)=>{
+                            this.logger.info("students were updated in the database")
+                            if(!ok) {
+                                this.logger.error("Aperantly setting the groupBelonging did not work, should throw error")
+                                throw new Exception("Aperantly setting the groupBelonging did not work") 
+                            }
+                            else {
+                                classModel.updateStatus(id, 3).map(v => {
+                                    this.logger.info("class surveyStatus was updated")
+                                    })
+                            }
+                        })
+                    })
 
                     classModel.updateStatus(id, 2)
                     Future.successful(Ok(Json.obj("message" -> "success - started calculating")))

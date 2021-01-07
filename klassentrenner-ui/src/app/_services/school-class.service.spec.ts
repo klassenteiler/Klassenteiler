@@ -20,7 +20,7 @@ describe('SchoolClassService', () => {
 
   beforeEach(async () => {
     const promise : Promise<[SchoolClass, ClassTeacher]> = EncTools.makeClass(
-      "test school", "test class", passwordG
+      "test school", "test class", passwordG, 8
     ).toPromise();
 
     const [schoolClassTmp, classTeacherTmp]  = await promise;
@@ -53,7 +53,7 @@ describe('SchoolClassService', () => {
   it('trying the promises', () => {
     const promies = new Promise(resolve => {
       const key = forge.pki.rsa.generateKeyPair()
-      const pw = EncTools.createTeacherPassword()
+      const pw = EncTools.createTeacherPassword(8)
       resolve(pw);
     } )
     console.log('created promis')

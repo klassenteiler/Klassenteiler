@@ -1,0 +1,22 @@
+<div class='col-12 container'>
+    <ul class='list-group'>
+
+        <ng-container *ngFor="let matchingStudent of friendReportedList; index as index">
+            <ng-container *ngIf="!nameIsInClasslist(matchingStudent.name)">
+                <li class="list-group-item" [class.list-group-item-danger]="matchingStudent.shouldBeDeleted">
+                    <div class="form-group">
+
+                        <label for="inlineFormCustomSelect">{{matchingStudent.name}}</label>
+                        <select class="form-select" id="inlineFormCustomSelect" [formControl]="getControl(index)"
+                            (change)="changeMatching(index, $event);">
+                            <option value="0" disabled>Bitte wählen</option>
+                            <option *ngFor="let opt of getClassListForId(index)" [ngValue]="opt.internalValue">
+                                {{opt.displayValue}}
+                            </option>
+                        </select>
+                    </div>
+                </li>
+            </ng-container>
+        </ng-container>
+    </ul>
+</div>

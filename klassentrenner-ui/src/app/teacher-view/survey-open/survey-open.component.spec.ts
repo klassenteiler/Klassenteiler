@@ -23,7 +23,7 @@ describe('SurveyOpenComponent', () => {
   let teacher: ClassTeacher;
 
   beforeAll( async () => {
-    await EncTools.makeClass("test school", "test class", "test password").toPromise().then(
+    await EncTools.makeClass("test school", "test class", "test password", 8).toPromise().then(
       ([sCls, teeach]: [SchoolClass,  ClassTeacher]) => {
         sCls.id = 23;
         sCls.surveyStatus = SchoolClassSurveyStatus.open;

@@ -1,0 +1,44 @@
+<li class="list-group-item"
+ [class.list-group-item-warning]="studentEntity.changed"
+ [class.list-group-item-danger]="studentEntity.deleted"
+ [class.list-group-item-info]="studentEntity.teacherAdded"
+ >
+    <div class='row'>
+         <div class='col-sm'>
+             <span *ngIf="!editMode">
+                 <span *ngIf="studentEntity.changed || studentEntity.deleted">
+                     <s>{{studentEntity.recoverName}}</s>
+                </span>
+                 <span *ngIf="!studentEntity.deleted">
+                     {{ studentEntity.name }}
+                </span>
+            </span>
+             <span *ngIf="editMode">
+                 <input [formControl]="formControl" 
+                 placeholder="{{studentEntity.name}}" 
+                 (blur)="save()" (keyup.enter)="save()" autofocus>
+             </span>
+         </div>
+         <div class='col-sm'>
+             <button (click)="toggleEdit()" class='btn btn-outline-info' [class.active]="editMode" [disabled]="studentEntity.deleted">
+                <svg class="bi" width="22" height="22" fill="currentColor">
+                    <use xlink:href="assets/bootstrap-icons.svg#pencil-square"/>
+                </svg>
+             </button>
+             <!-- <button *ngIf="editMode"  (click)="save()"> save</button> -->
+
+
+             <button (click)="delete()" class='btn btn-danger' [disabled]="studentEntity.deleted"> 
+                <svg class="bi" width="22" height="22" fill="currentColor">
+                    <use xlink:href="assets/bootstrap-icons.svg#trash"/>
+                </svg>
+             </button>
+
+             <button (click)="recover()" class='btn btn-success' [disabled]="!studentEntity.recoverable"> 
+                <svg class="bi" width="22" height="22" fill="currentColor">
+                    <use xlink:href="assets/bootstrap-icons.svg#arrow-counterclockwise"/>
+                </svg>
+             </button>
+         </div>
+     </div>   
+ </li>
