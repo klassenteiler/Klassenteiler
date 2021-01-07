@@ -41,7 +41,7 @@ class AuthenticationController @Inject() (
                 result match {
                     case Some(teacher) =>
                     f(teacher) //return whatever the passed function returns
-                    case None => Future.successful(Forbidden("Wrong teacherSecret")) //return
+                    case None => Future.successful(Unauthorized("Wrong teacherSecret")) //return
                 }
                 )
             }
