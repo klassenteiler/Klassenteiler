@@ -24,10 +24,10 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'klassentrener-ui'`, () => {
+  it(`should have as title 'Klassenteiler'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('klassentrener-ui');
+    expect(app.title).toEqual('Klassenteiler');
   });
 
   // it('should render title', () => {

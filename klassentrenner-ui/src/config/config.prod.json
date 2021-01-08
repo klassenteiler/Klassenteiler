@@ -7,5 +7,5 @@
     "description": "config prod json",
     "news": "prod news",
     "skipMerging": true,
-    "gitURL": "https://github.com/antonlaukemper/Klassenteiler"
+    "gitURL": "https://github.com/klassenteiler/Klassenteiler"
 }
