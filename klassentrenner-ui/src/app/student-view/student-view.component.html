@@ -1,6 +1,6 @@
 <div class='container container-fluid mt-4'>
 
-    <H1 style='color: olive'>Schüleransicht: {{schoolClass.name()}}</H1>
+    <H1 style='color: olive'>Schüler:innen-Ansicht: {{schoolClass.name()}}</H1>
 
     <div class="alert alert-danger" role="alert" id="error" *ngIf="errorMessage !=='' ">
         {{errorMessage}}
@@ -68,6 +68,6 @@
             </form>
         </div>
     </div>
-    <a href="http://{{getTeacherURL()}}">Ich bin LehrerIn dieser Klasse</a>
+    <a href="http://{{getTeacherURL()}}">Ich bin Lehrer:in dieser Klasse</a>
     <!-- <button type='button' (click)="check()"> check</button> -->
 </div>

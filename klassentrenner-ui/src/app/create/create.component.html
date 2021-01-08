@@ -7,7 +7,7 @@
       <fieldset [disabled]="!formIsOpen">
         <form>
           <div class="form-group">
-            <label for="inputSchoolName">Wie heist ihre Schule?</label>
+            <label for="inputSchoolName">Wie heißt Ihre Schule?</label>
             <input #inputSchoolName type="text" class="form-control" id="inputSchoolName"
               placeholder="z.b. Albertus Magnus Gymnasium">
           </div>
@@ -31,15 +31,15 @@
     </div>
     <div class="card-body">
 
-      Die Schulklasse <mark>{{generatedSchoolClass!.name()}}</mark>wurde erfolgreich erstellt. Bitte schreiben sie sich
-      das folgende Klassenpasswort unbeding auf. <br />
+      Die Schulklasse <mark>{{generatedSchoolClass!.name()}}</mark>wurde erfolgreich erstellt. Bitte schreiben Sie sich
+      das folgende Klassenpasswort unbedingt auf. <br />
       <div class="mt-2">
         <div id="passwordDisplay" class="alert alert-danger mx-auto" role="alert">
           {{password}}
         </div>
       </div>
 
-      Mit dem Klassenpasswort können Sie sich unter folgendem Link einlogen:
+      Mit dem Klassenpasswort können Sie sich unter folgendem Link einloggen:
       <div class="mt-2">
         <a href="http://{{getTeacherViewLink(true)}}">
           <div id="linkDisplay" class="alert alert-success mx-auto" role="alert">
@@ -50,7 +50,7 @@
 
       Das Klassenpasswort kann nicht wiederhergestellt werden. Schreiben Sie es also unbedingt auf.
 
-      Eine übersicht über die Zugangsdaten können Sie auch als PDF herunterladen.
+      Eine Übersicht über die Zugangsdaten können Sie auch als PDF herunterladen.
       <div class="row text-center">
         <div class="col-sm">
           <button class="btn btn-primary mt-2" (click)="savePDFsummary()"> PDF speichern</button>
