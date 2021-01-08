@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { CreateComponent } from './create/create.component';
+import { DatenschutzComponent } from './datenschutz/datenschutz.component';
+import { ImpressumComponent } from './impressum/impressum.component';
 import { IndexComponent } from './index/index.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { StudentViewComponent } from './student-view/student-view.component';
@@ -13,6 +15,8 @@ const routes: Routes = [
   {path: 'teacher/:id/:classSecret', component: TeacherViewComponent, resolve: {schoolClass: SchoolClassResolver}},
   {path: 'student/:id/:classSecret', component: StudentViewComponent, resolve: {schoolClass: SchoolClassResolver}},
   {path: 'notFound', component: NotFoundComponent},
+  {path: 'impressum', component: ImpressumComponent},
+  {path: 'datenschutz', component: DatenschutzComponent},
   {path: '**', component: NotFoundComponent}
 ];
 

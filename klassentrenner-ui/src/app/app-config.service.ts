@@ -78,6 +78,11 @@ export class MockAppConfigService {
       return this.appConfig.news
     }
 
+    get gitURL(): string{
+      this.check()
+      return this.appConfig.gitURL
+    }
+
     get skipMerging(): boolean{
       this.check()
 
