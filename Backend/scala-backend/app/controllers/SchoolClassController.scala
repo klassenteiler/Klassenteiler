@@ -4,10 +4,7 @@ import javax.inject._
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._
-import models.SchoolClassModel
-import models.SchoolClassCC
-import models.SchoolClassDB
-import models.ClassTeacherCC
+import models._
 
 import play.api.db.slick.DatabaseConfigProvider
 import scala.concurrent.ExecutionContext
@@ -70,7 +67,7 @@ class SchoolClassController @Inject() (
             sc.publicKey,
             ct.teacherSecret,
             ct.encryptedPrivateKey,
-            null // surveystatus
+            SurveyStatus.Uninitialized
           )
           model
             .createSchoolClass(schoolClass) // returns SchoolClassCC

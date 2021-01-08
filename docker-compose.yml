@@ -17,7 +17,7 @@ services:
   backend:
     build: 
       context: Backend/scala-backend
-      target: prod
+      target: dev
     depends_on: 
       - db
     ports: 
