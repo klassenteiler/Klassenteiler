@@ -6,5 +6,6 @@
     "teacherPasswordLength": 8,
     "description": "config prod json",
     "news": "prod news",
-    "skipMerging": true
+    "skipMerging": true,
+    "gitURL": "https://github.com/antonlaukemper/Klassenteiler"
 }

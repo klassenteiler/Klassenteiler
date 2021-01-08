@@ -22,6 +22,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatchStudentsComponent } from './teacher-view/teacher-clean-up/match-students/match-students.component';
 import { SummaryComponent } from './teacher-view/teacher-clean-up/summary/summary.component';
 import { FooterComponent } from './footer/footer.component';
+import { ImpressumComponent } from './impressum/impressum.component';
+import { DatenschutzComponent } from './datenschutz/datenschutz.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +41,9 @@ import { FooterComponent } from './footer/footer.component';
     StudentDetailComponent,
     MatchStudentsComponent,
     SummaryComponent,
-    FooterComponent
+    FooterComponent,
+    ImpressumComponent,
+    DatenschutzComponent
   ],
   imports: [
     BrowserModule,
