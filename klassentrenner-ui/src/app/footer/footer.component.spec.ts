@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AppConfigService, MockAppConfigService } from '../app-config.service';
 
 import { FooterComponent } from './footer.component';
 
@@ -8,6 +9,7 @@ describe('FooterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [{provide: AppConfigService, useClass: MockAppConfigService}],
       declarations: [ FooterComponent ]
     })
     .compileComponents();
