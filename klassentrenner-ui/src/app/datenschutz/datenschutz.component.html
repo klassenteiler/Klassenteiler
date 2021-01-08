@@ -5,27 +5,27 @@
     <h3>Wer wei&szlig; was?</h3>
     <p> <span class='fw-bold'>Auf unserem Server </span>werden nur pseudonymisierte Namen der Sch&uuml;ler:innen
         gespeichert. Das hei&szlig;t der
-        Server kennt das Beziehungsnetzwerk allerdings nicht mit Klarnamen.</p>
+        Server kennt das Beziehungsnetzwerk - allerdings nicht mit Klarnamen.</p>
 
     <p><span class='fw-bold'>Die Lehrkraft</span> erh&auml;lt am Ende eine Aufteilung der Klasse in zwei H&auml;lften.
-        Das hei&szlig;t die Lehrkraft
-        kennt die Klarnamen der Sch&uuml;ler:innen und diese Aufteilung die durch das Beziehungsnetzwerk informiert ist.
-        Allerdings kennt die Lehrkraft nicht welche Beziehungen welche:r Sch&uuml;ler:in eingetragen hat.</p>
+        Das hei&szlig;t, die Lehrkraft
+        kennt die Klarnamen der Sch&uuml;ler:innen und die Aufteilung, die durch das Beziehungsnetzwerk informiert ist.
+        Allerdings kennt die Lehrkraft nicht, welche Beziehungen welche:r Sch&uuml;ler:in eingetragen hat.</p>
 
     <H3>Technische Umsetzung</H3>
-    <p> Sobald eine neue Klasse erstellt wird werden im Browser der Lehrkraft ein Klassenpasswort und ein
+    <p> Sobald eine neue Klasse erstellt wird, werden im Browser der Lehrkraft ein Klassenpasswort und ein
         public/private key pair zuf&auml;llig generiert. Der PrivateKey wird mit dem Klassenpasswort symmetrisch
         verschl&uuml;sselt und mit dem PublicKey zusammen an den Server &uuml;bertragen. Das Klassenpasswort ist nur der
         Lehrkraft bekannt und wird nie an den Server &uuml;bertragen.</p>
 
-    <p>In der Sch&uuml;ler:innen-Ansicht werden alle eingetragenen Namen mit dem public key verschl&uuml;sselt.
-        Zus&auml;tzlich wird ein hash aus jedem Namen erstellt der im Server als Pseudonym verwendet wird. Da dies im
-        Browser der Sch&uuml;ler:innen passiert werden nie Klarnamen &uuml;bertragen oder gespeichert.</p>
+    <p>In der Sch&uuml;ler:innen-Ansicht werden alle eingetragenen Namen mit dem PublicKey verschl&uuml;sselt.
+        Zus&auml;tzlich wird ein Hash aus jedem Namen erstellt, der im Server als Pseudonym verwendet wird. Da dies im
+        Browser der Sch&uuml;ler:innen passiert, werden nie Klarnamen &uuml;bertragen oder gespeichert.</p>
 
-    <p>Der Server erstellt die Klasseneinteilung anhand der Pseudonyme (hash des Klarnamens). Als Ergebnis wird dann die
+    <p>Der Server erstellt die Klasseneinteilung anhand der Pseudonyme (Hash des Klarnamens). Als Ergebnis wird dann die
         Liste von (mit dem PublicKey) verschl&uuml;sselten Namen an die Lehrkraft &uuml;bertragen. Zus&auml;tzlich wird
         auch der symmetrisch verschl&uuml;sselte PrivateKey &uuml;bertragen. Ausschlie&szlig;lich die Lehrkraft kennt
-        das Klassenpasswort mit dem sie den PrivateKey entschl&uuml;sseln kann. Mit diesem werden dann die Namen der
+        das Klassenpasswort, mit dem sie den PrivateKey entschl&uuml;sseln kann. Mit diesem werden dann die Namen der
         Sch&uuml;ler:innen entschl&uuml;sselt. </p>
 
     <p>Der Quelltext ist auf Github (siehe footer). Wir freuen uns über Feedback: mail(at)klassenteiler.de </p>
