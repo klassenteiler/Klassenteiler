@@ -13,7 +13,7 @@ const contributors: Contributor[] = [
   new Contributor("Clemens Hutter", "studiert MSc Data Science an der ETH Zürich", 
     [new Link('https://github.com/rauwuckl', 'github', 'GitHub'), 
     new Link("mailto:mail@clemenshutter.de", 'envelope', 'Email'), 
-    new Link("https:clemenshutter.de", 'window-sidebar', 'Website'),
+    new Link("https://clemenshutter.de", 'window-sidebar', 'Website'),
     new Link("https://twitter.com/clemens_hutter", "twitter", "Twitter")
   ]),
   new Contributor("Joshua Wiebe", "studiert M.Edu. (Informatik und Mathematik) an der FU Berlin", [

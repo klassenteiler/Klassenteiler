@@ -2,7 +2,8 @@
 <footer class="footer mt-auto py-3 bg-light">
   <div class="container container-fluid">
     <span class="text-muted">
-      <ul class="list-inline d-flex flex-row justify-content-between mb-0">
+      <!-- flex-col normaly it is a column, from devices sm onwards flex-sm-row is a row -->
+      <ul class="list-inline d-flex flex-sm-row flex-column text-center justify-content-between mb-0">
         <li class="list-inline-item">
           <a [routerLink]="['/']">Startseite</a>
         </li>
