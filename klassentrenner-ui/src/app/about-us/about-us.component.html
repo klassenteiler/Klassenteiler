@@ -1,0 +1,27 @@
+<div class="container container-fluid">
+    <div class="row mt-3 mb-4">
+        <div >
+          <h1>Über uns</h1>
+          <p >Wir kennen uns aus dem Bachelor Studium <a href="https://www.uni-osnabrueck.de/studieninteressierte/studiengaenge-a-z/cognitive-science-bachelor-of-science/">(Cognitive Science in Osnabrück)</a>. Inspiriert von <a href="https://www.ndr.de/nachrichten/info/68-Harter-Lockdown-jetzt,audio793452.html" >Christian Drostens Podcast</a> haben wir diese Webapp in unserer Freizeit programmiert. Die Serverkosten zahlen wir selbst und wir verfolgen keinerlei kommerzielle Interessen. Wir sind...</p>
+        </div>
+      </div>
+
+
+      <div class="row text-center">
+
+        <div class="col-lg-4 col-12 mb-5" *ngFor="let contributor of sortedContributors">
+          <div class="contributor-card bg-light rounded shadow-sm py-5 px-4">
+              <!-- <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="" width="100" class="img-fluid rounded-circle mb-3 img-thumbnail shadow-sm"> -->
+            <h5 class="mb-0">{{contributor.name}}</h5><span class="small text-muted">{{contributor.text}}</span>
+            
+            <ul class="social mb-0 list-inline mt-3">
+              <li class="list-inline-item ml-0 mr-0"  *ngFor="let link of contributor.links">
+                  <a href="{{link.href}}" target="_blank" rel="noopener noreferrer" class="social-link" placement="bottom" ngbTooltip="{{link.hint}}" [openDelay]="150">
+                <i class="bi bi-{{link.icon}}"></i>
+              </a></li>
+            </ul>
+          </div>
+        </div>
+
+    </div>
+</div>
