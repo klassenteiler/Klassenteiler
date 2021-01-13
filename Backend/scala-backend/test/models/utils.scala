@@ -18,7 +18,7 @@ trait DatabaseCleanerOnEachTest
     with GuiceOneAppPerTest // we need this sot aht we have acces to the field 'app'
      {
        this: GuiceOneAppPerTest with TestSuite => 
-       // this funny thing only allows the DAtabaseCleanerOnEachTest trait to be mixed into some class that also inherits from GuiceOneAppPerTest with TestSuite
+       // this funny thing only allows the DAtabaseCleanerOnEachTest trait to be mixed into some class that also inherits from TestSuite (i.e. only use this trait in PlaySpec test suits)
        // this is an enforcement from GuceOneAppPerTest with this we basically push the check down in the hierarchy so that the compiler does not shit it's pants
 
   // with this we get a dbConfigProvider from the dependency injection of the testing. i.e. what kind of database we have depends on GuiceOneAppPerTest. Recall that we overwritte
