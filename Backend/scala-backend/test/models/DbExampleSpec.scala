@@ -73,20 +73,24 @@ class DbExampleSpec
       //directly unpack into id, lol scala syntax lol rofl
       println(clsId)
 
+      // await inf is a method I implemented bellow
       awaitInf(studentModel.getNumberOfStudents(clsId)) mustBe 0 
       val stud: StudentCC = StudentCC(None, "hashedName", "encName", false, None)
 
       val createdS: Option[Int] =  awaitInf(studentModel.createStudent(stud, clsId))
       println(createdS)
+      createdS mustBe 1 // first student has id 1
       
       val stud2: StudentCC = StudentCC(None, "hashedName2", "encName2", false, None)
       val createdStwo: Option[Int] =  awaitInf(studentModel.createStudent(stud2, clsId))
-      println(createdStwo)
+      println(createdStwo) // 
+      createdStwo mustBe 2 // first student has id 1
+      
 
       val num: Int = awaitInf(studentModel.getNumberOfStudents(clsId))// mustBe 2
-      println(num)
+      println(num) // it actually seemed to be 0, maybe logic is false?
 
-      num mustBe 2
+      num mustBe 2 
     }
   }
 
@@ -123,6 +127,8 @@ class DbExampleSpec
 //   macintosh.introduced.value mustEqual "1984-01-24"
 // }
 
+
+    // method that just waits for a future
   def awaitInf[T](future: Future[T]): T  = {
     val res: T = Await.result(future, Duration.Inf)
     res
