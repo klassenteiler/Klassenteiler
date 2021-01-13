@@ -19,3 +19,5 @@ jdbc % Test,
 "com.typesafe.slick" %% "slick-hikaricp" % "3.3.3",
 "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % "test"
 )
+
+libraryDependencies += "com.h2database" % "h2" % "1.4.192"
