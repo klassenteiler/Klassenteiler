@@ -17,5 +17,6 @@ jdbc % Test,
 "com.typesafe.play" %% "play-json" % "2.8.1",
 "com.typesafe.slick" %% "slick-codegen" % "3.3.3",
 "com.typesafe.slick" %% "slick-hikaricp" % "3.3.3",
-"org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % "test"
+"org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % "test",
+"com.h2database" % "h2" % "1.4.192"
 )
