@@ -24,6 +24,7 @@ import { SummaryComponent } from './teacher-view/teacher-clean-up/summary/summar
 import { FooterComponent } from './footer/footer.component';
 import { ImpressumComponent } from './impressum/impressum.component';
 import { DatenschutzComponent } from './datenschutz/datenschutz.component';
+import { AboutUsComponent } from './about-us/about-us.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { DatenschutzComponent } from './datenschutz/datenschutz.component';
     SummaryComponent,
     FooterComponent,
     ImpressumComponent,
-    DatenschutzComponent
+    DatenschutzComponent,
+    AboutUsComponent
   ],
   imports: [
     BrowserModule,
