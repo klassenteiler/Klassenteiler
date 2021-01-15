@@ -11,9 +11,8 @@ class StudentModelSpec
     with MockDatabase
     with BeforeAndAfterEach {
 
-  implicit val ec: scala.concurrent.ExecutionContext =
-    scala.concurrent.ExecutionContext.global
-  // so we have access to db because DatabaseCleanerOnEachTest itself implements the trait play.api.db.slick.HasDatabaseConfigProvider
+
+  // we have access to db because DatabaseCleanerOnEachTest itself implements the trait play.api.db.slick.HasDatabaseConfigProvider
   val studentModel: StudentModel = new StudentModel(db)
   val classModel: SchoolClassModel = new SchoolClassModel(db)
   var classId: Option[Int] = None

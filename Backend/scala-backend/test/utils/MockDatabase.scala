@@ -34,6 +34,10 @@ trait MockDatabase
   // app comes from GuiceOneAppPerSuite
   // db comes from HasDatabaseConfigProvider
 
+  // we need this because for instantiating the models
+  implicit val ec: scala.concurrent.ExecutionContext =
+    scala.concurrent.ExecutionContext.global
+
   // this overrides the method of GuiceOneAppPerSuite, which delivers the app needed for testing
   override def fakeApplication(): Application = {
     GuiceApplicationBuilder()
