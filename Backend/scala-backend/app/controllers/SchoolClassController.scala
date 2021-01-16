@@ -45,37 +45,47 @@ class SchoolClassController @Inject() (
       // the json contains something and the case that it is empty
       case Some(content) =>
         // extract json values from JsObject
-        val schoolClassJs: JsValue = content("schoolClass")
-        val classTeacherJs: JsValue = content("classTeacher")
+        try {
+          // unfortunately this throws an exception if values are not found
+          val schoolClassJs: JsValue = content("schoolClass")
+          val classTeacherJs: JsValue = content("classTeacher")
 
-        // parse the Json Values
-        val schoolClassOption: JsResult[SchoolClassCC] =
-          Json.fromJson[SchoolClassCC](schoolClassJs)
-        val classTeacherOption: JsResult[ClassTeacherCC] =
-          Json.fromJson[ClassTeacherCC](classTeacherJs)
-
-        // we need to check whether the parsing was successful and, if not, return a 415
-        if (schoolClassOption.isSuccess && classTeacherOption.isSuccess) {
-          val sc: SchoolClassCC = schoolClassOption.get
-          val ct: ClassTeacherCC = classTeacherOption.get
-
-          val schoolClass: SchoolClassDB = SchoolClassDB(
-            null, // id
-            sc.className,
-            sc.schoolName,
-            sc.classSecret,
-            sc.publicKey,
-            ct.teacherSecret,
-            ct.encryptedPrivateKey,
-            SurveyStatus.Uninitialized
-          )
-          model
-            .createSchoolClass(schoolClass) // returns SchoolClassCC
-            .map(insertedClass => Ok(Json.toJson(insertedClass))) //return
-        } else
-          Future.successful(
-            UnsupportedMediaType("Wrong JSON format") //return
-          )
+          // parse the Json Values
+          val schoolClassOption: JsResult[SchoolClassCC] =
+            Json.fromJson[SchoolClassCC](schoolClassJs)
+          val classTeacherOption: JsResult[ClassTeacherCC] =
+            Json.fromJson[ClassTeacherCC](classTeacherJs)
+         
+          // we need to check whether the parsing was successful and, if not, return a 415
+          if (schoolClassOption.isSuccess && classTeacherOption.isSuccess) {
+            val sc: SchoolClassCC = schoolClassOption.get
+            val ct: ClassTeacherCC = classTeacherOption.get
+            
+            val schoolClass: SchoolClassDB = SchoolClassDB(
+              null, // id
+              sc.className,
+              sc.schoolName,
+              sc.classSecret,
+              sc.publicKey,
+              ct.teacherSecret,
+              ct.encryptedPrivateKey,
+              SurveyStatus.Uninitialized
+            )
+            model
+              .createSchoolClass(schoolClass) // returns SchoolClassCC
+              .map(insertedClass => Ok(Json.toJson(insertedClass))) //return
+            } else
+            Future.successful(
+              UnsupportedMediaType("Wrong JSON format") //return
+            )
+          } catch {
+            
+            case e: java.util.NoSuchElementException => Future.successful(
+              UnsupportedMediaType("Wrong JSON format") //return
+            )
+          }
+        
+         
 
       case None => Future.successful(BadRequest("Empty Body")) //return
     }
