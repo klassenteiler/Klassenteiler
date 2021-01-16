@@ -117,7 +117,6 @@ class StudentModelSpec
 
       numOfStudents0 mustBe 0
 
-      // awaitInf is a helper defined in MockDatabase
       val student1: StudentCC = StudentCC(None, "hashedName", "encName", true, None)
       val student2: StudentCC =
         StudentCC(None, "hashedName2", "encName2", false, None)
@@ -140,7 +139,6 @@ class StudentModelSpec
         awaitInf(studentModel.getStudents(classId.get))
       allStudents.length mustBe 0
 
-      // awaitInf is a helper defined in MockDatabase
       val student1: StudentCC = StudentCC(None, "hashedName", "encName", true, None)
 
       val numOfStudentsId: Option[Int] =
@@ -163,7 +161,6 @@ class StudentModelSpec
 
       allStudentIds1.length mustBe 0
 
-      // awaitInf is a helper defined in MockDatabase
       val student1: StudentCC =
         StudentCC(None, "hashedName", "encName", false, None)
       val student2: StudentCC =
