@@ -135,40 +135,14 @@ class SchoolClassControllerSpec
       val result1: Future[Result] =
         controller
           .getSchoolClass(99, schoolClass.classSecret) // wrong id
-          .apply(
-            FakeRequest().withHeaders(
-              Headers("teacherSecret" -> schoolClass.teacherSecret)
-            )
-          )
+          .apply(FakeRequest())
       status(result1) mustBe NotFound.header.status
 
       val result2: Future[Result] =
         controller
           .getSchoolClass(classId, "wrong Secret")
-          .apply(
-            FakeRequest().withHeaders(
-              Headers("teacherSecret" -> schoolClass.teacherSecret)
-            )
-          )
-      status(result2) mustBe NotFound.header.status
-    }
-    "return status 401 if teacherSecret is wrong" in {
-      val result: Future[Result] =
-        controller
-          .getSchoolClass(classId, schoolClass.classSecret) 
-          .apply(
-            FakeRequest().withHeaders(
-              Headers("teacherSecret" -> "wrong secret")
-            )
-          )
-      status(result) mustBe Unauthorized.header.status
-    }
-    "return status 400 if no teacherSecret is provided" in {
-      val result: Future[Result] =
-        controller
-          .getSchoolClass(classId, schoolClass.classSecret) 
           .apply(FakeRequest())
-      status(result) mustBe BadRequest.header.status
+      status(result2) mustBe NotFound.header.status
     }
   }
 }
