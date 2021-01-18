@@ -101,7 +101,6 @@ class SchoolClassControllerSpec
       status(result2) mustBe UnsupportedMediaType.header.status //i.e. 415
     }
     "return status 200 and the created schoolClass if a correct request is sent" in {
-      val body: JsObject = Json.obj("value" -> "wrong")
       val request: FakeRequest[play.api.mvc.AnyContent] =
         FakeRequest().withJsonBody(json)
       val result: Future[Result] = controller.createSchoolClass().apply(request)
