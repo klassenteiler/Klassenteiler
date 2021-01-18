@@ -9,7 +9,7 @@ import scala.concurrent.Future
 import play.api.mvc._
 import play.api.mvc.Results._
 import play.api.libs.json._
-import models.SchoolClassCC
+import models._
 
 /** Add your spec here.
   * You can mock out a whole application including requests, plugins etc.
@@ -62,7 +62,22 @@ class SchoolClassControllerSpec
       )
   )
 
+  // clear Database and insert one schoolClass
   this.clearDatabase();
+  val classModel: SchoolClassModel = new SchoolClassModel(db)
+  val schoolClass: SchoolClassDB = SchoolClassDB(
+    None,
+    "test",
+    Some("AMG"),
+    "clsSecret",
+    "teachsecret",
+    "puKey",
+    "encPrivateKey",
+    Some(0)
+  )
+  val createdSchoolClass: SchoolClassCC =
+    awaitInf(classModel.createSchoolClass(schoolClass))
+  val classId = createdSchoolClass.id.get
 
   "SchoolClassController" should {
     "return status 400 if no body is provided" in {
@@ -78,8 +93,11 @@ class SchoolClassControllerSpec
       status(result) mustBe UnsupportedMediaType.header.status //i.e. 415
 
       val request2: FakeRequest[play.api.mvc.AnyContent] =
-        FakeRequest().withJsonBody(wrongJson) // schoolClass and classTeacher are provided, but with a missing value
-      val result2: Future[Result] = controller.createSchoolClass().apply(request)
+        FakeRequest().withJsonBody(
+          wrongJson
+        ) // schoolClass and classTeacher are provided, but with a missing value
+      val result2: Future[Result] =
+        controller.createSchoolClass().apply(request)
       status(result2) mustBe UnsupportedMediaType.header.status //i.e. 415
     }
     "return status 200 and the created schoolClass if a correct request is sent" in {
@@ -93,8 +111,64 @@ class SchoolClassControllerSpec
       val jsBody: JsValue = Json.parse(resultBody)
       val schoolClass: SchoolClassCC = Json.fromJson[SchoolClassCC](jsBody).get
       schoolClass.className mustBe "testClassName"
+      schoolClass.id.get mustBe 2 // because we initially entered one class manually
 
     }
+    "should return schoolClass by id" in {
+      val result: Future[Result] =
+        controller
+          .getSchoolClass(classId, schoolClass.classSecret)
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> schoolClass.teacherSecret)
+            )
+          )
+      status(result) mustBe Ok.header.status
+      val resultBody: String =
+        contentAsString(result) // automatically waits for future
+      val jsBody: JsValue = Json.parse(resultBody)
+      val returnedSchoolClass: SchoolClassCC =
+        Json.fromJson[SchoolClassCC](jsBody).get
+      returnedSchoolClass.className mustBe schoolClass.className
+    }
+    "return status 404 if classSecret or id is wrong" in {
+      val result1: Future[Result] =
+        controller
+          .getSchoolClass(99, schoolClass.classSecret) // wrong id
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> schoolClass.teacherSecret)
+            )
+          )
+      status(result1) mustBe NotFound.header.status
 
+      val result2: Future[Result] =
+        controller
+          .getSchoolClass(classId, "wrong Secret")
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> schoolClass.teacherSecret)
+            )
+          )
+      status(result2) mustBe NotFound.header.status
+    }
+    "return status 401 if teacherSecret is wrong" in {
+      val result: Future[Result] =
+        controller
+          .getSchoolClass(classId, schoolClass.classSecret) 
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> "wrong secret")
+            )
+          )
+      status(result) mustBe Unauthorized.header.status
+    }
+    "return status 400 if no teacherSecret is provided" in {
+      val result: Future[Result] =
+        controller
+          .getSchoolClass(classId, schoolClass.classSecret) 
+          .apply(FakeRequest())
+      status(result) mustBe BadRequest.header.status
+    }
   }
 }
