@@ -41,20 +41,21 @@ class SurveyControllerSpec
   var classId: Option[Int] = None
   var classSecret: Option[String] = None
 
+  val schoolClass: SchoolClassDB = SchoolClassDB(
+    None,
+    "test",
+    Some("AMG"),
+    "clsSecret",
+    "teachsecret",
+    "puKey",
+    "encPrivateKey",
+    Some(0)
+  )
+
   override def beforeEach(): Unit = {
     // clear Database and insert one schoolClass
     this.clearDatabase();
 
-    val schoolClass: SchoolClassDB = SchoolClassDB(
-      None,
-      "test",
-      Some("AMG"),
-      "clsSecret",
-      "teachsecret",
-      "puKey",
-      "encPrivateKey",
-      Some(0)
-    )
     val createdSchoolClass: SchoolClassCC =
       awaitInf(classModel.createSchoolClass(schoolClass))
     classId = createdSchoolClass.id
@@ -198,11 +199,77 @@ class SurveyControllerSpec
   }
 
   "SurveyController /closeSurvey" should {
-    "return status 200, contain message and update status if request is correct" in {}
-    "return status 410 if the survey of the class is in wrong status" in {}
-    "return status 404 if classSecret or id is wrong" in {}
-    "return status 401 if teacherSecret is wrong" in {}
-    "return status 400 if no teacherSecret is provided" in {}
+    "return status 200, contain message and update status if request is correct" in {
+      awaitInf(classModel.getStatus(classId.get)) mustBe 0
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest().withHeaders(
+          Headers("teacherSecret" -> schoolClass.teacherSecret)
+        )
+      val result: Future[Result] =
+        controller.closeSurvey(classId.get, classSecret.get).apply(request)
+      status(result) mustBe Ok.header.status
+      contentAsString(result) mustBe Json
+        .obj(
+          "message" -> "success - survey closed"
+        )
+        .toString
+      awaitInf(classModel.getStatus(classId.get)) mustBe 1
+    }
+    "return status 410 if the survey of the class is in wrong status" in {
+
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest().withHeaders(
+          Headers("teacherSecret" -> schoolClass.teacherSecret)
+        )
+
+      awaitInf(classModel.updateStatus(classId.get, 1))
+      val result1: Future[Result] =
+        controller.closeSurvey(classId.get, classSecret.get).apply(request)
+      status(result1) mustBe Gone.header.status
+
+      awaitInf(classModel.updateStatus(classId.get, 2))
+      val result2: Future[Result] =
+        controller.closeSurvey(classId.get, classSecret.get).apply(request)
+      status(result2) mustBe Gone.header.status
+
+      awaitInf(classModel.updateStatus(classId.get, 3))
+      val result3: Future[Result] =
+        controller.closeSurvey(classId.get, classSecret.get).apply(request)
+      status(result3) mustBe Gone.header.status
+    }
+    "return status 404 if classSecret or id is wrong" in {
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest().withHeaders(
+          Headers("teacherSecret" -> schoolClass.teacherSecret)
+        )
+
+      // wrong id
+      val result: Future[Result] =
+        controller.closeSurvey(99, classSecret.get).apply(request)
+      status(result) mustBe NotFound.header.status
+      // wrong secret
+      val result2: Future[Result] =
+        controller.closeSurvey(classId.get, "wrong secret").apply(request)
+      status(result2) mustBe NotFound.header.status
+    }
+    "return status 401 if teacherSecret is wrong" in {
+      val result: Future[Result] =
+        controller
+          .closeSurvey(classId.get, schoolClass.classSecret)
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> "wrong secret")
+            )
+          )
+      status(result) mustBe Unauthorized.header.status
+    }
+    "return status 400 if no teacherSecret is provided" in {
+      val result: Future[Result] =
+        controller
+          .closeSurvey(classId.get, schoolClass.classSecret)
+          .apply(FakeRequest())
+      status(result) mustBe BadRequest.header.status
+    }
   }
 
   "SurveyController /startCalculating" should {
