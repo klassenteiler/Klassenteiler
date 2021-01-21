@@ -112,6 +112,8 @@ class SchoolClassControllerSpec
       schoolClass.className mustBe "testClassName"
       schoolClass.id.get mustBe 2 // because we initially entered one class manually
 
+      val createdClass: SchoolClassCC = awaitInf(classModel.getSchoolClass(schoolClass.id.get))
+      createdClass.className mustBe "testClassName"
     }
     "should return schoolClass by id" in {
       val result: Future[Result] =

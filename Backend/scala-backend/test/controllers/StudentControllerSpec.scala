@@ -68,6 +68,11 @@ class StudentControllerSpec extends PlaySpec with MockDatabase with Injecting {
       val result: Future[Result] =
         controller.getSignups(classId, schoolClass.classSecret).apply(request)
       status(result) mustBe Ok.header.status
+      contentAsString(result) mustBe Json
+        .obj(
+          "value" -> 2
+        )
+        .toString
     }
     "return status 404 if classSecret or id is wrong" in {
       val result1: Future[Result] =
