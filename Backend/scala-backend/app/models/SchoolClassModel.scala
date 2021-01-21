@@ -64,6 +64,8 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
   }
 
   def updateStatus(classId: Int, status: Int): Future[Int] = {
+    // ideally we check here whether status is a value in SurveyStatus somehow I haven't figured out how to do
+    // it although it should be trivial
     db.run(Schoolclass.filter(_.id === classId).map(row => (row.surveystatus)).update((Some(status))))
   }
 }
