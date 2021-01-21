@@ -15,11 +15,11 @@ class RelationshipModelSpec
   val relationshipModel: RelationshipModel = new RelationshipModel(db)
   val classModel: SchoolClassModel = new SchoolClassModel(db)
   val studentModel: StudentModel = new StudentModel(db)
-  var classId: Option[Int] = None
+  var classId: Int = _
   // self reported students
-  var srStudent1Id: Option[Int] = None
-  var srStudent2Id: Option[Int] = None
-  var alterstudentId: Option[Int] = None
+  var srStudent1Id: Int = _
+  var srStudent2Id: Int = _
+  var alterstudentId: Int = _
 
   override def beforeEach(): Unit = {
     this.clearDatabase();
@@ -37,32 +37,32 @@ class RelationshipModelSpec
 
     val createdSchoolClass: SchoolClassCC =
       awaitInf(classModel.createSchoolClass(schoolClass))
-    classId = createdSchoolClass.id
-    println("Before Test: SchoolclassId is " + classId.get)
+    classId = createdSchoolClass.id.get
+    println("Before Test: SchoolclassId is " + classId)
 
     val selfReportedStudent1: StudentCC =
       StudentCC(None, "selfReportedStudent1", "encName", true, None)
     srStudent1Id =
       // awaitInf is a helper defined in MockDatabase
-      awaitInf(studentModel.createStudent(selfReportedStudent1, classId.get))
+      awaitInf(studentModel.createStudent(selfReportedStudent1, classId)).get
 
     val selfReportedStudent2: StudentCC =
       StudentCC(None, "selfReportedStudent2", "encName", true, None)
     srStudent2Id = awaitInf(
-      studentModel.createStudent(selfReportedStudent2, classId.get)
-    )
+      studentModel.createStudent(selfReportedStudent2, classId)
+    ).get
 
     val alterStudent: StudentCC =
       StudentCC(None, "alterStudent", "encName2", false, None)
     alterstudentId = awaitInf(
-      studentModel.createStudent(alterStudent, classId.get)
-    )
+      studentModel.createStudent(alterStudent, classId)
+    ).get
   }
 
   "The Relationship Model" should {
     "create relations from a self-reported student to a not self-reported student" in {
       val rel1: RelationshipCC =
-        RelationshipCC(classId.get, srStudent1Id.get, alterstudentId.get)
+        RelationshipCC(classId, srStudent1Id, alterstudentId)
 
       val success: Boolean =
         awaitInf(relationshipModel.createRelationship(rel1))
@@ -75,7 +75,7 @@ class RelationshipModelSpec
     }
     "create relations from a self-reported student to another self-reported student" in {
       val rel1: RelationshipCC =
-        RelationshipCC(classId.get, srStudent1Id.get, srStudent2Id.get)
+        RelationshipCC(classId, srStudent1Id, srStudent2Id)
 
       val success: Boolean =
         awaitInf(relationshipModel.createRelationship(rel1))
@@ -83,8 +83,8 @@ class RelationshipModelSpec
     }
 
     "not create relations from one student to the same student" in {
-        val rel1: RelationshipCC =
-        RelationshipCC(classId.get, srStudent1Id.get, srStudent1Id.get)
+      val rel1: RelationshipCC =
+        RelationshipCC(classId, srStudent1Id, srStudent1Id)
 
       val success: Boolean =
         awaitInf(relationshipModel.createRelationship(rel1))
@@ -92,28 +92,28 @@ class RelationshipModelSpec
     }
     "return all relationships by classId" in {
       val rel1: RelationshipCC =
-        RelationshipCC(classId.get, srStudent1Id.get, alterstudentId.get)
+        RelationshipCC(classId, srStudent1Id, alterstudentId)
 
       val success: Boolean =
         awaitInf(relationshipModel.createRelationship(rel1))
 
       val allRelations1: Seq[(Int, Int)] =
-        awaitInf(relationshipModel.getAllRelationIdsOfClass(classId.get))
+        awaitInf(relationshipModel.getAllRelationIdsOfClass(classId))
       allRelations1 mustBe Seq(
-        (srStudent1Id.get, alterstudentId.get)
+        (srStudent1Id, alterstudentId)
       )
 
       val rel2: RelationshipCC =
-        RelationshipCC(classId.get, srStudent1Id.get, srStudent2Id.get)
+        RelationshipCC(classId, srStudent1Id, srStudent2Id)
 
       val success2: Boolean =
         awaitInf(relationshipModel.createRelationship(rel2))
 
       val allRelations2: Seq[(Int, Int)] =
-        awaitInf(relationshipModel.getAllRelationIdsOfClass(classId.get))
+        awaitInf(relationshipModel.getAllRelationIdsOfClass(classId))
       allRelations2 mustBe Seq(
-        (srStudent1Id.get, alterstudentId.get),
-        (srStudent1Id.get, srStudent2Id.get)
+        (srStudent1Id, alterstudentId),
+        (srStudent1Id, srStudent2Id)
       )
     }
   }
