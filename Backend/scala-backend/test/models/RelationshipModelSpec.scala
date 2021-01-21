@@ -81,22 +81,15 @@ class RelationshipModelSpec
         awaitInf(relationshipModel.createRelationship(rel1))
       success mustBe true
     }
-    // "not create relations from not self-reported students to another student" in {
-    //   val rel1: RelationshipCC =
-    //     RelationshipCC(classId.get, alterstudentId.get, srStudent2Id.get)
 
-    //   val success: Boolean =
-    //     awaitInf(relationshipModel.createRelationship(rel1))
-    //   success mustBe false
-    // }
-    // "not create relations from one student to the same student" in {
-    //     val rel1: RelationshipCC =
-    //     RelationshipCC(classId.get, srStudent1Id.get, srStudent1Id.get)
+    "not create relations from one student to the same student" in {
+        val rel1: RelationshipCC =
+        RelationshipCC(classId.get, srStudent1Id.get, srStudent1Id.get)
 
-    //   val success: Boolean =
-    //     awaitInf(relationshipModel.createRelationship(rel1))
-    //   success mustBe false
-    // }
+      val success: Boolean =
+        awaitInf(relationshipModel.createRelationship(rel1))
+      success mustBe false
+    }
     "return all relationships by classId" in {
       val rel1: RelationshipCC =
         RelationshipCC(classId.get, srStudent1Id.get, alterstudentId.get)
