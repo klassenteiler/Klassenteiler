@@ -59,7 +59,9 @@ class SurveyController @Inject() (
                       val altersOption: JsResult[Seq[StudentCC]] =
                         Json.fromJson[Seq[StudentCC]](altersJs)
 
-                      val ego: StudentCC = egoOption.get
+                      var ego: StudentCC = egoOption.get
+                      // set selfReported to true (since StudentCC is a case class and thus immutable we have to create a new instance)
+                      ego = StudentCC(None, ego.hashedName, ego.encryptedName, true, None)
                       val alters: Seq[StudentCC] = altersOption.get
                       // we read the Friend limit from the .env or set it to 5 if no value is provided
                       val limit: Int =

@@ -83,6 +83,22 @@ class SurveyControllerSpec
     )
   )
 
+    val jsonWithEgoNotSelfReported: JsValue = Json.obj(
+    "me" ->
+      Json.obj(
+        "encryptedName" -> "asdf",
+        "hashedName" -> "ego",
+        "selfReported" -> false
+      ),
+    "friends" -> Json.arr(
+      Json.obj(
+        "encryptedName" -> "asdfadsf",
+        "hashedName" -> "alter1",
+        "selfReported" -> false
+      )
+    )
+  )
+
   val friendLimit: Int =
     sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
   val tooManyFriendsArray: ArrayBuffer[JsObject] = ArrayBuffer[JsObject]()
@@ -195,6 +211,21 @@ class SurveyControllerSpec
       val result2: Future[Result] =
         controller.submitSurvey(classId, "wrong secret").apply(request)
       status(result2) mustBe NotFound.header.status
+    }
+    "set self-reported status of source student to true before creating student" in {
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest().withJsonBody(jsonWithEgoNotSelfReported)
+      val result: Future[Result] =
+        controller.submitSurvey(classId, classSecret).apply(request)
+      status(result) mustBe Created.header.status
+      contentAsString(result) mustBe Json
+        .obj(
+          "message" -> "success - created"
+        )
+        .toString
+      val allStudents: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents(0).selfReported mustBe true
     }
   }
 
