@@ -39,28 +39,27 @@ class SchoolClassController @Inject() (
     * will be called when the application receives a `POST` request with
     * a path of `/createClass`.
     */
-  def createSchoolClass(): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    request.body.asJson match {
-      // since this returns an option we need to cover the case that
-      // the json contains something and the case that it is empty
-      case Some(content) =>
-        // extract json values from JsObject
-        try {
-          // unfortunately this throws an exception if values are not found
-          val schoolClassJs: JsValue = content("schoolClass")
-          val classTeacherJs: JsValue = content("classTeacher")
+  def createSchoolClass(): play.api.mvc.Action[play.api.mvc.AnyContent] =
+    Action.async { implicit request: Request[AnyContent] =>
+      request.body.asJson match {
+        // since this returns an option we need to cover the case that
+        // the json contains something and the case that it is empty
+        case Some(content) =>
+          // extract json values from JsObject
+          try {
+            // unfortunately this throws an exception if values are not found
+            val schoolClassJs: JsValue = content("schoolClass")
+            val classTeacherJs: JsValue = content("classTeacher")
 
-          // parse the Json Values
-          val schoolClassOption: JsResult[SchoolClassCC] =
-            Json.fromJson[SchoolClassCC](schoolClassJs)
-          val classTeacherOption: JsResult[ClassTeacherCC] =
-            Json.fromJson[ClassTeacherCC](classTeacherJs)
-         
-          // we need to check whether the parsing was successful and, if not, return a 415
-          if (schoolClassOption.isSuccess && classTeacherOption.isSuccess) {
+            // parse the Json Values
+            val schoolClassOption: JsResult[SchoolClassCC] =
+              Json.fromJson[SchoolClassCC](schoolClassJs)
+            val classTeacherOption: JsResult[ClassTeacherCC] =
+              Json.fromJson[ClassTeacherCC](classTeacherJs)
+
             val sc: SchoolClassCC = schoolClassOption.get
             val ct: ClassTeacherCC = classTeacherOption.get
-            
+
             val schoolClass: SchoolClassDB = SchoolClassDB(
               null, // id
               sc.className,
@@ -74,31 +73,34 @@ class SchoolClassController @Inject() (
             model
               .createSchoolClass(schoolClass) // returns SchoolClassCC
               .map(insertedClass => Ok(Json.toJson(insertedClass))) //return
-            } else
-            Future.successful(
-              UnsupportedMediaType("Wrong JSON format") //return
-            )
-          } catch {
-            
-            case e: java.util.NoSuchElementException => Future.successful(
-              UnsupportedMediaType("Wrong JSON format") //return
-            )
-          }
-        
-         
 
-      case None => Future.successful(BadRequest("Empty Body")) //return
+          } catch {
+
+            case e: java.util.NoSuchElementException =>
+              Future.successful(
+                UnsupportedMediaType("Wrong JSON format") //return
+              )
+          }
+
+        case None => Future.successful(BadRequest("Empty Body")) //return
+      }
     }
-  }
 
   // GET /getClass/:id/:classSecret
   // returns schoolclass as json
-  def getSchoolClass(implicit id: Int, classSecret: String): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    
-    val body = {() => model.getSchoolClass(id).map(returnedClass => Ok(Json.toJson(returnedClass)))}
+  def getSchoolClass(implicit
+      id: Int,
+      classSecret: String
+  ): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
+    implicit request: Request[AnyContent] =>
+      val body = { () =>
+        model
+          .getSchoolClass(id)
+          .map(returnedClass => Ok(Json.toJson(returnedClass)))
+      }
 
-    // before returning the schoolclass we need to check whether the classSecret is correct
-    auth.withClassAuthentication(body)
+      // before returning the schoolclass we need to check whether the classSecret is correct
+      auth.withClassAuthentication(body)
 
   }
 }

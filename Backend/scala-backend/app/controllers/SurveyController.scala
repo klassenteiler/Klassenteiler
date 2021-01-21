@@ -59,61 +59,54 @@ class SurveyController @Inject() (
                       val altersOption: JsResult[Seq[StudentCC]] =
                         Json.fromJson[Seq[StudentCC]](altersJs)
 
-                      // if the parsing was successful
-                      if (egoOption.isSuccess && altersOption.isSuccess) {
-                        val ego: StudentCC = egoOption.get
-                        val alters: Seq[StudentCC] = altersOption.get
-                        // we read the Friend limit from the .env or set it to 5 if no value is provided
-                        val limit: Int =
-                          sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
-                        if (alters.length <= limit) {
-                          val sourceId: Future[Option[Int]] =
-                            studentModel.createStudent(ego, id)
-                          sourceId.flatMap(sId =>
-                            sId match {
-                              case Some(sId) => {
-                                // enter each alter and store the id of the student objects
-                                val targetIds: Seq[Future[Option[Int]]] =
-                                  alters.map(alter =>
-                                    studentModel.createStudent(alter, id)
-                                  )
-                                // create a new relationship with the alter as target and ego as source
-                                targetIds.foreach(targetId => {
-                                  targetId.map(tId => {
-                                    val relationship = RelationshipCC(
-                                      classId = id,
-                                      sourceId = sId,
-                                      targetId = tId.get
-                                    ) //tId is an option
-                                    relModel.createRelationship(relationship)
-                                  })
-                                })
-                                Future.successful(
-                                  Created(
-                                    Json.obj("message" -> "success - created")
-                                  )
-                                ) //TODO maybe only report success once it is created
-
-                              }
-                              case None => {
-                                Future.successful(
-                                  Forbidden(
-                                    "Student with this name already submitted survey"
-                                  )
+                      val ego: StudentCC = egoOption.get
+                      val alters: Seq[StudentCC] = altersOption.get
+                      // we read the Friend limit from the .env or set it to 5 if no value is provided
+                      val limit: Int =
+                        sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
+                      if (alters.length <= limit) {
+                        val sourceId: Future[Option[Int]] =
+                          studentModel.createStudent(ego, id)
+                        sourceId.flatMap(sId =>
+                          sId match {
+                            case Some(sId) => {
+                              // enter each alter and store the id of the student objects
+                              val targetIds: Seq[Future[Option[Int]]] =
+                                alters.map(alter =>
+                                  studentModel.createStudent(alter, id)
                                 )
-                              }
-                            }
-                          )
-                        } else {
-                          Future.successful(BadRequest("Over friend limit (5)"))
-                        }
+                              // create a new relationship with the alter as target and ego as source
+                              targetIds.foreach(targetId => {
+                                targetId.map(tId => {
+                                  val relationship = RelationshipCC(
+                                    classId = id,
+                                    sourceId = sId,
+                                    targetId = tId.get
+                                  ) //tId is an option
+                                  relModel.createRelationship(relationship)
+                                })
+                              })
+                              Future.successful(
+                                Created(
+                                  Json.obj("message" -> "success - created")
+                                )
+                              ) //TODO maybe only report success once it is created
 
+                            }
+                            case None => {
+                              Future.successful(
+                                Forbidden(
+                                  "Student with this name already submitted survey"
+                                )
+                              )
+                            }
+                          }
+                        )
                       } else {
-                        Future
-                          .successful(UnsupportedMediaType("Wrong JSON format"))
+                        Future.successful(BadRequest("Over friend limit (5)"))
                       }
                     } catch {
-                      // in case the json does not contain "me" or "friends" objects
+                      // in case the json does not contain "me" or "friends" objects or json format is wrong
                       case e: java.util.NoSuchElementException =>
                         Future.successful(
                           UnsupportedMediaType("Wrong JSON format") //return
