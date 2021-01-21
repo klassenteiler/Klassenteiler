@@ -23,20 +23,20 @@ class SchoolClassModelSpec
     "encPrivateKey", // encryptedPrivateKey
     Some(0) // SurveyStatus
   )
-  var createdClass1: Option[SchoolClassCC] = None
+  var createdClass1: SchoolClassCC = _
 
   override def beforeEach(): Unit = {
     this.clearDatabase();
 
     // one schoolclass is added in every test so we do it here to avoid duplicate code
-    createdClass1 = Some(awaitInf(classModel.createSchoolClass(schoolClass1)))
+    createdClass1 = awaitInf(classModel.createSchoolClass(schoolClass1))
   }
 
   "The SchoolClassModels" should {
     "create new school classes" in {
 
-      createdClass1.get.id.get mustBe 1
-      createdClass1.get.className mustBe "test"
+      createdClass1.id.get mustBe 1
+      createdClass1.className mustBe "test"
 
       // adding a second class to check whether IDs increments
       val schoolClass2: SchoolClassDB = SchoolClassDB(
@@ -72,12 +72,11 @@ class SchoolClassModelSpec
     }
     "return a schoolclassCC by id" in {
       val returnedClass: SchoolClassCC =
-        awaitInf(classModel.getSchoolClass(createdClass1.get.id.get))
+        awaitInf(classModel.getSchoolClass(createdClass1.id.get))
       returnedClass.id.get mustBe 1
       returnedClass.className mustBe "test"
 
       // request nonexistent class
-      // do we want an exception here??
       an[java.util.NoSuchElementException] mustBe thrownBy(
         awaitInf(classModel.getSchoolClass(2))
       )
@@ -86,7 +85,7 @@ class SchoolClassModelSpec
     "validate that a class with id and secret exists" in {
       val validatedSuccess: Boolean = awaitInf(
         classModel.validateAccess(
-          createdClass1.get.id.get,
+          createdClass1.id.get,
           schoolClass1.classSecret
         )
       )
@@ -95,7 +94,7 @@ class SchoolClassModelSpec
       // wrong secret but existing id
       val validatedFailure1: Boolean =
         awaitInf(
-          classModel.validateAccess(createdClass1.get.id.get, "wrongSecret")
+          classModel.validateAccess(createdClass1.id.get, "wrongSecret")
         )
       validatedFailure1 mustBe false
       // wrong id but existing secret
@@ -107,7 +106,7 @@ class SchoolClassModelSpec
     "return the teacher of a class if the teacher secret is correct" in {
       val authenticatedTeacher: Option[ClassTeacherCC] = awaitInf(
         classModel.getTeacher(
-          createdClass1.get.id.get,
+          createdClass1.id.get,
           schoolClass1.teacherSecret
         )
       )
@@ -115,7 +114,7 @@ class SchoolClassModelSpec
 
       // wrong secret
       val notAuthenticatedTeacher1: Option[ClassTeacherCC] = awaitInf(
-        classModel.getTeacher(createdClass1.get.id.get, "wrong Secret")
+        classModel.getTeacher(createdClass1.id.get, "wrong Secret")
       )
       notAuthenticatedTeacher1.isEmpty mustBe true
 
@@ -128,11 +127,10 @@ class SchoolClassModelSpec
     "return the status of a class by id" in {
       // initial state is 0
       val surveyStatus: Int =
-        awaitInf(classModel.getStatus(createdClass1.get.id.get))
-      surveyStatus mustBe 0
+        awaitInf(classModel.getStatus(createdClass1.id.get))
+      surveyStatus mustBe SurveyStatus.Open
 
       // nonexisting id
-      // again an Exception, do we want this?
       an[java.util.NoSuchElementException] mustBe thrownBy(
         awaitInf(classModel.getStatus(2))
       )
@@ -140,14 +138,14 @@ class SchoolClassModelSpec
     }
     "update the surveyStatus of a class if id is correct" in {
       val surveyStatus: Int =
-        awaitInf(classModel.getStatus(createdClass1.get.id.get))
-      surveyStatus mustBe 0
+        awaitInf(classModel.getStatus(createdClass1.id.get))
+      surveyStatus mustBe SurveyStatus.Open
 
       val NumberOfChangedClasses: Int =
-        awaitInf(classModel.updateStatus(createdClass1.get.id.get, 1))
+        awaitInf(classModel.updateStatus(createdClass1.id.get, 1))
       val surveyStatus1: Int =
-        awaitInf(classModel.getStatus(createdClass1.get.id.get))
-      surveyStatus1 mustBe 1
+        awaitInf(classModel.getStatus(createdClass1.id.get))
+      surveyStatus1 mustBe SurveyStatus.Closed
     }
   }
 }
