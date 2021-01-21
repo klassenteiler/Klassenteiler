@@ -105,7 +105,6 @@ class StudentModelSpec
         awaitInf(studentModel.createStudent(student1, classId))
       student1Id.get mustBe 1 // first student has id 1
 
-      // student with same name but this time the entry is self-reported
       val student2: StudentCC =
         StudentCC(None, "uniqueName", "encName2", false, None)
       val student2Id: Option[Int] =

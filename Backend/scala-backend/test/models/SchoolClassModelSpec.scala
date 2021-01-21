@@ -77,7 +77,6 @@ class SchoolClassModelSpec
       returnedClass.className mustBe "test"
 
       // request nonexistent class
-      // do we want an exception here??
       an[java.util.NoSuchElementException] mustBe thrownBy(
         awaitInf(classModel.getSchoolClass(2))
       )
@@ -129,10 +128,9 @@ class SchoolClassModelSpec
       // initial state is 0
       val surveyStatus: Int =
         awaitInf(classModel.getStatus(createdClass1.id.get))
-      surveyStatus mustBe 0
+      surveyStatus mustBe SurveyStatus.Open
 
       // nonexisting id
-      // again an Exception, do we want this?
       an[java.util.NoSuchElementException] mustBe thrownBy(
         awaitInf(classModel.getStatus(2))
       )
@@ -141,13 +139,13 @@ class SchoolClassModelSpec
     "update the surveyStatus of a class if id is correct" in {
       val surveyStatus: Int =
         awaitInf(classModel.getStatus(createdClass1.id.get))
-      surveyStatus mustBe 0
+      surveyStatus mustBe SurveyStatus.Open
 
       val NumberOfChangedClasses: Int =
         awaitInf(classModel.updateStatus(createdClass1.id.get, 1))
       val surveyStatus1: Int =
         awaitInf(classModel.getStatus(createdClass1.id.get))
-      surveyStatus1 mustBe 1
+      surveyStatus1 mustBe SurveyStatus.Closed
     }
   }
 }
