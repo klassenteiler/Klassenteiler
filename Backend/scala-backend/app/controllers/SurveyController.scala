@@ -61,7 +61,13 @@ class SurveyController @Inject() (
 
                       var ego: StudentCC = egoOption.get
                       // set selfReported to true (since StudentCC is a case class and thus immutable we have to create a new instance)
-                      ego = StudentCC(None, ego.hashedName, ego.encryptedName, true, None)
+                      ego = StudentCC(
+                        None,
+                        ego.hashedName,
+                        ego.encryptedName,
+                        true,
+                        None
+                      )
                       val alters: Seq[StudentCC] = altersOption.get
                       // we read the Friend limit from the .env or set it to 5 if no value is provided
                       val limit: Int =
@@ -164,78 +170,7 @@ class SurveyController @Inject() (
             .getStatus(id)
             .flatMap(status => {
               if (status == SurveyStatus.Closed) {
-                val studentsOfClass: Future[Seq[Int]] =
-                  studentModel.getAllSelfReportedStudentIDs(id)
-                val relationsOfClass: Future[Seq[(Int, Int)]] =
-                  relModel.getAllRelationIdsOfClass(id)
-
-                val suSAndRelations: Future[(Seq[Int], Seq[(Int, Int)])] = for {
-                  f1 <- studentsOfClass
-                  f2 <- relationsOfClass
-                } yield (f1, f2)
-
-                // studentsOfClass.zip(relationsOfClass)
-                val partition: Future[(Array[Int], Array[Int])] =
-                  suSAndRelations.map {
-                    case ((f1, f2)) => {
-                      this.logger.info(
-                        s"starting to compute the partition for students ${f1.mkString(" ")}"
-                      )
-                      IterativeAlgo.computePartition(f1.toArray, f2.toArray)
-                    }
-                  }
-
-                partition.map(p => {
-                  this.logger.info(s"partition was computed: p1=[${p._1
-                    .mkString(" ")}] p2=[${p._2.mkString(" ")}]")
-                  val futureGroupOneSet: List[Future[Int]] = p._1.toList
-                    .map(id => studentModel.updateGroupBelonging(id, 1))
-                  val futureGroupTwoSet: List[Future[Int]] = p._2.toList
-                    .map(id => studentModel.updateGroupBelonging(id, 2))
-
-                  val futureAllGroupOne: Future[Seq[Int]] =
-                    Future.sequence(futureGroupOneSet)
-                  val futureAllGroupTwo: Future[Seq[Int]] =
-                    Future.sequence(futureGroupTwoSet)
-
-                  // these are just sanity checks and get rid of the sequence
-                  val checkedFutureOne: Future[Boolean] =
-                    futureAllGroupOne.map((arr: Seq[Int]) => {
-                      // this.logger.warn(s"group one set ${arr.mkString(" ")} ")
-                      arr.forall(_ == 1) // one seems to mean successful
-                    })
-                  val checkedFutureTwo: Future[Boolean] =
-                    futureAllGroupTwo.map((arr: Seq[Int]) => {
-                      // this.logger.warn(s"group two set ${arr.mkString(" ")} ")
-                      arr.forall(_ == 1) // one seems to mean successful
-                    })
-
-                  val allUpdateComplete: Future[Boolean] = for {
-                    oneOK <- checkedFutureOne
-                    twoOK <- checkedFutureTwo
-                  } yield (oneOK && twoOK)
-                  // val allUpdateComplete: Future[Tuple2[Boolean, Boolean]] = checkedFutureOne.zipWith(checkedFutureTwo)
-
-                  val classStatusUpdateFuture: Future[Unit] =
-                    allUpdateComplete.flatMap((ok: Boolean) => {
-                      this.logger.info("students were updated in the database")
-                      if (!ok) {
-                        this.logger.error(
-                          "Aperantly setting the groupBelonging did not work, should throw error"
-                        )
-                        throw new Exception(
-                          "Aperantly setting the groupBelonging did not work"
-                        )
-                      } else {
-                        classModel
-                          .updateStatus(id, SurveyStatus.Done)
-                          .map(v => {
-                            this.logger.info("class surveyStatus was updated")
-                          })
-                      }
-                    })
-                })
-
+                startPartitionAlgorithm(id)
                 classModel.updateStatus(id, SurveyStatus.Calculating)
                 Future.successful(
                   Ok(Json.obj("message" -> "success - started calculating"))
@@ -244,8 +179,81 @@ class SurveyController @Inject() (
             })
         }
       }
-      //Future.successful(Ok("todo"))
       auth.withTeacherAuthentication(body)
+  }
+
+  def startPartitionAlgorithm(classId: Int): Unit= {
+    val studentsOfClass: Future[Seq[Int]] =
+      studentModel.getAllSelfReportedStudentIDs(classId)
+    val relationsOfClass: Future[Seq[(Int, Int)]] =
+      relModel.getAllRelationIdsOfClass(classId)
+
+    val suSAndRelations: Future[(Seq[Int], Seq[(Int, Int)])] = for {
+      f1 <- studentsOfClass
+      f2 <- relationsOfClass
+    } yield (f1, f2)
+
+    // studentsOfClass.zip(relationsOfClass)
+    val partition: Future[(Array[Int], Array[Int])] =
+      suSAndRelations.map {
+        case ((f1, f2)) => {
+          this.logger.info(
+            s"starting to compute the partition for students ${f1.mkString(" ")}"
+          )
+          IterativeAlgo.computePartition(f1.toArray, f2.toArray)
+        }
+      }
+
+    partition.map(p => {
+      this.logger.info(s"partition was computed: p1=[${p._1
+        .mkString(" ")}] p2=[${p._2.mkString(" ")}]")
+      val futureGroupOneSet: List[Future[Int]] = p._1.toList
+        .map(id => studentModel.updateGroupBelonging(id, 1))
+      val futureGroupTwoSet: List[Future[Int]] = p._2.toList
+        .map(id => studentModel.updateGroupBelonging(id, 2))
+
+      val futureAllGroupOne: Future[Seq[Int]] =
+        Future.sequence(futureGroupOneSet)
+      val futureAllGroupTwo: Future[Seq[Int]] =
+        Future.sequence(futureGroupTwoSet)
+
+      // these are just sanity checks and get rid of the sequence
+      val checkedFutureOne: Future[Boolean] =
+        futureAllGroupOne.map((arr: Seq[Int]) => {
+          // this.logger.warn(s"group one set ${arr.mkString(" ")} ")
+          arr.forall(_ == 1) // one seems to mean successful
+        })
+      val checkedFutureTwo: Future[Boolean] =
+        futureAllGroupTwo.map((arr: Seq[Int]) => {
+          // this.logger.warn(s"group two set ${arr.mkString(" ")} ")
+          arr.forall(_ == 1) // one seems to mean successful
+        })
+
+      val allUpdateComplete: Future[Boolean] = for {
+        oneOK <- checkedFutureOne
+        twoOK <- checkedFutureTwo
+      } yield (oneOK && twoOK)
+      // val allUpdateComplete: Future[Tuple2[Boolean, Boolean]] = checkedFutureOne.zipWith(checkedFutureTwo)
+
+      val classStatusUpdateFuture: Future[Unit] =
+        allUpdateComplete.flatMap((ok: Boolean) => {
+          this.logger.info("students were updated in the database")
+          if (!ok) {
+            this.logger.error(
+              "Aperantly setting the groupBelonging did not work, should throw error"
+            )
+            throw new Exception(
+              "Aperantly setting the groupBelonging did not work"
+            )
+          } else {
+            classModel
+              .updateStatus(classId, SurveyStatus.Done)
+              .map(v => {
+                this.logger.info("class surveyStatus was updated")
+              })
+          }
+        })
+    })
   }
 
   // GET /getResult/:id/:classSecret
