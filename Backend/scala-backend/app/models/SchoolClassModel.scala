@@ -68,5 +68,12 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
     // it although it should be trivial
     db.run(Schoolclass.filter(_.id === classId).map(row => (row.surveystatus)).update((Some(status))))
   }
+
+  def getAllClasses(): Future[Seq[SchoolClassCC]] = {
+    val intermediateResult: Future[Seq[models.Tables.SchoolclassRow]] = db.run(Schoolclass.map(cls => cls).result)
+    val result: Future[Seq[SchoolClassCC]] = intermediateResult.map(sequence => sequence.map(entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.surveystatus)))
+
+    result // return
+  }
 }
 

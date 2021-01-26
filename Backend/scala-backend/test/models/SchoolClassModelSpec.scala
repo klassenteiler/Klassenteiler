@@ -82,6 +82,34 @@ class SchoolClassModelSpec
       )
 
     }
+    "return all schoolclasses" in {
+      val allClasses1: Seq[SchoolClassCC] =
+        awaitInf(classModel.getAllClasses())
+      allClasses1.length mustBe 1
+      allClasses1(0).id.get mustBe 1
+      allClasses1(0).className mustBe "test"
+
+      // add another class
+      val schoolClass2: SchoolClassDB = SchoolClassDB(
+        None, // id
+        "test2", // className
+        Some("AMG"), // schoolName
+        "clsSecret", // classSecret
+        "teachsecret", // teacherSecret
+        "puKey", // public Key
+        "encPrivateKey", // encryptedPrivateKey
+        Some(0) // SurveyStatus
+      )
+      val createdClass2: SchoolClassCC =
+        awaitInf(classModel.createSchoolClass(schoolClass2))
+      createdClass2.id.get mustBe 2
+
+      val allClasses2: Seq[SchoolClassCC] =
+        awaitInf(classModel.getAllClasses())
+      allClasses2.length mustBe 2
+      allClasses2(1).id.get mustBe 2
+      allClasses2(1).className mustBe "test2"
+    }
     "validate that a class with id and secret exists" in {
       val validatedSuccess: Boolean = awaitInf(
         classModel.validateAccess(
@@ -142,7 +170,7 @@ class SchoolClassModelSpec
       surveyStatus mustBe SurveyStatus.Open
 
       val NumberOfChangedClasses: Int =
-        awaitInf(classModel.updateStatus(createdClass1.id.get, 1))
+        awaitInf(classModel.updateStatus(createdClass1.id.get, SurveyStatus.Closed))
       val surveyStatus1: Int =
         awaitInf(classModel.getStatus(createdClass1.id.get))
       surveyStatus1 mustBe SurveyStatus.Closed
