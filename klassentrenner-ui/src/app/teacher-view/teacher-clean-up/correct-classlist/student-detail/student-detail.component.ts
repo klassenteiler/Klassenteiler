@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { Form, FormControl, Validators } from '@angular/forms';
 import { SelfReportedInEdit } from '../../teacher-clean-up.models';
 import { timer } from 'rxjs';
+import { ForbiddenNameValidator } from 'src/app/_shared/forbidden-name.directive';
 
 @Component({
   selector: 'app-student-detail',
@@ -11,19 +12,25 @@ import { timer } from 'rxjs';
 export class StudentDetailComponent implements OnInit {
 
   @Input() studentEntity!: SelfReportedInEdit;
-  @Output() shouldBeDeleted  = new EventEmitter<boolean>();
+  @Input() currentClassListNames!: string[];
 
+  @Output() shouldBeDeleted  = new EventEmitter<boolean>();
   @Output() classListChanged = new EventEmitter<void>();
 
   sleeping: boolean = false;
 
   editMode: boolean = false;
 
-  formControl = new FormControl("", Validators.required);
+  formControl!: FormControl;
 
   constructor() { }
 
   ngOnInit(): void {
+    const validator = new ForbiddenNameValidator(this.currentClassListNames)
+    this.formControl = new FormControl("", [
+      Validators.required,
+      validator.func.bind(validator)
+    ]);
   }
 
   toggleEdit(){

@@ -14,9 +14,14 @@
                 </span>
             </span>
              <span *ngIf="editMode">
-                 <input [formControl]="formControl" 
+                 <input [formControl]="formControl" class='form-control'
+                 [class.is-invalid]="formControl.invalid && (formControl.touched || formControl.dirty)"
                  placeholder="{{studentEntity.name}}" 
                  (blur)="save()" (keyup.enter)="save()" autofocus>
+                 <div *ngIf="formControl.invalid"  class="invalid-feedback">
+                    <span *ngIf="formControl.errors!.forbiddenName">Dieser Name kommt bereits vor.</span>
+                    <!-- note the exclamation mark after errors in the line above, I am a bit confused about it -->
+                </div>
              </span>
          </div>
          <div class='col-sm'>
