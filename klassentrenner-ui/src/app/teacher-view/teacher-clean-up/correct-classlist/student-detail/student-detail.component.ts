@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { SelfReportedInEdit } from '../../teacher-clean-up.models';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-student-detail',
@@ -14,6 +15,8 @@ export class StudentDetailComponent implements OnInit {
 
   @Output() classListChanged = new EventEmitter<void>();
 
+  sleeping: boolean = false;
+
   editMode: boolean = false;
 
   formControl = new FormControl("", Validators.required);
@@ -24,25 +27,31 @@ export class StudentDetailComponent implements OnInit {
   }
 
   toggleEdit(){
-    if(this.editMode){
-      this.save()
-    }else{
-      this.edit()
-    }
+      if(this.editMode){
+        this.save()
+      }else{
+        this.edit()
+      }
+  }
+
+  sleep(){
+    this.sleeping = true;
+    timer(200).subscribe(val => {this.sleeping = false;})
   }
 
   save(){
-    if(this.editMode){
+    if(this.editMode && !this.sleeping){
       if(this.formControl.valid){
         this.studentEntity.name = this.formControl.value;
         this.classListChanged.emit();
       }
       this.editMode = false;
+      this.sleep();
     }
   }
 
   edit(){
-    if(!this.editMode){
+    if(!this.editMode && !this.sleeping){
       this.formControl.setValue(this.studentEntity.name)
       this.editMode = true;
     }

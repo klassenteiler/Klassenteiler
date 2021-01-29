@@ -6,6 +6,6 @@
     "teacherPasswordLength": 8,
     "description": "config json test",
     "news": "dev news",
-    "skipMerging": true,
+    "skipMerging": false,
     "gitURL": "https://github.com/klassenteiler/Klassenteiler"
 }

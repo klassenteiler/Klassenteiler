@@ -6,7 +6,10 @@
             <li [ngbNavItem]="1">
               <a ngbNavLink>1) Klassenliste Korregieren</a>
               <ng-template ngbNavContent>
-                <app-correct-classlist [classList]="classList" (classListChanged)="saveClassList()"></app-correct-classlist>
+                <app-correct-classlist 
+                [classList]="classList" 
+                [currentClassListNames] = "currentClassListNames"
+                (classListChanged)="saveClassList()"></app-correct-classlist>
               </ng-template>
             </li>
             <li [ngbNavItem]="2">
@@ -14,7 +17,7 @@
               <ng-template ngbNavContent>
                   <app-match-students 
                     [friendReportedList]="friendRstudents" 
-                    [classList]="getCurrentClasslist()"
+                    [classList]="currentClassListNames"
                     (friendReportedChanged)="saveFriendReportedMatching()"
                     >
                   </app-match-students>

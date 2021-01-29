@@ -20,6 +20,8 @@ export class TeacherCleanUpComponent implements OnInit {
   classList: Array<SelfReportedInEdit>| null = null;
   friendRstudents: Array<FriendReported2Match> | null = null;
 
+  currentClassListNames: string[] = [];
+
   // the current merging intermediate state is derived from a list of self reported students in the backend
   // this is summarised by the stateHash
   // it the list of self reported students in the backend changes, we can use this together with the stateHash
@@ -33,13 +35,15 @@ export class TeacherCleanUpComponent implements OnInit {
         this.classList = selfRstudents;
         this.friendRstudents = friendRstudents;
         this.stateHash = stateHash;
+        this.updateCurrentClasslist();
       });
   }
 
   saveClassList() {
     console.log("saving class state")
-
     if(this.classList === null){throw new Error("cant save classList cause it's not defined.")}
+
+    this.updateCurrentClasslist()
     this.mergeService.saveState2local(this.schoolClass, this.stateHash, this.classList!, null)
   }
 
@@ -65,6 +69,10 @@ export class TeacherCleanUpComponent implements OnInit {
   getCurrentClasslist(): string[]{
     if(this.classList === null){ throw new Error("no classlist")}
     return this.classList.filter((s: SelfReportedInEdit) => !s.deleted).map(s => s.name)
+  }
+
+  updateCurrentClasslist(){
+    this.currentClassListNames = this.getCurrentClasslist();
   }
 
 }

@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, Validators } from '@angular/forms';
 import { TeacherService } from 'src/app/_services/teacher.service';
+import { ForbiddenNameValidator } from 'src/app/_shared/forbidden-name.directive';
 import {  SelfReportedInEdit } from '../teacher-clean-up.models';
 
 @Component({
@@ -11,14 +12,19 @@ import {  SelfReportedInEdit } from '../teacher-clean-up.models';
 export class CorrectClasslistComponent implements OnInit {
 
   @Input() classList!: Array<SelfReportedInEdit>;
+  @Input() currentClassListNames!: string[];
   @Output() classListChanged = new EventEmitter<void>()
 
-  newStudentControl = new FormControl("", Validators.required);
-
+  newStudentControl!: FormControl;
+  // newStudentControl = new FormControl("", [Validators.required, forbiddenNameValidator(["a", "b"])]);
   constructor() { }
 
   ngOnInit(): void {
-
+    const validator = new ForbiddenNameValidator(this.currentClassListNames)
+    this.newStudentControl = new FormControl("", [
+      validator.func.bind(validator)
+      // this.validateName.bind(this) // inside validateName, the keyword 'this' is set through bind, to the value of this at calling. yolo
+      ]);
   }
 
   delete(i: number){
@@ -27,8 +33,9 @@ export class CorrectClasslistComponent implements OnInit {
   }
 
   add(){
-    if(this.newStudentControl.valid){
-      const newStudent: SelfReportedInEdit = SelfReportedInEdit.makeTeacherAdded(this.newStudentControl.value)
+    const name_to_add = this.newStudentControl.value
+    if(this.newStudentControl.valid &&  name_to_add !== ""){
+      const newStudent: SelfReportedInEdit = SelfReportedInEdit.makeTeacherAdded(name_to_add)
       this.newStudentControl.setValue("")
 
       this.classList.push(newStudent);
@@ -39,5 +46,4 @@ export class CorrectClasslistComponent implements OnInit {
   triggerClassListChanged(){
     this.classListChanged.emit()
   }
-
 }
