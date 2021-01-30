@@ -69,6 +69,26 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
     db.run(Student.filter(x => (x.classid === classId && x.selfreported === true)).result).map(rows => rows.map(_.id))
   }
 
+  def getAllFriendReportedStudents(classId: Int): Future[Seq[StudentCC]] = {
+    db.run(Student.filter(x => (x.classid === classId && x.selfreported === false)).result).map(rows => rows.map(entry => StudentCC(
+          Some(entry.id),
+          entry.hashedname,
+          entry.encryptedname,
+          entry.selfreported,
+          entry.groupbelonging
+        )))
+  }
+
+  def getAllSelfReportedStudents(classId: Int): Future[Seq[StudentCC]] = {
+    db.run(Student.filter(x => (x.classid === classId && x.selfreported === true)).result).map(rows => rows.map(entry => StudentCC(
+          Some(entry.id),
+          entry.hashedname,
+          entry.encryptedname,
+          entry.selfreported,
+          entry.groupbelonging
+        )))
+  }
+
   def updateGroupBelonging(studentId: Int, group: Int): Future[Int] = {
     val updateOp: Future[Int] = db.run(Student.filter(_.id === studentId).map(row => (row.groupbelonging)).update((Some(group))))
     return updateOp

@@ -206,5 +206,53 @@ class StudentModelSpec
       ) // updating a non-existent student
       updatedStudents2 mustBe 0
     }
+    "return all selfreported students by classID" in{
+      val allSelfReportedStudents1: Seq[StudentCC] =
+        awaitInf(studentModel.getAllSelfReportedStudents(classId))
+
+      allSelfReportedStudents1.length mustBe 0
+
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", false, None)
+      val student2: StudentCC =
+        StudentCC(None, "hashedName2", "encName2", true, None)
+
+      val student1Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student1, classId))
+      student1Id.get mustBe 1 // first student has id 1
+
+      val student2Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student2, classId))
+      student2Id.get mustBe 2 // second student has id 2
+
+      val allSelfReportedStudents2: Seq[StudentCC] =
+        awaitInf(studentModel.getAllSelfReportedStudents(classId))
+      allSelfReportedStudents2.length mustBe 1
+      allSelfReportedStudents2(0).id.get mustBe 2 // there is only one element in the list and it must be of the second student
+    }
+    "return all friendreported students by classID" in {
+      val allFriendReportedStudents1: Seq[StudentCC] =
+        awaitInf(studentModel.getAllFriendReportedStudents(classId))
+
+      allFriendReportedStudents1.length mustBe 0
+
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", false, None)
+      val student2: StudentCC =
+        StudentCC(None, "hashedName2", "encName2", true, None)
+
+      val student1Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student1, classId))
+      student1Id.get mustBe 1 // first student has id 1
+
+      val student2Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student2, classId))
+      student2Id.get mustBe 2 // second student has id 2
+
+      val allFriendReportedStudents2: Seq[StudentCC] =
+        awaitInf(studentModel.getAllFriendReportedStudents(classId))
+      allFriendReportedStudents2.length mustBe 1
+      allFriendReportedStudents2(0).id.get mustBe 1 
+    }
   }
 }
