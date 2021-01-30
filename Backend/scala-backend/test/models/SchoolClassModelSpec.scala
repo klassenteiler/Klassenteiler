@@ -110,6 +110,59 @@ class SchoolClassModelSpec
       allClasses2(1).id.get mustBe 2
       allClasses2(1).className mustBe "test2"
     }
+    "return the ids of all calculating classes" in {
+      val calculatingClasses1: Seq[Int] =
+        awaitInf(classModel.getCalculatingClassesIds())
+      calculatingClasses1.length mustBe 0 // class is in status OPEN
+
+      val numberOfChangedClasses: Int =
+        awaitInf(
+          classModel.updateStatus(
+            createdClass1.id.get,
+            SurveyStatus.Calculating
+          )
+        )
+      numberOfChangedClasses mustBe 1
+
+      val calculatingClasses2: Seq[Int] =
+        awaitInf(classModel.getCalculatingClassesIds())
+      calculatingClasses2.length mustBe 1
+      calculatingClasses2(0) mustBe createdClass1.id.get
+
+      // add another class
+      val schoolClass2: SchoolClassDB = SchoolClassDB(
+        None, // id
+        "test2", // className
+        Some("AMG"), // schoolName
+        "clsSecret", // classSecret
+        "teachsecret", // teacherSecret
+        "puKey", // public Key
+        "encPrivateKey", // encryptedPrivateKey
+        Some(0) // SurveyStatus
+      )
+      val createdClass2: SchoolClassCC =
+        awaitInf(classModel.createSchoolClass(schoolClass2))
+      createdClass2.id.get mustBe 2
+
+      val calculatingClasses3: Seq[Int] =
+        awaitInf(classModel.getCalculatingClassesIds())
+      calculatingClasses3.length mustBe 1
+
+      val numberOfChangedClasses2: Int =
+        awaitInf(
+          classModel.updateStatus(
+            createdClass2.id.get,
+            SurveyStatus.Calculating
+          )
+        )
+      numberOfChangedClasses mustBe 1
+
+      val calculatingClasses4: Seq[Int] =
+        awaitInf(classModel.getCalculatingClassesIds())
+      calculatingClasses4.length mustBe 2
+      calculatingClasses4(1) mustBe createdClass2.id.get
+
+    }
     "validate that a class with id and secret exists" in {
       val validatedSuccess: Boolean = awaitInf(
         classModel.validateAccess(
@@ -170,7 +223,9 @@ class SchoolClassModelSpec
       surveyStatus mustBe SurveyStatus.Open
 
       val NumberOfChangedClasses: Int =
-        awaitInf(classModel.updateStatus(createdClass1.id.get, SurveyStatus.Closed))
+        awaitInf(
+          classModel.updateStatus(createdClass1.id.get, SurveyStatus.Closed)
+        )
       val surveyStatus1: Int =
         awaitInf(classModel.getStatus(createdClass1.id.get))
       surveyStatus1 mustBe SurveyStatus.Closed

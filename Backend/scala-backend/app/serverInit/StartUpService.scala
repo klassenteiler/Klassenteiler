@@ -26,17 +26,14 @@ class StartUpService @Inject() (
 
   println("~~~~~~~Starting Application~~~~~~~")
 
-  val allClasses: Future[Seq[SchoolClassCC]] = classModel.getAllClasses()
-  val calculatingClasses: Future[Seq[SchoolClassCC]] =
-    allClasses.map(sequence =>
-      sequence.filter(_.surveyStatus.get == SurveyStatus.Calculating) // we
-    )
+  val calculatingClasses: Future[Seq[Int]] =
+    classModel.getCalculatingClassesIds()
 
   calculatingClasses.map(sequence =>
-    sequence.map(schoolClass => {
-      surveyController.startPartitionAlgorithm(schoolClass.id.get)
+    sequence.foreach(id => {
+      surveyController.startPartitionAlgorithm(id)
       this.logger.info(
-        s"restarted calculation of class ${schoolClass.className} with id ${schoolClass.id.get}"
+        s"restarted calculation of class with id ${id}"
       )
     })
   )

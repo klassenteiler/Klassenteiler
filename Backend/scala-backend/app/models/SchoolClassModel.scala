@@ -75,5 +75,12 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
 
     result // return
   }
+
+  def getCalculatingClassesIds(): Future[Seq[Int]] = {
+    val intermediateResult: Future[Seq[models.Tables.SchoolclassRow]] = db.run(Schoolclass.filter(_.surveystatus === SurveyStatus.Calculating).result)
+    val result: Future[Seq[Int]] = intermediateResult.map(sequence => sequence.map(entry => entry.id))
+
+    result // return
+  }
 }
 
