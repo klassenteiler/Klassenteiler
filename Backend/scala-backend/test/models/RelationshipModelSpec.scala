@@ -116,5 +116,39 @@ class RelationshipModelSpec
         (srStudent1Id, srStudent2Id)
       )
     }
+    "override all occurences of an id in the 'target' field of a relationship with a new id" in {
+
+      // rewiring a relation that does not exist yet
+      val rewiringSuccess1: Boolean =
+        awaitInf(
+          relationshipModel.rewireRelations(alterstudentId, srStudent2Id)
+        )
+      rewiringSuccess1 mustBe false
+
+      val rel1: RelationshipCC =
+        RelationshipCC(classId, srStudent1Id, alterstudentId)
+
+      val creationSuccess: Boolean =
+        awaitInf(relationshipModel.createRelationship(rel1))
+      creationSuccess mustBe true
+
+      val allRelations1: Seq[(Int, Int)] =
+        awaitInf(relationshipModel.getAllRelationIdsOfClass(classId))
+      allRelations1 mustBe Seq(
+        (srStudent1Id, alterstudentId)
+      )
+
+      val rewiringSuccess2: Boolean =
+        awaitInf(
+          relationshipModel.rewireRelations(alterstudentId, srStudent2Id)
+        )
+      rewiringSuccess2 mustBe true
+
+      val allRelations2: Seq[(Int, Int)] =
+        awaitInf(relationshipModel.getAllRelationIdsOfClass(classId))
+      allRelations2 mustBe Seq(
+        (srStudent1Id, srStudent2Id)
+      )
+    }
   }
 }

@@ -46,9 +46,11 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
     })
   }
 
-  def removeStudent(studentId: Int): Future[Boolean] = ???
+  def removeStudent(studentId: Int): Future[Boolean] = {
+    db.run(Student.filter(_.id === studentId).delete).map(count => count > 0) 
+  }
 
-   def getStudents(classId: Int): Future[Seq[StudentCC]] = {
+  def getStudents(classId: Int): Future[Seq[StudentCC]] = {
     db.run(Student.filter(_.classid === classId).result).map(rows => rows.map(entry => {
         StudentCC(
           Some(entry.id),

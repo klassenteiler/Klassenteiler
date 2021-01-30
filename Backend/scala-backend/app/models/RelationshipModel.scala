@@ -29,4 +29,9 @@ class RelationshipModel(db: Database)(implicit ec: ExecutionContext) {
     db.run(Relationship.filter(x => (x.classid === classId)).result)
       .map(rows => rows.map(row => (row.sourceid.get, row.targetid.get)))
   }
+
+  def rewireRelations(oldId: Int, newId: Int): Future[Boolean] = {
+    val affectedRows: Future[Int] = db.run(Relationship.filter(_.targetid === oldId).map(row => (row.targetid)).update(Some(newId)))
+    affectedRows.map(rows => rows > 0)
+  }
 }
