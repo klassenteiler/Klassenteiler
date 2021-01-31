@@ -78,27 +78,30 @@ class SurveyController @Inject() (
                         sourceId.flatMap(sId =>
                           sId match {
                             case Some(sId) => {
-                              // enter each alter and store the id of the student objects
-                              val targetIds: Seq[Future[Option[Int]]] =
-                                alters.map(alter =>
-                                  studentModel.createStudent(alter, classId)
-                                )
-                              // create a new relationship with the alter as target and ego as source
-                              targetIds.foreach(targetId => {
-                                targetId.map(tId => {
-                                  val relationship = RelationshipCC(
-                                    classId = classId,
-                                    sourceId = sId,
-                                    targetId = tId.get
-                                  ) //tId is an option
-                                  relModel.createRelationship(relationship)
+                              // enter each alter and create a relationship with its id
+                              //
+                              val creationSuccesses: Seq[Future[Boolean]] =
+                                alters.map(alter => {
+                                  val targetStudentId: Future[Option[Int]] =
+                                    studentModel.createStudent(alter, classId)
+                                  targetStudentId.flatMap(tId => {
+                                    val relationship = RelationshipCC(
+                                      classId = classId,
+                                      sourceId = sId,
+                                      targetId = tId.get
+                                    ) 
+                                    relModel.createRelationship(relationship)
+                                  })
                                 })
-                              })
-                              Future.successful(
+
+                              val creationsSucceeded: Future[Seq[Boolean]] =
+                                Future.sequence(creationSuccesses)
+
+                              creationsSucceeded.map(success =>
                                 Created(
                                   Json.obj("message" -> "success - created")
                                 )
-                              ) //TODO maybe only report success once it is created
+                              )
 
                             }
                             case None => {
@@ -162,8 +165,8 @@ class SurveyController @Inject() (
   // ruft internen algorithmus auf
   // ändert alle groupbelonging einträge in der students datenbank
   // setzt survey status auf 3 (done)
-  def startCalculating(implicit classId: Int, classSecret: String) = Action.async {
-    implicit request: Request[AnyContent] =>
+  def startCalculating(implicit classId: Int, classSecret: String) =
+    Action.async { implicit request: Request[AnyContent] =>
       val body = { _: ClassTeacherCC =>
         {
           classModel
@@ -180,9 +183,9 @@ class SurveyController @Inject() (
         }
       }
       auth.withTeacherAuthentication(body)
-  }
+    }
 
-  def startPartitionAlgorithm(classId: Int): Unit= {
+  def startPartitionAlgorithm(classId: Int): Unit = {
     val studentsOfClass: Future[Seq[Int]] =
       studentModel.getAllSelfReportedStudentIDs(classId)
     val relationsOfClass: Future[Seq[(Int, Int)]] =
