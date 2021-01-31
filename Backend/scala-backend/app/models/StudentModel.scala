@@ -97,8 +97,8 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
   }
 
   // returns id of student with the given hash
-  def getByHash(hash: String): Future[Option[Int]] = {
-    val studentRows: Future[Seq[StudentRow]] = db.run(Student.filter(_.hashedname === hash).result)
+  def getByHash(hash: String, classId: Int): Future[Option[Int]] = {
+    val studentRows: Future[Seq[StudentRow]] = db.run(Student.filter(x => (x.classid ===classId && x.hashedname === hash)).result)
     studentRows.map(students => {
       if (students.length != 1) {
         None
