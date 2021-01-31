@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { mergeMap , map} from 'rxjs/operators';
 import { AppConfigService } from 'src/app/app-config.service';
+import { DemoService } from 'src/app/_services/demo.service';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, SchoolClass } from 'src/app/_tools/enc-tools.service';
 
@@ -17,13 +18,16 @@ export class SurveyOpenComponent implements OnInit {
   studentUrl!: string;
   nSignups:number=0;
 
+  submittingDemo = false;
+
   
-  constructor(private configService: AppConfigService, private teacherService: TeacherService) { 
+  constructor(private configService: AppConfigService, private teacherService: TeacherService, private demoService: DemoService) { 
   }
 
   get studentURLhttp():string {
     return `http://${this.studentUrl}`
   }
+
 
   ngOnInit(): void {
     this.studentUrl = `${this.configService.frontendUrl}/${this.schoolClass.studentURL}`
@@ -31,7 +35,34 @@ export class SurveyOpenComponent implements OnInit {
     this.teacherService.nSignups(this.schoolClass, this.classTeacher).subscribe(n => {
       console.log(`nSignups = ${n}`)
       this.nSignups = n})
-    // this.teacherService.
+
+    console.log(this.showDemoDataButton())
+  }
+
+  showDemoDataButton():boolean {
+    return this.demoService.demoActive() && (this.nSignups == 0) && this.demoService.schoolEligable(this.schoolClass)
+  }
+
+  submitSampleData(){
+    if(this.showDemoDataButton()){
+      this.submittingDemo = true;
+      this.demoService.submitSampleData(this.schoolClass).subscribe(
+        msg => {
+          console.log("Generating the sample data was successfull")
+          this.submittingDemo = false
+          window.location.reload()
+        },
+        error => {
+          console.log(error)
+          alert("Irgendetwas ist schief gegangen. Der Error wurde in die Konsole geloggt. Vieleicht hilft es die Seite neu zu laden")
+        }
+        )
+    }
+  }
+
+  test(){
+    console.log(this.nSignups == 0)
+    console.log(this.showDemoDataButton())
   }
 
   closeSurvey(): void {

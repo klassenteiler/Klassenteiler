@@ -1,0 +1,8 @@
+{
+    "Tim": ["Philip", "Dieter", "Peter"],
+    "Philip": ["Dieter", "Clemens"],
+    "Klemens": ["Phillip", "Anna"],
+    "Peter": ["Santa Claus", "Anna"],
+    "Anna": ["Peter", "Dieter"],
+    "Dieter": ["Max", "Klemens"]
+}

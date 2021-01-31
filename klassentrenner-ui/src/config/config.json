@@ -7,5 +7,7 @@
     "description": "config json test",
     "news": "dev news",
     "skipMerging": false,
-    "gitURL": "https://github.com/klassenteiler/Klassenteiler"
+    "gitURL": "https://github.com/klassenteiler/Klassenteiler",
+    "demoData": "demoClass.json",
+    "demoSchoolnamePrefix": "DEMO"
 }
