@@ -35,7 +35,7 @@ class SurveyController @Inject() (
   // fügt student zu student table hinzu
   // fügt friends und student zu relations table hinzu
   def submitSurvey(implicit
-      id: Int,
+      classId: Int,
       classSecret: String
   ): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
@@ -43,7 +43,7 @@ class SurveyController @Inject() (
         {
           // if the survey is not open anymore we return 410
           classModel
-            .getStatus(id)
+            .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Open) {
                 request.body.asJson match {
@@ -74,20 +74,20 @@ class SurveyController @Inject() (
                         sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
                       if (alters.length <= limit) {
                         val sourceId: Future[Option[Int]] =
-                          studentModel.createStudent(ego, id)
+                          studentModel.createStudent(ego, classId)
                         sourceId.flatMap(sId =>
                           sId match {
                             case Some(sId) => {
                               // enter each alter and store the id of the student objects
                               val targetIds: Seq[Future[Option[Int]]] =
                                 alters.map(alter =>
-                                  studentModel.createStudent(alter, id)
+                                  studentModel.createStudent(alter, classId)
                                 )
                               // create a new relationship with the alter as target and ego as source
                               targetIds.foreach(targetId => {
                                 targetId.map(tId => {
                                   val relationship = RelationshipCC(
-                                    classId = id,
+                                    classId = classId,
                                     sourceId = sId,
                                     targetId = tId.get
                                   ) //tId is an option
@@ -135,17 +135,17 @@ class SurveyController @Inject() (
   }
 
   // PUT /closeSurvey/:id/:classSecret
-  // setzt survey status von schoolclass mit der relevanten id und
-  def closeSurvey(implicit id: Int, classSecret: String) = Action.async {
+  // setzt survey status von schoolclass mit der relevanten classId und
+  def closeSurvey(implicit classId: Int, classSecret: String) = Action.async {
     implicit request: Request[AnyContent] =>
       val body = { _: ClassTeacherCC =>
         {
           classModel
-            .getStatus(id)
+            .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Open) {
                 classModel
-                  .updateStatus(id, SurveyStatus.Closed)
+                  .updateStatus(classId, SurveyStatus.Closed)
                   .map(_ =>
                     Ok(Json.obj("message" -> "success - survey closed"))
                   )
@@ -162,16 +162,16 @@ class SurveyController @Inject() (
   // ruft internen algorithmus auf
   // ändert alle groupbelonging einträge in der students datenbank
   // setzt survey status auf 3 (done)
-  def startCalculating(implicit id: Int, classSecret: String) = Action.async {
+  def startCalculating(implicit classId: Int, classSecret: String) = Action.async {
     implicit request: Request[AnyContent] =>
       val body = { _: ClassTeacherCC =>
         {
           classModel
-            .getStatus(id)
+            .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Closed) {
-                startPartitionAlgorithm(id)
-                classModel.updateStatus(id, SurveyStatus.Calculating)
+                startPartitionAlgorithm(classId)
+                classModel.updateStatus(classId, SurveyStatus.Calculating)
                 Future.successful(
                   Ok(Json.obj("message" -> "success - started calculating"))
                 )
@@ -259,15 +259,15 @@ class SurveyController @Inject() (
   // GET /getResult/:id/:classSecret
   // checkt ob der status von der relevanten schoolclass korrekt ist und queried die studenttable mit classid == id
   // returns Array[StudentCC]
-  def getResults(implicit id: Int, classSecret: String) = Action.async {
+  def getResults(implicit classId: Int, classSecret: String) = Action.async {
     implicit request: Request[AnyContent] =>
       val body = { _: ClassTeacherCC =>
         classModel
-          .getStatus(id)
+          .getStatus(classId)
           .flatMap(status => {
             if (status == SurveyStatus.Done) {
               val allStudents: Future[Seq[StudentCC]] =
-                studentModel.getStudents(id)
+                studentModel.getStudents(classId)
               allStudents.map(students => {
                 Ok(Json.toJson(students))
               })
