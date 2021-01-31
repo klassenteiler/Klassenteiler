@@ -95,4 +95,19 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
     val updateOp: Future[Int] = db.run(Student.filter(_.id === studentId).map(row => (row.groupbelonging)).update((Some(group))))
     return updateOp
   }
+
+  // returns id of student with the given hash
+  def getByHash(hash: String): Future[Option[Int]] = {
+    val studentRows: Future[Seq[StudentRow]] = db.run(Student.filter(_.hashedname === hash).result)
+    studentRows.map(students => {
+      if (students.length != 1) {
+        None
+      }else{
+        Some(students.head.id)
+      }
+
+    })
+
+    
+  }
 }

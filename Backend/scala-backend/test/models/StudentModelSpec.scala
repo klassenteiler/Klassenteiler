@@ -282,5 +282,20 @@ class StudentModelSpec
         awaitInf(studentModel.getStudents(classId))
       allStudents2.length mustBe 0
     }
+    "return student by unique hash" in {
+      // student with that name doesnt exist yet
+      val id1: Option[Int] = awaitInf(studentModel.getByHash("hashedName"))
+      id1.isEmpty mustBe true // none is returned
+
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", true, None)
+
+      val student1Id: Option[Int] =
+        // awaitInf is a helper defined in MockDatabase
+        awaitInf(studentModel.createStudent(student1, classId))
+
+      val id2: Option[Int] = awaitInf(studentModel.getByHash("hashedName"))
+      id2 mustBe student1Id
+    }
   }
 }
