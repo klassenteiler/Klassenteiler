@@ -79,7 +79,6 @@ class SurveyController @Inject() (
                           sId match {
                             case Some(sId) => {
                               // enter each alter and create a relationship with its id
-                              //
                               val creationSuccesses: Seq[Future[Boolean]] =
                                 alters.map(alter => {
                                   val targetStudentId: Future[Option[Int]] =
