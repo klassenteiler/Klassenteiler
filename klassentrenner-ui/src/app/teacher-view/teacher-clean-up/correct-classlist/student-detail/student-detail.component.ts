@@ -26,10 +26,10 @@ export class StudentDetailComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    const validator = new ForbiddenNameValidator(this.currentClassListNames)
+    const validator = new ForbiddenNameValidator()
     this.formControl = new FormControl("", [
       Validators.required,
-      validator.func.bind(validator)
+      validator.func.bind(this)
     ]);
   }
 

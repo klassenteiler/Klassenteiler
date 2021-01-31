@@ -111,7 +111,6 @@ export class TeacherService {
     ).pipe(map((data: Array<StudentT>) => 
       data.map(s => teacher.clearLocalStudentFromTransport(s))
     ))
-    
     return req
   }
 
@@ -121,7 +120,6 @@ export class TeacherService {
     ).pipe(map((data: Array<StudentT>) => 
       data.map(s => teacher.clearLocalStudentFromTransport(s))
     ))
-    
     return req
   }
 

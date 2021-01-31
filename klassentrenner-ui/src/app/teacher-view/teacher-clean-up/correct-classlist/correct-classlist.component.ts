@@ -20,9 +20,9 @@ export class CorrectClasslistComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    const validator = new ForbiddenNameValidator(this.currentClassListNames)
+    const validator = new ForbiddenNameValidator()
     this.newStudentControl = new FormControl("", [
-      validator.func.bind(validator)
+      validator.func.bind(this) // TODO this is some very hacky shit
       // this.validateName.bind(this) // inside validateName, the keyword 'this' is set through bind, to the value of this at calling. yolo
       ]);
   }
@@ -33,6 +33,7 @@ export class CorrectClasslistComponent implements OnInit {
   }
 
   add(){
+    console.log(this.currentClassListNames)
     const name_to_add = this.newStudentControl.value
     if(this.newStudentControl.valid &&  name_to_add !== ""){
       const newStudent: SelfReportedInEdit = SelfReportedInEdit.makeTeacherAdded(name_to_add)
