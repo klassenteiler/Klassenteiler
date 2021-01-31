@@ -42,7 +42,7 @@ class MergingModel(db: Database)(implicit ec: ExecutionContext) {
 
     // sometimes the frontend cannot deliver the id of a student because it doesnt know the id yet
     // In theses cases we first find the id of the student with the corresponding name and then call rewireAndDelete
-    def FindRewireAndDelete(classId: Int, friendId: Int, selfHash: String): Future[Boolean] = {
+    def findRewireAndDelete(classId: Int, friendId: Int, selfHash: String): Future[Boolean] = {
         val selfId: Future[Option[Int]] = studentModel.getByHash(selfHash, classId)
         selfId.flatMap(id => {
             if(!id.isEmpty){

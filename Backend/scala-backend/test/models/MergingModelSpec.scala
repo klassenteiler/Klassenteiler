@@ -120,6 +120,61 @@ class MergingModelSpec
         )
       success3 mustBe true
 
+      val allRelations2: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelations2 mustBe Seq(
+        (selfReportedStudent1Id, selfReportedStudent2Id)
+      )
+    }
+    "delete the friendreported student" in {
+      val allStudents1: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents1.length mustBe 3
+
+      val success1: Boolean =
+        awaitInf(
+          mergingModel.rewireAndDelete(
+            friendReportedStudentId,
+            selfReportedStudent2Id
+          )
+        )
+      success1 mustBe true
+
+      val allStudents2: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents2.length mustBe 2
+    }
+  }
+
+  "The MergingModel's findRewireAndDelete" should {
+        "update all relations with the old id as target" in {
+      // in this test we change all incoming ties to the friendreported student to the second
+      // selfreported student
+
+      val allRelations1: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelations1 mustBe Seq(
+        (selfReportedStudent1Id, friendReportedStudentId)
+      )
+
+      // nonexistent selfReportedHash
+      val success1: Boolean =
+        awaitInf(mergingModel.findRewireAndDelete(classId, friendReportedStudentId, "fail"))
+      success1 mustBe false
+      // nonexistent friendId
+      val success2: Boolean =
+        awaitInf(mergingModel.findRewireAndDelete(classId, 99, selfReportedStudent2.hashedName))
+      success2 mustBe false
+
+      val success3: Boolean =
+        awaitInf(
+          mergingModel.findRewireAndDelete(
+            classId,
+            friendReportedStudentId,
+            selfReportedStudent2.hashedName
+          )
+        )
+      success3 mustBe true
 
       val allRelations2: Seq[(Int, Int)] =
         awaitInf(relModel.getAllRelationIdsOfClass(classId))
@@ -127,6 +182,24 @@ class MergingModelSpec
         (selfReportedStudent1Id, selfReportedStudent2Id)
       )
     }
-  }
+    "delete the friendreported student" in {
+      val allStudents1: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents1.length mustBe 3
 
+      val success1: Boolean =
+        awaitInf(
+          mergingModel.findRewireAndDelete(
+            classId,
+            friendReportedStudentId,
+            selfReportedStudent2.hashedName
+          )
+        )
+      success1 mustBe true
+
+      val allStudents2: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents2.length mustBe 2
+    }
+  }
 }
