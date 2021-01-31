@@ -26,7 +26,12 @@
             <li [ngbNavItem]="3">
               <a ngbNavLink>3) Zusammenfassung</a>
               <ng-template ngbNavContent>
-                <app-summary [classList]="classList" [friendReportedList]="friendRstudents"></app-summary>
+                <app-summary 
+                [classList]="classList" 
+                [friendReportedList]="friendRstudents"
+                [schoolClass]="schoolClass"
+                [classTeacher]="classTeacher"
+                ></app-summary>
               </ng-template>
             </li>
           </ul>

@@ -1,1 +1,12 @@
-<p>summary works!</p>
+<div *ngIf="problems !== null">
+    <ul>
+        <li *ngFor="let problem of problems">
+            <span>{{problem}}</span>
+        </li>
+    </ul>
+</div>
+<div *ngIf="mergeCommands !== null">
+    Seems fine
+
+    <button class='btn btn-lg btn-success' (click)="submit()">Abschicken!</button>
+</div>

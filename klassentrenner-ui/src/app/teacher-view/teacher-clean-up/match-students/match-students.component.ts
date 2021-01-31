@@ -44,7 +44,7 @@ export class MatchStudentsComponent implements OnInit {
   }
 
   getClassListForId(entityId: number): Array<_MatchOption>{
-    //
+    //TODO sort by similarity
 
     const sortedClassList: string[] = this.classList!
 
@@ -99,6 +99,7 @@ export class _MatchOption{
   }
 
   static setValueFromStudent(s: FriendReported2Match): string|number{
+    // returns the value that should be written into the form based on the student
     if(!s.hasBeenAssigned){
       return _MatchOption.notYetSetMarker
     }

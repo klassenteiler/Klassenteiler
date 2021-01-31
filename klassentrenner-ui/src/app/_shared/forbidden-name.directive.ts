@@ -8,7 +8,7 @@ export class ForbiddenNameValidator{
   // rely on the component having a currentClassListNames field. very very hacky!
 
     func (control: AbstractControl): {[key: string]: any} | null{
-      console.log(this.currentClassListNames)
+      // console.log(this.currentClassListNames)
       const foundId: number = this.currentClassListNames.indexOf(control.value)
       const forbidden = foundId !== -1;
       return forbidden ? {forbiddenName: {arrayPosition: foundId}} : null;

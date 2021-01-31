@@ -16,6 +16,7 @@ describe('CorrectClasslistComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CorrectClasslistComponent);
     component = fixture.componentInstance;
+    component.currentClassListNames = ['Dieter', 'Philip']
     fixture.detectChanges();
   });
 

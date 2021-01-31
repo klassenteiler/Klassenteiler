@@ -1,6 +1,7 @@
 import { stringify } from "@angular/compiler/src/util"
 import { type } from "os"
-import { impl } from "src/app/_tools/enc-tools.service"
+import { StudentT } from "src/app/models"
+import { ClearLocalStudent, impl, SchoolClass } from "src/app/_tools/enc-tools.service"
 
 interface StudentInEditStore{
     _currentName: string,
@@ -81,8 +82,13 @@ export class SelfReportedInEdit{
     get name(): string { return this._currentName}
     get deleted(): boolean { return this._deleted}
     get teacherAdded(): boolean { return this._teacherAdded}
+    get id(): number { 
+        if(this._id === null){throw new Error("tried to get id of student that does not have it set")}
+        else{return this._id}
+    }
 
     get changed(): boolean {
+        // only if renamed
         if (this.teacherAdded){return false;}
         else {
             return (this._origName !== this._currentName)
@@ -90,6 +96,7 @@ export class SelfReportedInEdit{
     }
 
     get recoverable(): boolean{
+        // renamed or deleted
         if (this.teacherAdded){ return false;}
         else{
             return (this.deleted || this.changed)
@@ -222,4 +229,37 @@ export class FriendReported2Match{
         this._shouldBeDeleted = true;
     }
 
+}
+
+export interface MergingCommandsT{
+    studentsToAdd: StudentT[];
+    studentsToRename: StudentT[];
+    studentsToDelete: number[];
+    isAliasOf: Array<[number, string]>;
+}
+
+export class MergeCommandsDict{
+    constructor( 
+        public studentsToAdd: ClearLocalStudent[],
+        public studentsToRename: ClearLocalStudent[],
+        public studentsToDelete: number[],
+        public isAliasOf: Array<[number, string]>){
+        }
+
+    toTransport(schoolClass : SchoolClass) : MergingCommandsT {
+        const toAdd: StudentT[] = schoolClass.arrayLocalStudentToTransport(this.studentsToAdd)
+        const toRename: StudentT[] = schoolClass.arrayLocalStudentToTransport(this.studentsToAdd)
+
+        const isAliasOfTargetHashed: Array<[number, string]> = this.isAliasOf.map(([friendRId, matchedName]: [number, string]) =>{
+            const hashedName = schoolClass.hashStudentName(matchedName)
+            return [friendRId, hashedName]
+        })
+
+        return impl<MergingCommandsT>({
+            studentsToAdd: toAdd,
+            studentsToRename: toRename,
+            studentsToDelete: this.studentsToDelete,
+            isAliasOf: isAliasOfTargetHashed
+        })
+    }
 }

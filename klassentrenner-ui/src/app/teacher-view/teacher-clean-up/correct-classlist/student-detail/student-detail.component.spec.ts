@@ -18,6 +18,7 @@ describe('StudentDetailComponent', () => {
     fixture = TestBed.createComponent(StudentDetailComponent);
     component = fixture.componentInstance;
     component.studentEntity = SelfReportedInEdit.makeTeacherAdded("Tim K")
+    component.currentClassListNames = ['Dieter', 'Philip']
     fixture.detectChanges();
   });
 

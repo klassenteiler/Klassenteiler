@@ -100,26 +100,25 @@ export class TeacherService {
     return this.backendService.startCalculatingWithMerge(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret, mergeBody).pipe(
       catchError(e=>this.handleTeacherError(schoolClass.id!, e))).pipe(
         map(data=>{
-      if (data.message === undefined){ throw new Error("The server response for ccloseSurvey has no field message")}
+      if (data.message === undefined){ throw new Error("The server response for closeSurvey has no field message")}
       return data.message
     }))
   }
 
-  getFriendReported(schoolClass: SchoolClass, teacher:ClassTeacher): Observable<Array<ClearLocalStudent>>{
-    const req: Observable<Array<ClearLocalStudent>> = this.backendService.getFriendReported(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
+  getFriendReportedEnc(schoolClass: SchoolClass, teacher:ClassTeacher): Observable<Array<StudentT>>{
+    const req: Observable<Array<StudentT>> = this.backendService.getFriendReported(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
       catchError(e=> this.handleTeacherError(schoolClass.id!, e))
-    ).pipe(map((data: Array<StudentT>) => 
-      data.map(s => teacher.clearLocalStudentFromTransport(s))
-    ))
+    )
     return req
   }
 
-  getSelfReported(schoolClass: SchoolClass, teacher:ClassTeacher): Observable<Array<ClearLocalStudent>>{
-    const req: Observable<Array<ClearLocalStudent>> = this.backendService.getSelfReported(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
+  getSelfReportedEnc(schoolClass: SchoolClass, teacher:ClassTeacher): Observable<Array<StudentT>>{
+    const req: Observable<Array<StudentT>> = this.backendService.getSelfReported(schoolClass.id!, schoolClass.classSecret, teacher.teacherSecret).pipe(
       catchError(e=> this.handleTeacherError(schoolClass.id!, e))
-    ).pipe(map((data: Array<StudentT>) => 
-      data.map(s => teacher.clearLocalStudentFromTransport(s))
-    ))
+    )
+    // .pipe(map((data: Array<StudentT>) => 
+    //   data.map(s => teacher.clearLocalStudentFromTransport(s))
+    // ))
     return req
   }
 
