@@ -35,7 +35,7 @@ class SurveyController @Inject() (
   // fügt student zu student table hinzu
   // fügt friends und student zu relations table hinzu
   def submitSurvey(implicit
-      id: Int,
+      classId: Int,
       classSecret: String
   ): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
@@ -43,7 +43,7 @@ class SurveyController @Inject() (
         {
           // if the survey is not open anymore we return 410
           classModel
-            .getStatus(id)
+            .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Open) {
                 request.body.asJson match {
@@ -74,31 +74,33 @@ class SurveyController @Inject() (
                         sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
                       if (alters.length <= limit) {
                         val sourceId: Future[Option[Int]] =
-                          studentModel.createStudent(ego, id)
+                          studentModel.createStudent(ego, classId)
                         sourceId.flatMap(sId =>
                           sId match {
                             case Some(sId) => {
-                              // enter each alter and store the id of the student objects
-                              val targetIds: Seq[Future[Option[Int]]] =
-                                alters.map(alter =>
-                                  studentModel.createStudent(alter, id)
-                                )
-                              // create a new relationship with the alter as target and ego as source
-                              targetIds.foreach(targetId => {
-                                targetId.map(tId => {
-                                  val relationship = RelationshipCC(
-                                    classId = id,
-                                    sourceId = sId,
-                                    targetId = tId.get
-                                  ) //tId is an option
-                                  relModel.createRelationship(relationship)
+                              // enter each alter and create a relationship with its id
+                              val creationSuccesses: Seq[Future[Boolean]] =
+                                alters.map(alter => {
+                                  val targetStudentId: Future[Option[Int]] =
+                                    studentModel.createStudent(alter, classId)
+                                  targetStudentId.flatMap(tId => {
+                                    val relationship = RelationshipCC(
+                                      classId = classId,
+                                      sourceId = sId,
+                                      targetId = tId.get
+                                    ) 
+                                    relModel.createRelationship(relationship)
+                                  })
                                 })
-                              })
-                              Future.successful(
+
+                              val creationsSucceeded: Future[Seq[Boolean]] =
+                                Future.sequence(creationSuccesses)
+
+                              creationsSucceeded.map(success =>
                                 Created(
                                   Json.obj("message" -> "success - created")
                                 )
-                              ) //TODO maybe only report success once it is created
+                              )
 
                             }
                             case None => {
@@ -135,17 +137,17 @@ class SurveyController @Inject() (
   }
 
   // PUT /closeSurvey/:id/:classSecret
-  // setzt survey status von schoolclass mit der relevanten id und
-  def closeSurvey(implicit id: Int, classSecret: String) = Action.async {
+  // setzt survey status von schoolclass mit der relevanten classId und
+  def closeSurvey(implicit classId: Int, classSecret: String) = Action.async {
     implicit request: Request[AnyContent] =>
       val body = { _: ClassTeacherCC =>
         {
           classModel
-            .getStatus(id)
+            .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Open) {
                 classModel
-                  .updateStatus(id, SurveyStatus.Closed)
+                  .updateStatus(classId, SurveyStatus.Closed)
                   .map(_ =>
                     Ok(Json.obj("message" -> "success - survey closed"))
                   )
@@ -162,16 +164,16 @@ class SurveyController @Inject() (
   // ruft internen algorithmus auf
   // ändert alle groupbelonging einträge in der students datenbank
   // setzt survey status auf 3 (done)
-  def startCalculating(implicit id: Int, classSecret: String) = Action.async {
-    implicit request: Request[AnyContent] =>
+  def startCalculating(implicit classId: Int, classSecret: String) =
+    Action.async { implicit request: Request[AnyContent] =>
       val body = { _: ClassTeacherCC =>
         {
           classModel
-            .getStatus(id)
+            .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Closed) {
-                startPartitionAlgorithm(id)
-                classModel.updateStatus(id, SurveyStatus.Calculating)
+                startPartitionAlgorithm(classId)
+                classModel.updateStatus(classId, SurveyStatus.Calculating)
                 Future.successful(
                   Ok(Json.obj("message" -> "success - started calculating"))
                 )
@@ -180,9 +182,9 @@ class SurveyController @Inject() (
         }
       }
       auth.withTeacherAuthentication(body)
-  }
+    }
 
-  def startPartitionAlgorithm(classId: Int): Unit= {
+  def startPartitionAlgorithm(classId: Int): Unit = {
     val studentsOfClass: Future[Seq[Int]] =
       studentModel.getAllSelfReportedStudentIDs(classId)
     val relationsOfClass: Future[Seq[(Int, Int)]] =
@@ -259,15 +261,15 @@ class SurveyController @Inject() (
   // GET /getResult/:id/:classSecret
   // checkt ob der status von der relevanten schoolclass korrekt ist und queried die studenttable mit classid == id
   // returns Array[StudentCC]
-  def getResults(implicit id: Int, classSecret: String) = Action.async {
+  def getResults(implicit classId: Int, classSecret: String) = Action.async {
     implicit request: Request[AnyContent] =>
       val body = { _: ClassTeacherCC =>
         classModel
-          .getStatus(id)
+          .getStatus(classId)
           .flatMap(status => {
             if (status == SurveyStatus.Done) {
               val allStudents: Future[Seq[StudentCC]] =
-                studentModel.getStudents(id)
+                studentModel.getStudents(classId)
               allStudents.map(students => {
                 Ok(Json.toJson(students))
               })
