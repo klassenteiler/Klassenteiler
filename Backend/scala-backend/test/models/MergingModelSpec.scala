@@ -147,7 +147,7 @@ class MergingModelSpec
   }
 
   "The MergingModel's findRewireAndDelete" should {
-        "update all relations with the old id as target" in {
+      "update all relations with the hash as target" in {
       // in this test we change all incoming ties to the friendreported student to the second
       // selfreported student
 
@@ -201,5 +201,82 @@ class MergingModelSpec
         awaitInf(studentModel.getStudents(classId))
       allStudents2.length mustBe 2
     }
+  }
+  "The MergingModel's updateStudent" should {
+    "update all relations with the hash as target" in {
+      // in this test we want to update the name of the second selfreported student to the name
+      // of the friendreported student
+
+      val allRelations1: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelations1 mustBe Seq(
+        (selfReportedStudent1Id, friendReportedStudentId)
+      )
+
+
+      // nonexistent friendId
+      val success2: Boolean =
+        awaitInf(mergingModel.updateStudent(classId, 99, selfReportedStudent2.hashedName))
+      success2 mustBe false
+
+      val success3: Boolean =
+        awaitInf(
+          mergingModel.updateStudent(
+            classId,
+            selfReportedStudent2Id,
+            friendReportedStudent.hashedName
+          )
+        )
+      success3 mustBe true
+
+      val allRelations2: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelations2 mustBe Seq(
+        (selfReportedStudent1Id, selfReportedStudent2Id)
+      )
+    }
+    "delete the friendreported student" in {
+      val allStudents1: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents1.length mustBe 3
+
+      val success1: Boolean =
+        awaitInf(
+          mergingModel.updateStudent(
+            classId,
+            selfReportedStudent2Id,
+            friendReportedStudent.hashedName
+          )
+        )
+      success1 mustBe true
+
+      val allStudents2: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents2.length mustBe 2
+    }
+  }
+  "change the (hashed) name of the second selfreported student" in {
+    // this is the scenario where somebody (selfReportedStudent2) had a typo in their own name 
+    // and somebody else nominated the student without the typo (friendReportedStudent)
+    // we now want to update the name of the selfReportedStudent2
+    val studentId: Option[Int] =
+        awaitInf(
+          studentModel.getByHash(selfReportedStudent2.hashedName, classId)
+        )
+      studentId.get mustBe selfReportedStudent2Id
+
+      val success1: Boolean =
+        awaitInf(mergingModel.updateStudent(classId, selfReportedStudent2Id, friendReportedStudent.hashedName))
+      success1 mustBe true
+
+      val studentId2: Option[Int] =
+        awaitInf(
+          studentModel.getByHash(selfReportedStudent2.hashedName, classId)
+        )
+      studentId2.isEmpty mustBe true // we should not be able to find the student by the old hash anymore
+
+      val studentId3: Option[Int] =
+        awaitInf(studentModel.getByHash(friendReportedStudent.hashedName, classId))
+      studentId3.get mustBe selfReportedStudent2Id
   }
 }
