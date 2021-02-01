@@ -73,43 +73,18 @@ class SurveyController @Inject() (
                       val limit: Int =
                         sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
                       if (alters.length <= limit) {
-                        val sourceId: Future[Option[Int]] =
-                          studentModel.createStudent(ego, classId)
-                        sourceId.flatMap(sId =>
-                          sId match {
-                            case Some(sId) => {
-                              // enter each alter and create a relationship with its id
-                              val creationSuccesses: Seq[Future[Boolean]] =
-                                alters.map(alter => {
-                                  val targetStudentId: Future[Option[Int]] =
-                                    studentModel.createStudent(alter, classId)
-                                  targetStudentId.flatMap(tId => {
-                                    val relationship = RelationshipCC(
-                                      classId = classId,
-                                      sourceId = sId,
-                                      targetId = tId.get
-                                    ) 
-                                    relModel.createRelationship(relationship)
-                                  })
-                                })
+                        val creationSuccess: Future[Boolean] =
+                          createStudents(classId, ego, alters)
 
-                              val creationsSucceeded: Future[Seq[Boolean]] =
-                                Future.sequence(creationSuccesses)
-
-                              creationsSucceeded.map(success =>
-                                Created(
-                                  Json.obj("message" -> "success - created")
-                                )
-                              )
-
-                            }
-                            case None => {
-                              Future.successful(
-                                Forbidden(
-                                  "Student with this name already submitted survey"
-                                )
-                              )
-                            }
+                        creationSuccess.map(success =>
+                          if (success) {
+                            Created(
+                              Json.obj("message" -> "success - created")
+                            )
+                          } else {
+                            Forbidden(
+                              "Student with this name already submitted survey"
+                            )
                           }
                         )
                       } else {
@@ -134,6 +109,54 @@ class SurveyController @Inject() (
 
       // check whether classSecret is correct
       auth.withClassAuthentication(body)
+  }
+
+  def createStudents(
+      classId: Int,
+      ego: StudentCC,
+      alters: Seq[StudentCC]
+  ): Future[Boolean] = {
+    val sourceId: Future[Option[Int]] =
+      studentModel.createStudent(ego, classId)
+    sourceId.flatMap(sId =>
+      sId match {
+        case Some(sId) => {
+          // enter each alter and create a relationship with its id
+          val creationSuccesses: Seq[Future[Boolean]] =
+            alters.map(alter => {
+              val targetStudentId: Future[Option[Int]] =
+                studentModel.createStudent(alter, classId)
+              targetStudentId.flatMap(tId => {
+                val relationship = RelationshipCC(
+                  classId = classId,
+                  sourceId = sId,
+                  targetId = tId.get
+                )
+                relModel.createRelationship(relationship)
+              })
+            })
+
+          // make a future out of a list of futures
+          val creationsSuccessesList: Future[Seq[Boolean]] =
+            Future.sequence(creationSuccesses)
+
+
+          // flatten the list of booleans into one boolean
+          val creationsSucceeded: Future[Boolean] =
+            creationsSuccessesList.map((arr: Seq[Boolean]) => {
+              arr.forall(_ == true)
+            })
+
+          creationsSucceeded // return
+
+        }
+        case None => {
+          Future.successful(
+            false // return
+          )
+        }
+      }
+    )
   }
 
   // PUT /closeSurvey/:id/:classSecret
@@ -185,6 +208,7 @@ class SurveyController @Inject() (
     }
 
   def startPartitionAlgorithm(classId: Int): Unit = {
+    // todo: check that all students have selfReported == true
     val studentsOfClass: Future[Seq[Int]] =
       studentModel.getAllSelfReportedStudentIDs(classId)
     val relationsOfClass: Future[Seq[(Int, Int)]] =
