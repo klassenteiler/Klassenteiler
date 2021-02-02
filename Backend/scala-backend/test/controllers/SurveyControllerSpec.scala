@@ -694,6 +694,37 @@ class SurveyControllerSpec
       allStudentsAfter(1).selfReported mustBe true
       allStudentsAfter.length mustBe 2 // we added one, but also deleted one
     }
+    "delete students" in {
+
+      val mergeObject: MergeInterface = MergeInterface(
+        Seq(),
+        Seq(),
+        Seq(student1Id),
+        Seq()
+      )
+
+      val numStudentsBefore: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+
+      numStudentsBefore mustBe 1 // only the baseStudent is in the db
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+
+      val result: Result =
+        awaitInf(controller.closeSurvey(classId, classSecret).apply(request))
+      status(Future.successful(result)) mustBe Ok.header.status
+
+      val numStudentsAfter: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+
+      numStudentsAfter mustBe 0
+    }
 
     "return status 410 if the survey of the class is in wrong status" in {
 

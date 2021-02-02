@@ -241,29 +241,44 @@ class SurveyController @Inject() (
             arr.forall(_ == true)
           })
         //3. delete
-        //4. isAliasOf
-        renameSuccess.flatMap(success => {
-          if (success) {
-            val aliasOfSuccessesList: Seq[Future[Boolean]] =
-              mergingObject.isAliasOf.map(aliasTuple =>
-                mergeModel.findRewireAndDelete(
-                  classId,
-                  aliasTuple._1,
-                  aliasTuple._2
-                )
+        renameSuccess.flatMap(rSuccess => {
+          if (rSuccess) {
+            val deletionSuccessesList: Seq[Future[Boolean]] =
+              mergingObject.studentsToDelete.map(id =>
+                studentModel.removeStudent(id)
               )
-            val aliasOfSuccess: Future[Boolean] = Future
-              .sequence(aliasOfSuccessesList)
+            val deletionSuccess: Future[Boolean] = Future
+              .sequence(deletionSuccessesList)
               .map((arr: Seq[Boolean]) => {
                 arr.forall(_ == true)
               })
 
-            aliasOfSuccess
+            //4. isAliasOf
+            deletionSuccess.flatMap(dSuccess => {
+              if (dSuccess) {
+                val aliasOfSuccessesList: Seq[Future[Boolean]] =
+                  mergingObject.isAliasOf.map(aliasTuple =>
+                    mergeModel.findRewireAndDelete(
+                      classId,
+                      aliasTuple._1,
+                      aliasTuple._2
+                    )
+                  )
+                val aliasOfSuccess: Future[Boolean] = Future
+                  .sequence(aliasOfSuccessesList)
+                  .map((arr: Seq[Boolean]) => {
+                    arr.forall(_ == true)
+                  })
+                aliasOfSuccess // return
+              } else {
+                Future.successful(false)
+              }
+            })
           } else {
             Future.successful(false)
           }
         })
-      }else{
+      } else {
         Future.successful(false)
       }
     })
