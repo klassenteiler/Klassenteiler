@@ -26,9 +26,12 @@ class SurveyController @Inject() (
   implicit val studentReads = Json.reads[StudentCC]
   implicit val studentWrites = Json.writes[StudentCC]
 
+  implicit val mergeInterfaceReads = Json.reads[MergeInterface]
+
   private val classModel = new SchoolClassModel(db)
   private val studentModel = new StudentModel(db)
   private val relModel = new RelationshipModel(db)
+  private val mergeModel = new MergingModel(db)
 
   private val logger: Logger = Logger(this.getClass())
   // POST /submitStudentSurvey/:id/:classSecret
@@ -111,6 +114,7 @@ class SurveyController @Inject() (
       auth.withClassAuthentication(body)
   }
 
+  // helper method used by submitSurvey and closeSurvey
   def createStudents(
       classId: Int,
       ego: StudentCC,
@@ -140,7 +144,6 @@ class SurveyController @Inject() (
           val creationsSuccessesList: Future[Seq[Boolean]] =
             Future.sequence(creationSuccesses)
 
-
           // flatten the list of booleans into one boolean
           val creationsSucceeded: Future[Boolean] =
             creationsSuccessesList.map((arr: Seq[Boolean]) => {
@@ -169,16 +172,102 @@ class SurveyController @Inject() (
             .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Open) {
-                classModel
-                  .updateStatus(classId, SurveyStatus.Closed)
-                  .map(_ =>
-                    Ok(Json.obj("message" -> "success - survey closed"))
-                  )
-              } else Future.successful(Gone("Survey has wrong status"))
+                request.body.asJson match {
+                  case Some(content) => {
+                    val mergingJsonOption: JsResult[MergeInterface] =
+                      Json.fromJson[MergeInterface](content)
+
+                    if (mergingJsonOption.isSuccess) {
+                      val mergingSuccess: Future[Boolean] =
+                        mergeStudents(classId, mergingJsonOption.get)
+
+                      mergingSuccess.flatMap(success => {
+                        classModel
+                          .updateStatus(classId, SurveyStatus.Closed)
+                          .map(_ =>
+                            Ok(
+                              Json.obj("message" -> "success - survey closed")
+                            ) //return
+                          )
+                      })
+                    } else {
+                      Future.successful(
+                        UnsupportedMediaType("Wrong JSON format") //return
+                      )
+                    }
+                  }
+                  case None =>
+                    Future.successful(BadRequest("Empty Body")) //return
+                }
+
+              } else Future.successful(Gone("Survey has wrong status")) //return
             })
         }
       }
       auth.withTeacherAuthentication(body)
+  }
+
+  def mergeStudents(
+      classId: Int,
+      mergingObject: MergeInterface
+  ): Future[Boolean] = {
+
+    //1. create new
+    val creationSuccessList: Seq[Future[Boolean]] =
+      mergingObject.studentsToAdd.map(student =>
+        createStudents(classId, student, Seq())
+      )
+
+    val creationSuccess: Future[Boolean] = Future
+      .sequence(creationSuccessList)
+      .map((arr: Seq[Boolean]) => {
+        arr.forall(_ == true)
+      })
+
+    // 2. rename
+    creationSuccess.flatMap(cSuccess => {
+      if (cSuccess) {
+        val renameSuccessesList: Seq[Future[Boolean]] =
+          mergingObject.studentsToRename.map(student =>
+            mergeModel.updateStudent(
+              classId,
+              student.id.get,
+              student.hashedName
+            )
+          )
+        val renameSuccess: Future[Boolean] = Future
+          .sequence(renameSuccessesList)
+          .map((arr: Seq[Boolean]) => {
+            arr.forall(_ == true)
+          })
+        //3. delete
+        //4. isAliasOf
+        renameSuccess.flatMap(success => {
+          if (success) {
+            val aliasOfSuccessesList: Seq[Future[Boolean]] =
+              mergingObject.isAliasOf.map(aliasTuple =>
+                mergeModel.findRewireAndDelete(
+                  classId,
+                  aliasTuple._1,
+                  aliasTuple._2
+                )
+              )
+            val aliasOfSuccess: Future[Boolean] = Future
+              .sequence(aliasOfSuccessesList)
+              .map((arr: Seq[Boolean]) => {
+                arr.forall(_ == true)
+              })
+
+            aliasOfSuccess
+          } else {
+            Future.successful(false)
+          }
+        })
+      }else{
+        Future.successful(false)
+      }
+    })
+
   }
 
   // PUT

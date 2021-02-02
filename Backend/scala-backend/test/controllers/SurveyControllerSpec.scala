@@ -38,8 +38,12 @@ class SurveyControllerSpec
   val studentModel = new StudentModel(db)
   val relModel = new RelationshipModel(db)
 
+  implicit val studentWrites = Json.writes[StudentCC]
+  implicit val mergeInterfaceWrites = Json.writes[MergeInterface]
+
   var classId: Int = _
   var classSecret: String = _
+  var student1Id: Int = _
 
   val schoolClass: SchoolClassDB = SchoolClassDB(
     None,
@@ -60,6 +64,10 @@ class SurveyControllerSpec
       awaitInf(classModel.createSchoolClass(schoolClass))
     classId = createdSchoolClass.id.get
     classSecret = createdSchoolClass.classSecret
+
+    val student1: StudentCC =
+      StudentCC(None, "baseStudent", "encName", true, None)
+    student1Id = awaitInf(studentModel.createStudent(student1, classId)).get
   }
 
   val json: JsValue = Json.obj(
@@ -83,7 +91,7 @@ class SurveyControllerSpec
     )
   )
 
-    val jsonWithEgoNotSelfReported: JsValue = Json.obj(
+  val jsonWithEgoNotSelfReported: JsValue = Json.obj(
     "me" ->
       Json.obj(
         "encryptedName" -> "asdf",
@@ -133,7 +141,8 @@ class SurveyControllerSpec
         .toString
       val allStudents: Seq[StudentCC] =
         awaitInf(studentModel.getStudents(classId))
-      allStudents.length mustBe 3
+      allStudents.length mustBe 4 // one student is already in database
+      // see beforeEach
 
       val allRelations: Seq[(Int, Int)] =
         awaitInf(relModel.getAllRelationIdsOfClass(classId))
@@ -154,7 +163,8 @@ class SurveyControllerSpec
 
       val allStudents: Seq[StudentCC] =
         awaitInf(studentModel.getStudents(classId))
-      allStudents.length mustBe 3
+      allStudents.length mustBe 4 // one student is already in database
+      // see beforeEach
 
       val allRelations: Seq[(Int, Int)] =
         awaitInf(relModel.getAllRelationIdsOfClass(classId))
@@ -231,11 +241,22 @@ class SurveyControllerSpec
 
   "SurveyController /closeSurvey" should {
     "return status 200, contain message and update status if request is correct" in {
+      // empty body:
+
+      val mergeObject: MergeInterface = MergeInterface(
+        Seq(),
+        Seq(),
+        Seq(),
+        Seq()
+      )
+
       awaitInf(classModel.getStatus(classId)) mustBe SurveyStatus.Open
       val request: FakeRequest[play.api.mvc.AnyContent] =
-        FakeRequest().withHeaders(
-          Headers("teacherSecret" -> schoolClass.teacherSecret)
-        )
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
       val result: Future[Result] =
         controller.closeSurvey(classId, classSecret).apply(request)
       status(result) mustBe Ok.header.status
@@ -246,6 +267,434 @@ class SurveyControllerSpec
         .toString
       awaitInf(classModel.getStatus(classId)) mustBe SurveyStatus.Closed
     }
+    "merge wrongly typed friendreported student with correctly typed selfreported Student [CASE 1]" in {
+      // one selfreported student is already in database
+      // create a misstyped student and a correct student
+      val friendReportedStudent: StudentCC =
+        StudentCC(None, "wrongName", "encName", false, None)
+      val selfReportedStudent: StudentCC =
+        StudentCC(None, "correctName", "encName2", true, None)
+      val friendReportedStudentId: Int =
+        awaitInf(studentModel.createStudent(friendReportedStudent, classId)).get
+      friendReportedStudentId mustBe 2 // second student has id 2
+      val selfReportedStudentId: Int =
+        awaitInf(studentModel.createStudent(selfReportedStudent, classId)).get
+      selfReportedStudentId mustBe 3 // third student has id 3
+
+      // create relation from first student to friendreported student, which will be rewired
+      val relation: RelationshipCC =
+        RelationshipCC(classId, student1Id, friendReportedStudentId)
+      val success: Boolean =
+        awaitInf(relModel.createRelationship(relation))
+      success mustBe true
+
+      val mergeObject: MergeInterface = MergeInterface(
+        Seq( // isAliasOf
+          Tuple2[Int, String](
+            friendReportedStudentId,
+            selfReportedStudent.hashedName // "correctName"
+          )
+        ),
+        Seq(), // studentsToAdd
+        Seq(), // studentsToDelete
+        Seq() // studentsToRename
+      )
+      val numOfStudentsBefore: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+      numOfStudentsBefore mustBe 3
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+      val result: Result =
+        awaitInf(controller.closeSurvey(classId, classSecret).apply(request))
+      status(Future.successful(result)) mustBe Ok.header.status
+
+      val numOfStudentsAfter: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+      numOfStudentsAfter mustBe 2 // we deleted the friendreported student
+
+      val allRelations: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelations mustBe Seq(
+        (student1Id, selfReportedStudentId)
+      )
+
+    }
+    "merge a correctly and wrongly typed friendreported student with wrongly typed selfreported Student [CASE 2/B]" in {
+      // one selfreported student is already in database
+      // create a misstyped student and a correct student
+      val friendRepCorrect: StudentCC =
+        StudentCC(None, "correctName", "encName", false, None)
+      val friendRepWrong: StudentCC =
+        StudentCC(None, "wrongName", "encName2", false, None)
+      val selfReportedStudent: StudentCC =
+        StudentCC(None, "anotherWrongName", "encName3", true, None)
+      val friendRepCorrectId: Int =
+        awaitInf(
+          studentModel.createStudent(friendRepCorrect, classId)
+        ).get
+      friendRepCorrectId mustBe 2
+      val friendRepWrongId: Int =
+        awaitInf(
+          studentModel.createStudent(friendRepWrong, classId)
+        ).get
+      friendRepWrongId mustBe 3
+      val selfReportedStudentId: Int =
+        awaitInf(studentModel.createStudent(selfReportedStudent, classId)).get
+      selfReportedStudentId mustBe 4
+
+      // for brevity reasons I am going to use student 1 to create two test relations. this is of course unrealistic,
+      //  because it would mean the same student send a relation to the same person twice, once with incorrect spelling
+
+      // create relation from first student to friendreported student, which will be rewired
+      val relation1: RelationshipCC =
+        RelationshipCC(classId, student1Id, friendRepCorrectId)
+      val success1: Boolean =
+        awaitInf(relModel.createRelationship(relation1))
+      success1 mustBe true
+      // create relation from first student to second friendreported student, which will be rewired
+      val relation2: RelationshipCC =
+        RelationshipCC(classId, student1Id, friendRepWrongId)
+      val success2: Boolean =
+        awaitInf(relModel.createRelationship(relation2))
+      success2 mustBe true
+
+      val mergeObject: MergeInterface = MergeInterface(
+        Seq( // isAliasOf
+          Tuple2[Int, String](
+            friendRepWrongId,
+            friendRepCorrect.hashedName // "correctName"
+          )
+        ),
+        Seq(),
+        Seq(),
+        Seq( // studentsToRename
+          StudentCC(
+            Some(selfReportedStudentId),
+            friendRepCorrect.hashedName, //"correctName"
+            "encName3",
+            true,
+            None
+          )
+        )
+      )
+
+      // sanity checks to see whether database actually changes
+      val studentIdBefore: Int = awaitInf(
+        studentModel.getByHash(friendRepCorrect.hashedName, classId)
+      ).get
+      // if we look for the correct hash in the database, it should lead to the friendreported Student
+      studentIdBefore mustBe friendRepCorrectId
+
+      val allRelationsBefore: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelationsBefore mustBe Seq(
+        (
+          student1Id,
+          friendRepCorrectId
+        ),
+        (
+          student1Id,
+          friendRepWrongId
+        )
+      )
+
+      val numOfStudentsBefore: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+      numOfStudentsBefore mustBe 4
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+      val result: Result =
+        awaitInf(controller.closeSurvey(classId, classSecret).apply(request))
+      status(Future.successful(result)) mustBe Ok.header.status
+
+      val updatedStudentId: Int = awaitInf(
+        studentModel.getByHash(friendRepCorrect.hashedName, classId)
+      ).get
+      // if we look for the correct hash in the database, it should now lead to the selfreported student's id
+      updatedStudentId mustBe selfReportedStudentId
+
+      val allRelationsAfter: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelationsAfter mustBe Seq(
+        (
+          student1Id,
+          selfReportedStudentId
+        ),
+        (
+          student1Id,
+          selfReportedStudentId
+        ) // its twice the same because we used the same student to create both relations
+      )
+
+      val numOfStudentsAfter: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+      numOfStudentsAfter mustBe 2 // because it was 4 and we deleted two
+
+    }
+    "add selfreported student if a student didnt enter their own info [CASE 3]" in {
+      val friendRepCorrectName: StudentCC =
+        StudentCC(None, "correctName", "encName", false, None)
+
+      val friendRepCorrectNameId: Int =
+        awaitInf(
+          studentModel.createStudent(friendRepCorrectName, classId)
+        ).get
+      friendRepCorrectNameId mustBe 2
+
+      val mergeObject: MergeInterface = MergeInterface(
+        Seq(),
+        Seq( //studentsToAdd
+          StudentCC(
+            Some(friendRepCorrectNameId),
+            friendRepCorrectName.hashedName, //"correctName"
+            "encName",
+            true,
+            None
+          )
+        ),
+        Seq(),
+        Seq()
+      )
+
+      val allStudentsBefore: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+
+      allStudentsBefore(1).id.get mustBe friendRepCorrectNameId
+      allStudentsBefore(1).selfReported mustBe false
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+
+      val result: Result =
+        awaitInf(controller.closeSurvey(classId, classSecret).apply(request))
+      status(Future.successful(result)) mustBe Ok.header.status
+
+      val allStudentsAfter: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+
+      // we added a new selfreported student with the same hash, which automatically sets selfReported to true
+      allStudentsAfter(1).id.get mustBe friendRepCorrectNameId
+      allStudentsAfter(1).selfReported mustBe true
+    }
+    "add selfreported student if nobody entered their info [CASE 4]" in {
+      val mergeObject: MergeInterface = MergeInterface(
+        Seq(),
+        Seq( //studentsToAdd
+          StudentCC(
+            None,
+            "aName",
+            "encName",
+            true,
+            None
+          )
+        ),
+        Seq(),
+        Seq()
+      )
+
+      val numStudentsBefore: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+
+      numStudentsBefore mustBe 1 // only the baseStudent is in the db
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+
+      val result: Result =
+        awaitInf(controller.closeSurvey(classId, classSecret).apply(request))
+      status(Future.successful(result)) mustBe Ok.header.status
+
+      val numStudentsAfter: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+
+      numStudentsAfter mustBe 2
+    }
+    "add selfreported student and merge a correctly and a wrongly typed friendreported student into it [CASE A]" in {
+      val friendRepCorrect: StudentCC =
+        StudentCC(None, "correctName", "encName", false, None)
+      val friendRepWrong: StudentCC =
+        StudentCC(None, "wrongName", "encName2", false, None)
+      val friendRepCorrectId: Int =
+        awaitInf(
+          studentModel.createStudent(friendRepCorrect, classId)
+        ).get
+      friendRepCorrectId mustBe 2
+      val friendRepWrongId: Int =
+        awaitInf(
+          studentModel.createStudent(friendRepWrong, classId)
+        ).get
+      friendRepWrongId mustBe 3
+
+      // for brevity reasons I am going to use student 1 to create two test relations. this is of course unrealistic,
+      //  because it would mean the same student send a relation to the same person twice, once with incorrect spelling
+
+      // create relation from first student to friendreported student, which will be rewired
+      val relation1: RelationshipCC =
+        RelationshipCC(classId, student1Id, friendRepCorrectId)
+      val success1: Boolean =
+        awaitInf(relModel.createRelationship(relation1))
+      success1 mustBe true
+      // create relation from first student to second friendreported student, which will be rewired
+      val relation2: RelationshipCC =
+        RelationshipCC(classId, student1Id, friendRepWrongId)
+      val success2: Boolean =
+        awaitInf(relModel.createRelationship(relation2))
+      success2 mustBe true
+
+      val mergeObject: MergeInterface = MergeInterface(
+        Seq( // isAliasOf
+          Tuple2[Int, String](
+            friendRepWrongId,
+            friendRepCorrect.hashedName // "correctName"
+          )
+        ),
+        Seq( //studentsToAdd
+          StudentCC(
+            Some(friendRepCorrectId),
+            friendRepCorrect.hashedName, //"correctName"
+            "encName",
+            true,
+            None
+          )
+        ),
+        Seq(),
+        Seq()
+      )
+
+      val numStudentsBefore: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+      numStudentsBefore mustBe 3 // base student + two friendreported
+
+      val allRelationsBefore: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelationsBefore mustBe Seq(
+        (
+          student1Id,
+          friendRepCorrectId
+        ),
+        (
+          student1Id,
+          friendRepWrongId
+        )
+      )
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+
+      val result: Result =
+        awaitInf(controller.closeSurvey(classId, classSecret).apply(request))
+      status(Future.successful(result)) mustBe Ok.header.status
+
+      val numStudentsAfter: Int =
+        awaitInf(studentModel.getStudents(classId)).length
+      numStudentsAfter mustBe 2 // we delete one of the friendreported and set the other to selfReported = true
+
+      val allStudents: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents(1).selfReported mustBe true
+
+      val allRelationsAfter: Seq[(Int, Int)] =
+        awaitInf(relModel.getAllRelationIdsOfClass(classId))
+      allRelationsAfter mustBe Seq(
+        (
+          student1Id,
+          friendRepCorrectId
+        ),
+        (
+          student1Id,
+          friendRepCorrectId
+        ) // its twice the same because we used the same student to create both relations
+      )
+    }
+    "add selfreported student and merge a wrongly typed friendreported student into it [CASE C]" in {
+      val friendRepWrong: StudentCC =
+        StudentCC(None, "wrongName", "encName2", false, None)
+      val friendRepWrongId: Int =
+        awaitInf(
+          studentModel.createStudent(friendRepWrong, classId)
+        ).get
+      friendRepWrongId mustBe 2
+
+      val relation: RelationshipCC =
+        RelationshipCC(classId, student1Id, friendRepWrongId)
+      val success: Boolean =
+        awaitInf(relModel.createRelationship(relation))
+      success mustBe true
+
+      val mergeObject: MergeInterface = MergeInterface(
+        Seq( // isAliasOf
+          Tuple2[Int, String](
+            friendRepWrongId,
+            "correctName"
+          )
+        ),
+        Seq( //studentsToAdd
+          StudentCC(
+            None,
+            "correctName",
+            "encName",
+            true,
+            None
+          )
+        ),
+        Seq(),
+        Seq()
+      )
+
+      val allStudentsBefore: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+
+      allStudentsBefore(1).id.get mustBe friendRepWrongId
+      allStudentsBefore(1).hashedName mustBe friendRepWrong.hashedName
+      allStudentsBefore(1).selfReported mustBe false
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+
+      val result: Result =
+        awaitInf(controller.closeSurvey(classId, classSecret).apply(request))
+      status(Future.successful(result)) mustBe Ok.header.status
+
+      val allStudentsAfter: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+
+      allStudentsAfter(1).hashedName mustBe "correctName"
+      allStudentsAfter(1).selfReported mustBe true
+      allStudentsAfter.length mustBe 2 // we added one, but also deleted one
+    }
+
     "return status 410 if the survey of the class is in wrong status" in {
 
       val request: FakeRequest[play.api.mvc.AnyContent] =
@@ -314,7 +763,9 @@ class SurveyControllerSpec
         controller.startCalculating(classId, classSecret).apply(request)
       status(result) mustBe Ok.header.status
       val surveyStatus: Int = awaitInf(classModel.getStatus(classId))
-      surveyStatus must (equal(SurveyStatus.Calculating) or equal(SurveyStatus.Done))
+      surveyStatus must (equal(SurveyStatus.Calculating) or equal(
+        SurveyStatus.Done
+      ))
       contentAsString(result) mustBe Json
         .obj(
           "message" -> "success - started calculating"
@@ -388,7 +839,6 @@ class SurveyControllerSpec
       val result: Future[Result] =
         controller.getResults(classId, classSecret).apply(request)
       status(result) mustBe Ok.header.status
-      println(contentAsString(result))
     }
     "return status 409 if the survey of the class is in wrong status (Open,Closed,Calculating)" in {
       awaitInf(classModel.getStatus(classId)) mustBe SurveyStatus.Open
