@@ -39,7 +39,10 @@ class RelationshipModel(db: Database)(implicit ec: ExecutionContext) {
         Future.successful(false)
       }else{
         val affectedRows: Future[Int] = db.run(Relationship.filter(_.targetid === oldId).map(row => (row.targetid)).update(Some(newId)))
-        affectedRows.map(rows => rows > 0)
+        affectedRows.map(rows => rows > 0) 
+        // this method returns false if no relations are rewired.
+        // since this method is only called on friendreported students for oldId, they always
+        // should have at least one incoming tie 
 
       }
     })
