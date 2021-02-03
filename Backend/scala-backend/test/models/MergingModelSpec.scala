@@ -26,10 +26,10 @@ class MergingModelSpec
     StudentCC(None, "selfreport1", "encName", true, None)
 
   val selfReportedStudent2: StudentCC =
-    StudentCC(None, "selfreport2", "encName", true, None)
+    StudentCC(None, "selfreport2", "encName2", true, None)
 
   val friendReportedStudent: StudentCC =
-    StudentCC(None, "friendReportedStudent", "encName", false, None)
+    StudentCC(None, "friendReportedStudent", "encName3", false, None)
 
   override def beforeEach(): Unit = {
     this.clearDatabase();
@@ -68,7 +68,7 @@ class MergingModelSpec
   }
 
   "The MergingModel's changeName " should {
-    "update the hashedName of a selfreported student" in {
+    "update the hashedName and encryptedName of a selfreported student" in {
       val studentId: Option[Int] =
         awaitInf(
           studentModel.getByHash(selfReportedStudent1.hashedName, classId)
@@ -76,7 +76,9 @@ class MergingModelSpec
       studentId.get mustBe selfReportedStudent1Id
 
       val success1: Boolean =
-        awaitInf(mergingModel.changeName(selfReportedStudent1Id, "test"))
+        awaitInf(
+          mergingModel.changeName(selfReportedStudent1Id, "test", "test2")
+        )
       success1 mustBe true
 
       val studentId2: Option[Int] =
@@ -88,6 +90,11 @@ class MergingModelSpec
       val studentId3: Option[Int] =
         awaitInf(studentModel.getByHash("test", classId))
       studentId3.get mustBe selfReportedStudent1Id
+
+      val changedStudent: StudentCC =
+        awaitInf(studentModel.getStudents(classId)).head
+      changedStudent.hashedName mustBe "test"
+      changedStudent.encryptedName mustBe "test2"
     }
   }
 
@@ -147,7 +154,7 @@ class MergingModelSpec
   }
 
   "The MergingModel's findRewireAndDelete" should {
-      "update all relations with the hash as target" in {
+    "update all relations with the hash as target" in {
       // in this test we change all incoming ties to the friendreported student to the second
       // selfreported student
 
@@ -159,11 +166,23 @@ class MergingModelSpec
 
       // nonexistent selfReportedHash
       val success1: Boolean =
-        awaitInf(mergingModel.findRewireAndDelete(classId, friendReportedStudentId, "fail"))
+        awaitInf(
+          mergingModel.findRewireAndDelete(
+            classId,
+            friendReportedStudentId,
+            "fail"
+          )
+        )
       success1 mustBe false
       // nonexistent friendId
       val success2: Boolean =
-        awaitInf(mergingModel.findRewireAndDelete(classId, 99, selfReportedStudent2.hashedName))
+        awaitInf(
+          mergingModel.findRewireAndDelete(
+            classId,
+            99,
+            selfReportedStudent2.hashedName
+          )
+        )
       success2 mustBe false
 
       val success3: Boolean =
@@ -213,10 +232,16 @@ class MergingModelSpec
         (selfReportedStudent1Id, friendReportedStudentId)
       )
 
-
       // nonexistent friendId
       val success2: Boolean =
-        awaitInf(mergingModel.updateStudent(classId, 99, selfReportedStudent2.hashedName))
+        awaitInf(
+          mergingModel.updateStudent(
+            classId,
+            99,
+            selfReportedStudent2.hashedName,
+            selfReportedStudent2.encryptedName
+          )
+        )
       success2 mustBe false
 
       val success3: Boolean =
@@ -224,7 +249,8 @@ class MergingModelSpec
           mergingModel.updateStudent(
             classId,
             selfReportedStudent2Id,
-            friendReportedStudent.hashedName
+            friendReportedStudent.hashedName,
+            friendReportedStudent.encryptedName
           )
         )
       success3 mustBe true
@@ -245,7 +271,8 @@ class MergingModelSpec
           mergingModel.updateStudent(
             classId,
             selfReportedStudent2Id,
-            friendReportedStudent.hashedName
+            friendReportedStudent.hashedName,
+            friendReportedStudent.encryptedName
           )
         )
       success1 mustBe true
@@ -255,28 +282,47 @@ class MergingModelSpec
       allStudents2.length mustBe 2
     }
   }
-  "change the (hashed) name of the second selfreported student" in {
-    // this is the scenario where somebody (selfReportedStudent2) had a typo in their own name 
+  "change the (hashed and encrypted) name of the second selfreported student" in {
+    // this is the scenario where somebody (selfReportedStudent2) had a typo in their own name
     // and somebody else nominated the student without the typo (friendReportedStudent)
     // we now want to update the name of the selfReportedStudent2
     val studentId: Option[Int] =
-        awaitInf(
-          studentModel.getByHash(selfReportedStudent2.hashedName, classId)
+      awaitInf(
+        studentModel.getByHash(selfReportedStudent2.hashedName, classId)
+      )
+    studentId.get mustBe selfReportedStudent2Id
+
+    val studentToUpdate: StudentCC =
+      awaitInf(studentModel.getStudents(classId))(1)
+    studentToUpdate.hashedName mustBe selfReportedStudent2.hashedName
+    studentToUpdate.encryptedName mustBe selfReportedStudent2.encryptedName
+
+    val success1: Boolean =
+      awaitInf(
+        mergingModel.updateStudent(
+          classId,
+          selfReportedStudent2Id,
+          friendReportedStudent.hashedName,
+          friendReportedStudent.encryptedName
         )
-      studentId.get mustBe selfReportedStudent2Id
+      )
+    success1 mustBe true
 
-      val success1: Boolean =
-        awaitInf(mergingModel.updateStudent(classId, selfReportedStudent2Id, friendReportedStudent.hashedName))
-      success1 mustBe true
+    val studentId2: Option[Int] =
+      awaitInf(
+        studentModel.getByHash(selfReportedStudent2.hashedName, classId)
+      )
+    studentId2.isEmpty mustBe true // we should not be able to find the student by the old hash anymore
 
-      val studentId2: Option[Int] =
-        awaitInf(
-          studentModel.getByHash(selfReportedStudent2.hashedName, classId)
-        )
-      studentId2.isEmpty mustBe true // we should not be able to find the student by the old hash anymore
+    val studentId3: Option[Int] =
+      awaitInf(
+        studentModel.getByHash(friendReportedStudent.hashedName, classId)
+      )
+    studentId3.get mustBe selfReportedStudent2Id
 
-      val studentId3: Option[Int] =
-        awaitInf(studentModel.getByHash(friendReportedStudent.hashedName, classId))
-      studentId3.get mustBe selfReportedStudent2Id
+    val updatedStudent: StudentCC =
+      awaitInf(studentModel.getStudents(classId))(1)
+    updatedStudent.hashedName mustBe friendReportedStudent.hashedName
+    updatedStudent.encryptedName mustBe friendReportedStudent.encryptedName
   }
 }

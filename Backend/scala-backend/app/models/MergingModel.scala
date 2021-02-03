@@ -14,13 +14,14 @@ class MergingModel(db: Database)(implicit ec: ExecutionContext) {
   def updateStudent(
       classId: Int,
       studentId: Int,
-      hash: String
+      hashedName: String,
+      encryptedName: String
   ): Future[Boolean] = {
 
     // it is possible that there exists a friendreported name with the target hash
     // we first look for it in the database
     val studentWithCorrectNameId: Future[Option[Int]] =
-      studentModel.getByHash(hash, classId)
+      studentModel.getByHash(hashedName, classId)
     studentWithCorrectNameId.flatMap(frID => {
       var success: Future[Boolean] = Future.successful(true)
       if (!frID.isEmpty) {
@@ -30,7 +31,7 @@ class MergingModel(db: Database)(implicit ec: ExecutionContext) {
       }
       success.flatMap(succs => {
         if (succs) {
-          changeName(studentId, hash) // return
+          changeName(studentId, hashedName, encryptedName) // return
         }else{
             Future.successful(false) // return
         }
@@ -74,12 +75,12 @@ class MergingModel(db: Database)(implicit ec: ExecutionContext) {
   // updates the hash of a student. This is purposefully not part of studentmodel, because it should not be used
   // outside of this mergin process, as certain checks need to be run before updating the name to guarantee uniqueness
   // todo: I would like to set this to private but then the test dont have access anymore
-  def changeName(studentId: Int, newHashedName: String): Future[Boolean] = {
+  def changeName(studentId: Int, newHashedName: String, newEncryptedName: String): Future[Boolean] = {
     val affectedRows: Future[Int] = db.run(
       Student
         .filter(_.id === studentId)
-        .map(row => (row.hashedname))
-        .update(newHashedName)
+        .map(row => (row.hashedname, row.encryptedname))
+        .update(newHashedName, newEncryptedName)
     )
     affectedRows.map(rows => rows == 1)
   }

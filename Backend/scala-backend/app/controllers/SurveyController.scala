@@ -232,7 +232,8 @@ class SurveyController @Inject() (
             mergeModel.updateStudent(
               classId,
               student.id.get,
-              student.hashedName
+              student.hashedName,
+              student.encryptedName
             )
           )
         val renameSuccess: Future[Boolean] = Future
