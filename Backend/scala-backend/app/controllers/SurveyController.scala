@@ -26,7 +26,7 @@ class SurveyController @Inject() (
   implicit val studentReads = Json.reads[StudentCC]
   implicit val studentWrites = Json.writes[StudentCC]
 
-  implicit val mergeInterfaceReads = Json.reads[MergeInterface]
+  implicit val MergeCommandsCCReads = Json.reads[MergeCommandsCC]
 
   private val classModel = new SchoolClassModel(db)
   private val studentModel = new StudentModel(db)
@@ -174,8 +174,8 @@ class SurveyController @Inject() (
               if (status == SurveyStatus.Open) {
                 request.body.asJson match {
                   case Some(content) => {
-                    val mergingJsonOption: JsResult[MergeInterface] =
-                      Json.fromJson[MergeInterface](content)
+                    val mergingJsonOption: JsResult[MergeCommandsCC] =
+                      Json.fromJson[MergeCommandsCC](content)
 
                     if (mergingJsonOption.isSuccess) {
                       val mergingSuccess: Future[Boolean] =
@@ -209,7 +209,7 @@ class SurveyController @Inject() (
 
   def mergeStudents(
       classId: Int,
-      mergingObject: MergeInterface
+      mergingObject: MergeCommandsCC
   ): Future[Boolean] = {
 
     //1. create new

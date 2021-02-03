@@ -39,7 +39,7 @@ class SurveyControllerSpec
   val relModel = new RelationshipModel(db)
 
   implicit val studentWrites = Json.writes[StudentCC]
-  implicit val mergeInterfaceWrites = Json.writes[MergeInterface]
+  implicit val MergeCommandsCCWrites = Json.writes[MergeCommandsCC]
 
   var classId: Int = _
   var classSecret: String = _
@@ -243,7 +243,7 @@ class SurveyControllerSpec
     "return status 200, contain message and update status if request is correct" in {
       // empty body:
 
-      val mergeObject: MergeInterface = MergeInterface(
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
         Seq(),
         Seq(),
         Seq(),
@@ -288,7 +288,7 @@ class SurveyControllerSpec
         awaitInf(relModel.createRelationship(relation))
       success mustBe true
 
-      val mergeObject: MergeInterface = MergeInterface(
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
         Seq( // isAliasOf
           Tuple2[Int, String](
             friendReportedStudentId,
@@ -364,7 +364,7 @@ class SurveyControllerSpec
         awaitInf(relModel.createRelationship(relation2))
       success2 mustBe true
 
-      val mergeObject: MergeInterface = MergeInterface(
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
         Seq( // isAliasOf
           Tuple2[Int, String](
             friendRepWrongId,
@@ -453,7 +453,7 @@ class SurveyControllerSpec
         ).get
       friendRepCorrectNameId mustBe 2
 
-      val mergeObject: MergeInterface = MergeInterface(
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
         Seq(),
         Seq( //studentsToAdd
           StudentCC(
@@ -494,7 +494,7 @@ class SurveyControllerSpec
       allStudentsAfter(1).selfReported mustBe true
     }
     "add selfreported student if nobody entered their info [CASE 4]" in {
-      val mergeObject: MergeInterface = MergeInterface(
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
         Seq(),
         Seq( //studentsToAdd
           StudentCC(
@@ -563,7 +563,7 @@ class SurveyControllerSpec
         awaitInf(relModel.createRelationship(relation2))
       success2 mustBe true
 
-      val mergeObject: MergeInterface = MergeInterface(
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
         Seq( // isAliasOf
           Tuple2[Int, String](
             friendRepWrongId,
@@ -648,7 +648,7 @@ class SurveyControllerSpec
         awaitInf(relModel.createRelationship(relation))
       success mustBe true
 
-      val mergeObject: MergeInterface = MergeInterface(
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
         Seq( // isAliasOf
           Tuple2[Int, String](
             friendRepWrongId,
@@ -696,7 +696,7 @@ class SurveyControllerSpec
     }
     "delete students" in {
 
-      val mergeObject: MergeInterface = MergeInterface(
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
         Seq(),
         Seq(),
         Seq(student1Id),
