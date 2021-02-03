@@ -42,14 +42,14 @@ class MergingModel(db: Database)(implicit ec: ExecutionContext) {
     })
   }
 
-  // rewires all incoming ties that have friendId as target to selfId and deletes student with friendId
-  def rewireAndDelete(friendId: Int, selfId: Int): Future[Boolean] = {
+  // rewires all incoming ties that have friendRepStudentId as target to selfId and deletes student with friendRepStudentId
+  def rewireAndDelete(friendRepStudentId: Int, selfRepStudentId: Int): Future[Boolean] = {
     // old,     new
     val success: Future[Boolean] =
-      relationModel.rewireRelations(friendId, selfId)
+      relationModel.rewireRelations(friendRepStudentId, selfRepStudentId)
     success.flatMap(succs => {
       if (succs) {
-        studentModel.removeStudent(friendId)
+        studentModel.removeStudent(friendRepStudentId)
       } else {
         Future.successful(false)
       }
@@ -61,13 +61,13 @@ class MergingModel(db: Database)(implicit ec: ExecutionContext) {
   // In theses cases we first find the id of the student with the corresponding name and then call rewireAndDelete
   def findRewireAndDelete(
       classId: Int,
-      friendId: Int,
-      selfHash: String
+      friendRepStudentId: Int,
+      selfRepStudentHash: String
   ): Future[Boolean] = {
-    val selfId: Future[Option[Int]] = studentModel.getByHash(selfHash, classId)
+    val selfId: Future[Option[Int]] = studentModel.getByHash(selfRepStudentHash, classId)
     selfId.flatMap(id => {
       if (!id.isEmpty) {
-        rewireAndDelete(friendId, id.get)
+        rewireAndDelete(friendRepStudentId, id.get)
       } else {
         Future.successful(false)
       }

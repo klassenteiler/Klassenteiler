@@ -113,8 +113,8 @@ class MergingModelSpec
       val success1: Boolean =
         awaitInf(
           mergingModel.rewireAndDelete(
-            friendId = friendReportedStudentId,
-            selfId = 99
+            friendRepStudentId = friendReportedStudentId,
+            selfRepStudentId = 99
           )
         )
       success1 mustBe false
@@ -122,8 +122,8 @@ class MergingModelSpec
       val success2: Boolean =
         awaitInf(
           mergingModel.rewireAndDelete(
-            friendId = 99,
-            selfId = selfReportedStudent2Id
+            friendRepStudentId = 99,
+            selfRepStudentId = selfReportedStudent2Id
           )
         )
       success2 mustBe false
@@ -131,8 +131,8 @@ class MergingModelSpec
       val success3: Boolean =
         awaitInf(
           mergingModel.rewireAndDelete(
-            friendId = friendReportedStudentId,
-            selfId = selfReportedStudent2Id
+            friendRepStudentId = friendReportedStudentId,
+            selfRepStudentId = selfReportedStudent2Id
           )
         )
       success3 mustBe true
@@ -151,8 +151,8 @@ class MergingModelSpec
       val success1: Boolean =
         awaitInf(
           mergingModel.rewireAndDelete(
-            friendId = friendReportedStudentId,
-            selfId = selfReportedStudent2Id
+            friendRepStudentId = friendReportedStudentId,
+            selfRepStudentId = selfReportedStudent2Id
           )
         )
       success1 mustBe true
@@ -179,8 +179,8 @@ class MergingModelSpec
         awaitInf(
           mergingModel.findRewireAndDelete(
             classId,
-            friendId = friendReportedStudentId,
-            selfHash = "fail"
+            friendRepStudentId = friendReportedStudentId,
+            selfRepStudentHash = "fail"
           )
         )
       success1 mustBe false
@@ -189,8 +189,8 @@ class MergingModelSpec
         awaitInf(
           mergingModel.findRewireAndDelete(
             classId,
-            friendId = 99,
-            selfHash = selfReportedStudent2.hashedName
+            friendRepStudentId = 99,
+            selfRepStudentHash = selfReportedStudent2.hashedName
           )
         )
       success2 mustBe false
@@ -199,8 +199,8 @@ class MergingModelSpec
         awaitInf(
           mergingModel.findRewireAndDelete(
             classId,
-            friendId = friendReportedStudentId,
-            selfHash = selfReportedStudent2.hashedName
+            friendRepStudentId = friendReportedStudentId,
+            selfRepStudentHash = selfReportedStudent2.hashedName
           )
         )
       success3 mustBe true
@@ -220,8 +220,8 @@ class MergingModelSpec
         awaitInf(
           mergingModel.findRewireAndDelete(
             classId,
-            friendId = friendReportedStudentId,
-            selfHash = selfReportedStudent2.hashedName
+            friendRepStudentId = friendReportedStudentId,
+            selfRepStudentHash = selfReportedStudent2.hashedName
           )
         )
       success1 mustBe true
