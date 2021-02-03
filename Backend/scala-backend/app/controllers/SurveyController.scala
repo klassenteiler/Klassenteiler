@@ -172,33 +172,14 @@ class SurveyController @Inject() (
             .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Open) {
-                request.body.asJson match {
-                  case Some(content) => {
-                    val mergingJsonOption: JsResult[MergeCommandsCC] =
-                      Json.fromJson[MergeCommandsCC](content)
 
-                    if (mergingJsonOption.isSuccess) {
-                      val mergingSuccess: Future[Boolean] =
-                        mergeStudents(classId, mergingJsonOption.get)
-
-                      mergingSuccess.flatMap(success => {
-                        classModel
-                          .updateStatus(classId, SurveyStatus.Closed)
-                          .map(_ =>
-                            Ok(
-                              Json.obj("message" -> "success - survey closed")
-                            ) //return
-                          )
-                      })
-                    } else {
-                      Future.successful(
-                        UnsupportedMediaType("Wrong JSON format") //return
-                      )
-                    }
-                  }
-                  case None =>
-                    Future.successful(BadRequest("Empty Body")) //return
-                }
+                classModel
+                  .updateStatus(classId, SurveyStatus.Closed)
+                  .map(_ =>
+                    Ok(
+                      Json.obj("message" -> "success - survey closed")
+                    ) //return
+                  )
 
               } else Future.successful(Gone("Survey has wrong status")) //return
             })
@@ -303,11 +284,39 @@ class SurveyController @Inject() (
             .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Closed) {
-                startPartitionAlgorithm(classId)
-                classModel.updateStatus(classId, SurveyStatus.Calculating)
-                Future.successful(
-                  Ok(Json.obj("message" -> "success - started calculating"))
-                )
+
+                request.body.asJson match {
+                  case Some(content) => {
+                    val mergingJsonOption: JsResult[MergeCommandsCC] =
+                      Json.fromJson[MergeCommandsCC](content)
+
+                    if (mergingJsonOption.isSuccess) {
+                      val mergingSuccess: Future[Boolean] =
+                        mergeStudents(classId, mergingJsonOption.get)
+
+                      mergingSuccess.flatMap(success => {
+                        startPartitionAlgorithm(classId)
+                        classModel
+                          .updateStatus(classId, SurveyStatus.Calculating)
+                        Future.successful(
+                          Ok(
+                            Json
+                              .obj("message" -> "success - started calculating")
+                          )
+                        )
+
+                      })
+
+                    } else {
+                      Future.successful(
+                        UnsupportedMediaType("Wrong JSON format") //return
+                      )
+                    }
+                  }
+                  case None =>
+                    Future.successful(BadRequest("Empty Body")) //return
+                }
+
               } else Future.successful(Gone("Survey has wrong status"))
             })
         }
