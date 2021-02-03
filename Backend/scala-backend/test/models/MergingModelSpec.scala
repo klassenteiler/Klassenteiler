@@ -111,18 +111,28 @@ class MergingModelSpec
 
       // nonexistent selfReportedid
       val success1: Boolean =
-        awaitInf(mergingModel.rewireAndDelete(friendReportedStudentId, 99))
+        awaitInf(
+          mergingModel.rewireAndDelete(
+            friendId = friendReportedStudentId,
+            selfId = 99
+          )
+        )
       success1 mustBe false
       // nonexistent friendId
       val success2: Boolean =
-        awaitInf(mergingModel.rewireAndDelete(99, selfReportedStudent2Id))
+        awaitInf(
+          mergingModel.rewireAndDelete(
+            friendId = 99,
+            selfId = selfReportedStudent2Id
+          )
+        )
       success2 mustBe false
 
       val success3: Boolean =
         awaitInf(
           mergingModel.rewireAndDelete(
-            friendReportedStudentId,
-            selfReportedStudent2Id
+            friendId = friendReportedStudentId,
+            selfId = selfReportedStudent2Id
           )
         )
       success3 mustBe true
@@ -141,8 +151,8 @@ class MergingModelSpec
       val success1: Boolean =
         awaitInf(
           mergingModel.rewireAndDelete(
-            friendReportedStudentId,
-            selfReportedStudent2Id
+            friendId = friendReportedStudentId,
+            selfId = selfReportedStudent2Id
           )
         )
       success1 mustBe true
@@ -169,8 +179,8 @@ class MergingModelSpec
         awaitInf(
           mergingModel.findRewireAndDelete(
             classId,
-            friendReportedStudentId,
-            "fail"
+            friendId = friendReportedStudentId,
+            selfHash = "fail"
           )
         )
       success1 mustBe false
@@ -179,8 +189,8 @@ class MergingModelSpec
         awaitInf(
           mergingModel.findRewireAndDelete(
             classId,
-            99,
-            selfReportedStudent2.hashedName
+            friendId = 99,
+            selfHash = selfReportedStudent2.hashedName
           )
         )
       success2 mustBe false
@@ -189,8 +199,8 @@ class MergingModelSpec
         awaitInf(
           mergingModel.findRewireAndDelete(
             classId,
-            friendReportedStudentId,
-            selfReportedStudent2.hashedName
+            friendId = friendReportedStudentId,
+            selfHash = selfReportedStudent2.hashedName
           )
         )
       success3 mustBe true
@@ -210,8 +220,8 @@ class MergingModelSpec
         awaitInf(
           mergingModel.findRewireAndDelete(
             classId,
-            friendReportedStudentId,
-            selfReportedStudent2.hashedName
+            friendId = friendReportedStudentId,
+            selfHash = selfReportedStudent2.hashedName
           )
         )
       success1 mustBe true
@@ -237,9 +247,9 @@ class MergingModelSpec
         awaitInf(
           mergingModel.renameAndMerge(
             classId,
-            99,
-            selfReportedStudent2.hashedName,
-            selfReportedStudent2.encryptedName
+            studentId = 99,
+            hashedName = selfReportedStudent2.hashedName,
+            encryptedName = selfReportedStudent2.encryptedName
           )
         )
       success2 mustBe false
@@ -248,9 +258,9 @@ class MergingModelSpec
         awaitInf(
           mergingModel.renameAndMerge(
             classId,
-            selfReportedStudent2Id,
-            friendReportedStudent.hashedName,
-            friendReportedStudent.encryptedName
+            studentId = selfReportedStudent2Id,
+            hashedName = friendReportedStudent.hashedName,
+            encryptedName = friendReportedStudent.encryptedName
           )
         )
       success3 mustBe true
@@ -270,9 +280,9 @@ class MergingModelSpec
         awaitInf(
           mergingModel.renameAndMerge(
             classId,
-            selfReportedStudent2Id,
-            friendReportedStudent.hashedName,
-            friendReportedStudent.encryptedName
+            studentId = selfReportedStudent2Id,
+            hashedName = friendReportedStudent.hashedName,
+            encryptedName = friendReportedStudent.encryptedName
           )
         )
       success1 mustBe true
@@ -301,9 +311,9 @@ class MergingModelSpec
       awaitInf(
         mergingModel.renameAndMerge(
           classId,
-          selfReportedStudent2Id,
-          friendReportedStudent.hashedName,
-          friendReportedStudent.encryptedName
+          studentId = selfReportedStudent2Id,
+          hashedName = friendReportedStudent.hashedName,
+          encryptedName = friendReportedStudent.encryptedName
         )
       )
     success1 mustBe true
