@@ -11,7 +11,7 @@ class MergingModel(db: Database)(implicit ec: ExecutionContext) {
   val relationModel = new RelationshipModel(db)
 
   // possibly rewires and deletes a student and updates the name of another student
-  def updateStudent(
+  def renameAndMerge(
       classId: Int,
       studentId: Int,
       hashedName: String,

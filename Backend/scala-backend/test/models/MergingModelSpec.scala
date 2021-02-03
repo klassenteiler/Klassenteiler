@@ -221,7 +221,7 @@ class MergingModelSpec
       allStudents2.length mustBe 2
     }
   }
-  "The MergingModel's updateStudent" should {
+  "The MergingModel's renameAndMerge" should {
     "update all relations with the hash as target" in {
       // in this test we want to update the name of the second selfreported student to the name
       // of the friendreported student
@@ -235,7 +235,7 @@ class MergingModelSpec
       // nonexistent friendId
       val success2: Boolean =
         awaitInf(
-          mergingModel.updateStudent(
+          mergingModel.renameAndMerge(
             classId,
             99,
             selfReportedStudent2.hashedName,
@@ -246,7 +246,7 @@ class MergingModelSpec
 
       val success3: Boolean =
         awaitInf(
-          mergingModel.updateStudent(
+          mergingModel.renameAndMerge(
             classId,
             selfReportedStudent2Id,
             friendReportedStudent.hashedName,
@@ -268,7 +268,7 @@ class MergingModelSpec
 
       val success1: Boolean =
         awaitInf(
-          mergingModel.updateStudent(
+          mergingModel.renameAndMerge(
             classId,
             selfReportedStudent2Id,
             friendReportedStudent.hashedName,
@@ -299,7 +299,7 @@ class MergingModelSpec
 
     val success1: Boolean =
       awaitInf(
-        mergingModel.updateStudent(
+        mergingModel.renameAndMerge(
           classId,
           selfReportedStudent2Id,
           friendReportedStudent.hashedName,

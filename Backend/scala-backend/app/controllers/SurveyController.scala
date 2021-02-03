@@ -229,7 +229,7 @@ class SurveyController @Inject() (
       if (cSuccess) {
         val renameSuccessesList: Seq[Future[Boolean]] =
           mergingObject.studentsToRename.map(student =>
-            mergeModel.updateStudent(
+            mergeModel.renameAndMerge(
               classId,
               student.id.get,
               student.hashedName,
