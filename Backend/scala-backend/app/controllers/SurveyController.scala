@@ -225,64 +225,67 @@ class SurveyController @Inject() (
       })
 
     // 2. rename
-    creationSuccess.flatMap(cSuccess => {
-      if (cSuccess) {
-        val renameSuccessesList: Seq[Future[Boolean]] =
-          mergingObject.studentsToRename.map(student =>
-            mergeModel.renameAndMerge(
-              classId,
-              student.id.get,
-              student.hashedName,
-              student.encryptedName
+
+    val renameSuccess: Future[Boolean] =
+      creationSuccess.flatMap(cSuccess => {
+        if (cSuccess) {
+          val renameSuccessesList: Seq[Future[Boolean]] =
+            mergingObject.studentsToRename.map(student =>
+              mergeModel.renameAndMerge(
+                classId,
+                student.id.get,
+                student.hashedName,
+                student.encryptedName
+              )
             )
+          Future
+            .sequence(renameSuccessesList)
+            .map((arr: Seq[Boolean]) => {
+              arr.forall(_ == true)
+            })
+        } else {
+          Future.successful(false) // return
+        }
+      })
+
+    //3. delete
+    val deletionSuccess: Future[Boolean] = renameSuccess.flatMap(rSuccess => {
+      if (rSuccess) {
+        val deletionSuccessesList: Seq[Future[Boolean]] =
+          mergingObject.studentsToDelete.map(id =>
+            studentModel.removeStudent(id)
           )
-        val renameSuccess: Future[Boolean] = Future
-          .sequence(renameSuccessesList)
+        Future
+          .sequence(deletionSuccessesList)
           .map((arr: Seq[Boolean]) => {
             arr.forall(_ == true)
           })
-        //3. delete
-        renameSuccess.flatMap(rSuccess => {
-          if (rSuccess) {
-            val deletionSuccessesList: Seq[Future[Boolean]] =
-              mergingObject.studentsToDelete.map(id =>
-                studentModel.removeStudent(id)
-              )
-            val deletionSuccess: Future[Boolean] = Future
-              .sequence(deletionSuccessesList)
-              .map((arr: Seq[Boolean]) => {
-                arr.forall(_ == true)
-              })
+      } else {
+        Future.successful(false) //return
+      }
+    })
 
-            //4. isAliasOf
-            deletionSuccess.flatMap(dSuccess => {
-              if (dSuccess) {
-                val aliasOfSuccessesList: Seq[Future[Boolean]] =
-                  mergingObject.isAliasOf.map(aliasTuple =>
-                    mergeModel.findRewireAndDelete(
-                      classId,
-                      aliasTuple._1,
-                      aliasTuple._2
-                    )
-                  )
-                val aliasOfSuccess: Future[Boolean] = Future
-                  .sequence(aliasOfSuccessesList)
-                  .map((arr: Seq[Boolean]) => {
-                    arr.forall(_ == true)
-                  })
-                aliasOfSuccess // return
-              } else {
-                Future.successful(false)
-              }
-            })
-          } else {
-            Future.successful(false)
-          }
-        })
+    //4. isAliasOf
+    val aliasOfSuccess: Future[Boolean] = deletionSuccess.flatMap(dSuccess => {
+      if (dSuccess) {
+        val aliasOfSuccessesList: Seq[Future[Boolean]] =
+          mergingObject.isAliasOf.map(aliasTuple =>
+            mergeModel.findRewireAndDelete(
+              classId,
+              aliasTuple._1,
+              aliasTuple._2
+            )
+          )
+        Future
+          .sequence(aliasOfSuccessesList)
+          .map((arr: Seq[Boolean]) => {
+            arr.forall(_ == true)
+          })
       } else {
         Future.successful(false)
       }
     })
+    aliasOfSuccess
 
   }
 
