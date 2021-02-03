@@ -242,7 +242,7 @@ class SurveyController @Inject() (
             .sequence(renameSuccessesList)
             .map((arr: Seq[Boolean]) => {
               arr.forall(_ == true)
-            })
+            }) // return
         } else {
           Future.successful(false) // return
         }
@@ -259,7 +259,7 @@ class SurveyController @Inject() (
           .sequence(deletionSuccessesList)
           .map((arr: Seq[Boolean]) => {
             arr.forall(_ == true)
-          })
+          }) // return
       } else {
         Future.successful(false) //return
       }
@@ -280,7 +280,7 @@ class SurveyController @Inject() (
           .sequence(aliasOfSuccessesList)
           .map((arr: Seq[Boolean]) => {
             arr.forall(_ == true)
-          })
+          }) // return
       } else {
         Future.successful(false)
       }
