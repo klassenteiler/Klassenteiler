@@ -23,12 +23,14 @@ class MergingModel(db: Database)(implicit ec: ExecutionContext) {
     val studentWithCorrectNameId: Future[Option[Int]] =
       studentModel.getByHash(hashedName, classId)
     studentWithCorrectNameId.flatMap(frID => {
-      var success: Future[Boolean] = Future.successful(true)
-      if (!frID.isEmpty) {
-        // in case there already exists a friendreported student with that name
-        // we rewire all incoming ties and delete the student
-        success = rewireAndDelete(frID.get, studentId)
-      }
+      var success: Future[Boolean] = 
+        if (!frID.isEmpty) {
+          // in case there already exists a friendreported student with that name
+          // we rewire all incoming ties and delete the student
+          rewireAndDelete(frID.get, studentId)
+        }else {
+          Future.successful(true)
+        }
       success.flatMap(succs => {
         if (succs) {
           changeName(studentId, hashedName, encryptedName) // return
