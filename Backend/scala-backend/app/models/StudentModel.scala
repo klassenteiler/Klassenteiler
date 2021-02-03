@@ -92,8 +92,6 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
 
   def updateGroupBelonging(studentId: Int, group: Int): Future[Int] = {
     val updateOp: Future[Int] = db.run(Student.filter(_.id === studentId).map(row => (row.groupbelonging)).update((Some(group))))
-    
-    updateOp.map(x => println(x))
     return updateOp
   }
 
