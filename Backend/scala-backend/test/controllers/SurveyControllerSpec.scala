@@ -40,6 +40,7 @@ class SurveyControllerSpec
 
   var classId: Int = _
   var classSecret: String = _
+   var student1Id: Int = _
 
   val schoolClass: SchoolClassDB = SchoolClassDB(
     None,
@@ -60,6 +61,8 @@ class SurveyControllerSpec
       awaitInf(classModel.createSchoolClass(schoolClass))
     classId = createdSchoolClass.id.get
     classSecret = createdSchoolClass.classSecret
+
+
   }
 
   val json: JsValue = Json.obj(
@@ -306,6 +309,16 @@ class SurveyControllerSpec
   "SurveyController /startCalculating" should {
     "return status 200, contain message and update statuses if request is correct" in {
       awaitInf(classModel.updateStatus(classId, SurveyStatus.Closed))
+
+              val student1: StudentCC =
+      StudentCC(None, "baseStudent", "encName", true, None)
+    student1Id = awaitInf(studentModel.createStudent(student1, classId)).get
+
+
+            val student2: StudentCC =
+      StudentCC(None, "baseStudentw", "encNamew", true, None)
+    awaitInf(studentModel.createStudent(student2, classId)).get
+
       val request: FakeRequest[play.api.mvc.AnyContent] =
         FakeRequest().withHeaders(
           Headers("teacherSecret" -> schoolClass.teacherSecret)

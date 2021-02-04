@@ -25,8 +25,7 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
         // if the new entry is self reported but the old one is not, we need to update the value
         else if (!alreadySelfReported && studentCC.selfReported) {
           // update selfreported of student
-          db.run(Student.filter(_.id === studentId).map(row => (row.selfreported)).update((true)))
-          Future.successful(Some(studentId))  //return
+          db.run(Student.filter(_.id === studentId).map(row => (row.selfreported)).update((true))).map(success => Some(studentId))
         // else we don't need to do anything and just return the id
         }else Future.successful(Some(studentId))
 
@@ -70,7 +69,10 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
   }
 
   def updateGroupBelonging(studentId: Int, group: Int): Future[Int] = {
+    println(s"id searched: ${studentId}")
+    db.run(Student.filter(_.id === studentId).result).map(rows => println(s"students found in update: ${rows}"))
     val updateOp: Future[Int] = db.run(Student.filter(_.id === studentId).map(row => (row.groupbelonging)).update((Some(group))))
-    return updateOp
+    updateOp.map(s => println(s))
+    updateOp
   }
 }

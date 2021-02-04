@@ -187,6 +187,7 @@ class SurveyController @Inject() (
   def startPartitionAlgorithm(classId: Int): Unit = {
     val studentsOfClass: Future[Seq[Int]] =
       studentModel.getAllSelfReportedStudentIDs(classId)
+    studentsOfClass.map(s => println(s"These are literally the ids of students in the database: $s"))
     val relationsOfClass: Future[Seq[(Int, Int)]] =
       relModel.getAllRelationIdsOfClass(classId)
 
@@ -207,7 +208,7 @@ class SurveyController @Inject() (
       }
 
     partition.map(p => {
-      this.logger.info(s"partition was computed: p1=[${p._1
+      this.logger.error(s"partition was computed: p1=[${p._1
         .mkString(" ")}] p2=[${p._2.mkString(" ")}]")
       val futureGroupOneSet: List[Future[Int]] = p._1.toList
         .map(id => studentModel.updateGroupBelonging(id, 1))
@@ -219,17 +220,23 @@ class SurveyController @Inject() (
       val futureAllGroupTwo: Future[Seq[Int]] =
         Future.sequence(futureGroupTwoSet)
 
+        futureAllGroupOne.map(s => println(s))
+        futureAllGroupTwo.map(s => println(s))
+
+
       // these are just sanity checks and get rid of the sequence
       val checkedFutureOne: Future[Boolean] =
         futureAllGroupOne.map((arr: Seq[Int]) => {
           // this.logger.warn(s"group one set ${arr.mkString(" ")} ")
           arr.forall(_ == 1) // one seems to mean successful
         })
+        checkedFutureOne.map(s => println(s))
       val checkedFutureTwo: Future[Boolean] =
         futureAllGroupTwo.map((arr: Seq[Int]) => {
           // this.logger.warn(s"group two set ${arr.mkString(" ")} ")
           arr.forall(_ == 1) // one seems to mean successful
         })
+        checkedFutureTwo.map(s => println(s))
 
       val allUpdateComplete: Future[Boolean] = for {
         oneOK <- checkedFutureOne
