@@ -26,9 +26,12 @@ class SurveyController @Inject() (
   implicit val studentReads = Json.reads[StudentCC]
   implicit val studentWrites = Json.writes[StudentCC]
 
+  implicit val MergeCommandsCCReads = Json.reads[MergeCommandsCC]
+
   private val classModel = new SchoolClassModel(db)
   private val studentModel = new StudentModel(db)
   private val relModel = new RelationshipModel(db)
+  private val mergeModel = new MergingModel(db)
 
   private val logger: Logger = Logger(this.getClass())
   // POST /submitStudentSurvey/:id/:classSecret
@@ -73,43 +76,18 @@ class SurveyController @Inject() (
                       val limit: Int =
                         sys.env.getOrElse("FRIEND_LIMIT", 5).toString.toInt
                       if (alters.length <= limit) {
-                        val sourceId: Future[Option[Int]] =
-                          studentModel.createStudent(ego, classId)
-                        sourceId.flatMap(sId =>
-                          sId match {
-                            case Some(sId) => {
-                              // enter each alter and create a relationship with its id
-                              val creationSuccesses: Seq[Future[Boolean]] =
-                                alters.map(alter => {
-                                  val targetStudentId: Future[Option[Int]] =
-                                    studentModel.createStudent(alter, classId)
-                                  targetStudentId.flatMap(tId => {
-                                    val relationship = RelationshipCC(
-                                      classId = classId,
-                                      sourceId = sId,
-                                      targetId = tId.get
-                                    ) 
-                                    relModel.createRelationship(relationship)
-                                  })
-                                })
+                        val creationSuccess: Future[Boolean] =
+                          createStudents(classId, ego, alters)
 
-                              val creationsSucceeded: Future[Seq[Boolean]] =
-                                Future.sequence(creationSuccesses)
-
-                              creationsSucceeded.map(success =>
-                                Created(
-                                  Json.obj("message" -> "success - created")
-                                )
-                              )
-
-                            }
-                            case None => {
-                              Future.successful(
-                                Forbidden(
-                                  "Student with this name already submitted survey"
-                                )
-                              )
-                            }
+                        creationSuccess.map(success =>
+                          if (success) {
+                            Created(
+                              Json.obj("message" -> "success - created")
+                            )
+                          } else {
+                            Forbidden(
+                              "Student with this name already submitted survey"
+                            )
                           }
                         )
                       } else {
@@ -136,6 +114,54 @@ class SurveyController @Inject() (
       auth.withClassAuthentication(body)
   }
 
+  // helper method used by submitSurvey and closeSurvey
+  def createStudents(
+      classId: Int,
+      ego: StudentCC,
+      alters: Seq[StudentCC]
+  ): Future[Boolean] = {
+    val sourceId: Future[Option[Int]] =
+      studentModel.createStudent(ego, classId)
+    sourceId.flatMap(sId =>
+      sId match {
+        case Some(sId) => {
+          // enter each alter and create a relationship with its id
+          val creationSuccesses: Seq[Future[Boolean]] =
+            alters.map(alter => {
+              val targetStudentId: Future[Option[Int]] =
+                studentModel.createStudent(alter, classId)
+              targetStudentId.flatMap(tId => {
+                val relationship = RelationshipCC(
+                  classId = classId,
+                  sourceId = sId,
+                  targetId = tId.get
+                )
+                relModel.createRelationship(relationship)
+              })
+            })
+
+          // make a future out of a list of futures
+          val creationsSuccessesList: Future[Seq[Boolean]] =
+            Future.sequence(creationSuccesses)
+
+          // flatten the list of booleans into one boolean
+          val creationsSucceeded: Future[Boolean] =
+            creationsSuccessesList.map((arr: Seq[Boolean]) => {
+              arr.forall(_ == true)
+            })
+
+          creationsSucceeded // return
+
+        }
+        case None => {
+          Future.successful(
+            false // return
+          )
+        }
+      }
+    )
+  }
+
   // PUT /closeSurvey/:id/:classSecret
   // setzt survey status von schoolclass mit der relevanten classId und
   def closeSurvey(implicit classId: Int, classSecret: String) = Action.async {
@@ -146,16 +172,102 @@ class SurveyController @Inject() (
             .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Open) {
+
                 classModel
                   .updateStatus(classId, SurveyStatus.Closed)
                   .map(_ =>
-                    Ok(Json.obj("message" -> "success - survey closed"))
+                    Ok(
+                      Json.obj("message" -> "success - survey closed")
+                    ) //return
                   )
-              } else Future.successful(Gone("Survey has wrong status"))
+
+              } else Future.successful(Gone("Survey has wrong status")) //return
             })
         }
       }
       auth.withTeacherAuthentication(body)
+  }
+
+  def mergeStudents(
+      classId: Int,
+      mergingObject: MergeCommandsCC
+  ): Future[Boolean] = {
+
+    //1. create new
+    val creationSuccessList: Seq[Future[Boolean]] =
+      mergingObject.studentsToAdd.map(student =>
+        createStudents(classId, student, Seq())
+      )
+
+    val creationSuccess: Future[Boolean] = Future
+      .sequence(creationSuccessList)
+      .map((arr: Seq[Boolean]) => {
+        arr.forall(_ == true)
+      })
+
+    // 2. rename
+
+    val renameSuccess: Future[Boolean] =
+      creationSuccess.flatMap(cSuccess => {
+        if (cSuccess) {
+          val renameSuccessesList: Seq[Future[Boolean]] =
+            mergingObject.studentsToRename.map(student =>
+              mergeModel.renameAndMerge(
+                classId,
+                student.id.get,
+                student.hashedName,
+                student.encryptedName
+              )
+            )
+          Future
+            .sequence(renameSuccessesList)
+            .map((arr: Seq[Boolean]) => {
+              arr.forall(_ == true)
+            }) // return
+        } else {
+          Future.successful(false) // return
+        }
+      })
+
+    //3. delete
+    val deletionSuccess: Future[Boolean] = renameSuccess.flatMap(rSuccess => {
+      if (rSuccess) {
+        val deletionSuccessesList: Seq[Future[Boolean]] =
+          mergingObject.studentsToDelete.map(id =>
+            studentModel.removeStudent(id)
+          )
+        Future
+          .sequence(deletionSuccessesList)
+          .map((arr: Seq[Boolean]) => {
+            arr.forall(_ == true)
+          }) // return
+      } else {
+        Future.successful(false) //return
+      }
+    })
+
+    //4. isAliasOf
+    val aliasOfSuccess: Future[Boolean] = deletionSuccess.flatMap(dSuccess => {
+      if (dSuccess) {
+        val aliasOfSuccessesList: Seq[Future[Boolean]] =
+          mergingObject.isAliasOf.map(aliasTuple =>
+            mergeModel.findRewireAndDelete(
+              classId,
+              aliasTuple._1,
+              aliasTuple._2
+            )
+          )
+        Future
+          .sequence(aliasOfSuccessesList)
+          .map((arr: Seq[Boolean]) => {
+            arr.forall(_ == true)
+          }) // return
+      } else {
+        Future.successful(false)
+      }
+    })
+    aliasOfSuccess
+
   }
 
   // PUT
@@ -172,11 +284,37 @@ class SurveyController @Inject() (
             .getStatus(classId)
             .flatMap(status => {
               if (status == SurveyStatus.Closed) {
-                startPartitionAlgorithm(classId)
-                classModel.updateStatus(classId, SurveyStatus.Calculating)
-                Future.successful(
-                  Ok(Json.obj("message" -> "success - started calculating"))
-                )
+
+                request.body.asJson match {
+                  case Some(content) => {
+                    val mergingJsonOption: JsResult[MergeCommandsCC] =
+                      Json.fromJson[MergeCommandsCC](content)
+
+                    if (mergingJsonOption.isSuccess) {
+                      val mergingSuccess: Future[Boolean] =
+                        mergeStudents(classId, mergingJsonOption.get)
+
+                      mergingSuccess.flatMap(success => {
+                        startPartitionAlgorithm(classId)
+                        classModel
+                          .updateStatus(classId, SurveyStatus.Calculating).map(
+                            succs => Ok(
+                            Json
+                              .obj("message" -> "success - started calculating")
+                            )
+                          )
+                      })
+
+                    } else {
+                      Future.successful(
+                        UnsupportedMediaType("Wrong JSON format") //return
+                      )
+                    }
+                  }
+                  case None =>
+                    Future.successful(BadRequest("Empty Body")) //return
+                }
+
               } else Future.successful(Gone("Survey has wrong status"))
             })
         }
@@ -185,6 +323,7 @@ class SurveyController @Inject() (
     }
 
   def startPartitionAlgorithm(classId: Int): Unit = {
+    // todo: check that all students have selfReported == true
     val studentsOfClass: Future[Seq[Int]] =
       studentModel.getAllSelfReportedStudentIDs(classId)
     val relationsOfClass: Future[Seq[(Int, Int)]] =

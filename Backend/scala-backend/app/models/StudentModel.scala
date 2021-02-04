@@ -25,8 +25,7 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
         // if the new entry is self reported but the old one is not, we need to update the value
         else if (!alreadySelfReported && studentCC.selfReported) {
           // update selfreported of student
-          db.run(Student.filter(_.id === studentId).map(row => (row.selfreported)).update((true)))
-          Future.successful(Some(studentId))  //return
+          db.run(Student.filter(_.id === studentId).map(row => (row.selfreported)).update(true)).map(_ => Some(studentId)) //return
         // else we don't need to do anything and just return the id
         }else Future.successful(Some(studentId))
 
@@ -46,9 +45,11 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
     })
   }
 
-  def removeStudent(studentId: Int): Future[Boolean] = ???
+  def removeStudent(studentId: Int): Future[Boolean] = {
+    db.run(Student.filter(_.id === studentId).delete).map(count => count > 0) 
+  }
 
-   def getStudents(classId: Int): Future[Seq[StudentCC]] = {
+  def getStudents(classId: Int): Future[Seq[StudentCC]] = {
     db.run(Student.filter(_.classid === classId).result).map(rows => rows.map(entry => {
         StudentCC(
           Some(entry.id),
@@ -69,8 +70,43 @@ class StudentModel(db: Database)(implicit ec: ExecutionContext) {
     db.run(Student.filter(x => (x.classid === classId && x.selfreported === true)).result).map(rows => rows.map(_.id))
   }
 
+  def getAllFriendReportedStudents(classId: Int): Future[Seq[StudentCC]] = {
+    db.run(Student.filter(x => (x.classid === classId && x.selfreported === false)).result).map(rows => rows.map(entry => StudentCC(
+          Some(entry.id),
+          entry.hashedname,
+          entry.encryptedname,
+          entry.selfreported,
+          entry.groupbelonging
+        )))
+  }
+
+  def getAllSelfReportedStudents(classId: Int): Future[Seq[StudentCC]] = {
+    db.run(Student.filter(x => (x.classid === classId && x.selfreported === true)).result).map(rows => rows.map(entry => StudentCC(
+          Some(entry.id),
+          entry.hashedname,
+          entry.encryptedname,
+          entry.selfreported,
+          entry.groupbelonging
+        )))
+  }
+
   def updateGroupBelonging(studentId: Int, group: Int): Future[Int] = {
     val updateOp: Future[Int] = db.run(Student.filter(_.id === studentId).map(row => (row.groupbelonging)).update((Some(group))))
     return updateOp
+  }
+
+  // returns id of student with the given hash
+  def getByHash(hash: String, classId: Int): Future[Option[Int]] = {
+    val studentRows: Future[Seq[StudentRow]] = db.run(Student.filter(x => (x.classid ===classId && x.hashedname === hash)).result)
+    studentRows.map(students => {
+      if (students.length != 1) {
+        None
+      }else{
+        Some(students.head.id)
+      }
+
+    })
+
+    
   }
 }
