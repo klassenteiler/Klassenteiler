@@ -6,7 +6,7 @@
     "teacherPasswordLength": 8,
     "description": "config prod json",
     "news": "prod news",
-    "skipMerging": true,
+    "skipMerging": false,
     "gitURL": "https://github.com/klassenteiler/Klassenteiler",
     "demoData": "demoClass.json",
     "demoSchoolnamePrefix": "DEMO"

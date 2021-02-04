@@ -1,3 +1,16 @@
+
+
+<div class="card" *ngIf = "(classList === null) || (friendRstudents === null)">
+  <div class ="card-body">
+  Ihr Browser entschlüsselt gerade die Namen der Schüler:innen. Das kann ein bischen dauern. 
+
+  <div class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+    </div>
+  </div>
+</div>
+</div>
+
 <div class="card" *ngIf = "(classList !== null) && (friendRstudents !== null)">
     <div class="card-body">
 
