@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 import { AppConfigService, MockAppConfigService } from 'src/app/app-config.service';
 import { SchoolClassSurveyStatus } from 'src/app/models';
 import { SchoolClassResolver } from 'src/app/_resolvers/school-class.resolver';
+import { DemoService } from 'src/app/_services/demo.service';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, EncTools, SchoolClass } from 'src/app/_tools/enc-tools.service';
 
@@ -13,7 +14,9 @@ class MockTeacherService{
     return of(42);
   }
 }
-
+class MockDemoService{
+  demoActive() {return false}
+}
 
 describe('SurveyOpenComponent', () => {
   let component: SurveyOpenComponent;
@@ -35,8 +38,10 @@ describe('SurveyOpenComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [{provide: AppConfigService, useClass: MockAppConfigService},
-        {provide: TeacherService, useClass: MockTeacherService}
+      providers: [
+        {provide: AppConfigService, useClass: MockAppConfigService},
+        {provide: TeacherService, useClass: MockTeacherService},
+        {provide: DemoService, useClass: MockDemoService}
       ],
       declarations: [ SurveyOpenComponent ]
     })

@@ -6,7 +6,7 @@ import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, ClearLocalStudent, EncTools, SchoolClass } from 'src/app/_tools/enc-tools.service';
 
 import { MergeService } from './merge.service';
-import { SelfReportedInEdit } from './teacher-clean-up.models';
+import { MergeCommandsDict, SelfReportedInEdit } from './teacher-clean-up.models';
 
 class MockTeacherService{
   static makeFriendRBackendStudents(){
@@ -72,6 +72,25 @@ beforeEach(async () => {
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
+
+  fit('MergeCommandDict should be properly encoded', () => {
+    const knownStudent = new ClearLocalStudent("known student", true, 100)
+    const commands = new MergeCommandsDict(
+      [new ClearLocalStudent("new", true)],
+      [new ClearLocalStudent("newName", true, 42)],
+      [2],
+      [[3, "known student"]]
+    )
+
+    const encrypted = commands.toTransport(schoolClass!)
+
+    expect(encrypted.studentsToRename[0].id).toBeTruthy()
+    expect(encrypted.studentsToRename[0].id).toEqual(42)
+
+    expect(encrypted.isAliasOf[0][1]).toEqual(schoolClass!.localStudentToTransport(knownStudent).hashedName)
+
+    console.log(encrypted)
+  })
 
 
   it('should recover partial edit state if and only if backend state has not changed', async () => {

@@ -15,6 +15,8 @@ import { PdfTools } from '../_tools/pdf-tools';
 })
 export class CreateComponent implements OnInit {
 
+  showDemoPrefixHint: string = "";
+
   formIsOpen:boolean =true;
   creatingClass: boolean = false;
   buttonText: string = "Klasse erstellen"
@@ -33,6 +35,7 @@ export class CreateComponent implements OnInit {
     private location: Location) { }
 
   ngOnInit(): void {
+    if(this.config.demoData !== ""){this.showDemoPrefixHint = this.config.demoSchoolnamePrefix}
   }
 
   deactivateForm(){

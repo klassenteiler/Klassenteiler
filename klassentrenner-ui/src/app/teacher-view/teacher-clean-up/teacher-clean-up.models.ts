@@ -248,7 +248,7 @@ export class MergeCommandsDict{
 
     toTransport(schoolClass : SchoolClass) : MergingCommandsT {
         const toAdd: StudentT[] = schoolClass.arrayLocalStudentToTransport(this.studentsToAdd)
-        const toRename: StudentT[] = schoolClass.arrayLocalStudentToTransport(this.studentsToAdd)
+        const toRename: StudentT[] = schoolClass.arrayLocalStudentToTransport(this.studentsToRename)
 
         const isAliasOfTargetHashed: Array<[number, string]> = this.isAliasOf.map(([friendRId, matchedName]: [number, string]) =>{
             const hashedName = schoolClass.hashStudentName(matchedName)

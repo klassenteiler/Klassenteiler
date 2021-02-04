@@ -77,6 +77,7 @@ export class SummaryComponent implements OnInit {
         }
         else if(friendR.shouldBeDeleted){
           toDelete.push(friendR.id)
+          // TODO make sure this student hasnt been added in the meantime
         }
         else {
           problems.push(`Der Name ${friendR.name} wurde keinem Namen in der Klassenliste zugeordnet.`)
@@ -99,7 +100,7 @@ export class SummaryComponent implements OnInit {
     const mergeCommandsT = this.mergeCommands.toTransport(this.schoolClass)
     console.log(this.mergeCommands)
     console.log(mergeCommandsT)
-
+    
     this.mergeService.submitMergeCommandsAndStartCalculation(this.schoolClass, this.classTeacher, mergeCommandsT).subscribe(msg=>
       {
         console.log(msg)

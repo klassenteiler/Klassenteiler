@@ -32,6 +32,10 @@ export class MergeService {
     localStorage.setItem(this.stateHashKey(sCls), stateHash);
   }
 
+  removeStateHash(sCls: SchoolClass){
+    localStorage.removeItem(this.stateHashKey(sCls))
+  }
+
   checkStateHash(sCls: SchoolClass, queryHash: string): boolean {
     // returns true if the starting point of the merging operation had the same hash (of the current db state) as the query hash provided
     // if the hash is wrong clean up the local storage
@@ -80,6 +84,12 @@ export class MergeService {
 
   windowReload(){
     window.location.reload();
+  }
+
+  clearStateInLocal(schoolClass: SchoolClass){
+    localStorage.removeItem(this.classListKey(schoolClass))
+    localStorage.removeItem(this.friendRListKey(schoolClass))
+    this.removeStateHash(schoolClass)
   }
 
   // state here means a partial state of merging
@@ -173,7 +183,10 @@ export class MergeService {
         window.location.reload()
       }
       else{
-        return this.teacherService.startCalculatingWithMerge(schoolClass, classTeacher, mergeCommands)
+        return this.teacherService.startCalculatingWithMerge(schoolClass, classTeacher, mergeCommands).pipe(map(s=> {
+          this.clearStateInLocal(schoolClass)
+          return s
+        }))
       }
     }))
    }
