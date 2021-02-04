@@ -73,7 +73,7 @@ beforeEach(async () => {
     expect(service).toBeTruthy();
   });
 
-  fit('MergeCommandDict should be properly encoded', () => {
+  it('MergeCommandDict should be properly encoded', () => {
     const knownStudent = new ClearLocalStudent("known student", true, 100)
     const commands = new MergeCommandsDict(
       [new ClearLocalStudent("new", true)],
