@@ -297,14 +297,12 @@ class SurveyController @Inject() (
                       mergingSuccess.flatMap(success => {
                         startPartitionAlgorithm(classId)
                         classModel
-                          .updateStatus(classId, SurveyStatus.Calculating)
-                        Future.successful(
-                          Ok(
+                          .updateStatus(classId, SurveyStatus.Calculating).map(
+                            succs => Ok(
                             Json
                               .obj("message" -> "success - started calculating")
+                            )
                           )
-                        )
-
                       })
 
                     } else {
