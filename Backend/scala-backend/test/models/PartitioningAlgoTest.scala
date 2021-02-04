@@ -95,7 +95,7 @@ class PartitioningAlgoTest extends PlaySpec {
   }
   // Helper method to compute a random
   def computeRandomCellValue(i: Int, j: Int): Boolean =
-    (math.random < 0.25) // 0.25 for 20 students (~5 Friends per student)
+    (math.random() < 0.25) // 0.25 for 20 students (~5 Friends per student)
 
   // Helper method to create edges based on a adjacency matrix
   def createEdges(adjacencyMatrix :Array[Array[Boolean]], nrSus :Int): Array[(Int, Int)] = {

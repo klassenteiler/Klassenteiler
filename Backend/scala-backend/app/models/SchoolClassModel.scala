@@ -64,7 +64,23 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
   }
 
   def updateStatus(classId: Int, status: Int): Future[Int] = {
+    // ideally we check here whether status is a value in SurveyStatus somehow I haven't figured out how to do
+    // it although it should be trivial
     db.run(Schoolclass.filter(_.id === classId).map(row => (row.surveystatus)).update((Some(status))))
+  }
+
+  def getAllClasses(): Future[Seq[SchoolClassCC]] = {
+    val intermediateResult: Future[Seq[models.Tables.SchoolclassRow]] = db.run(Schoolclass.map(cls => cls).result)
+    val result: Future[Seq[SchoolClassCC]] = intermediateResult.map(sequence => sequence.map(entry => SchoolClassCC(Some(entry.id), entry.classname, entry.schoolname, entry.classsecret, entry.publickey, entry.surveystatus)))
+
+    result // return
+  }
+
+  def getCalculatingClassesIds(): Future[Seq[Int]] = {
+    val intermediateResult: Future[Seq[models.Tables.SchoolclassRow]] = db.run(Schoolclass.filter(_.surveystatus === SurveyStatus.Calculating).result)
+    val result: Future[Seq[Int]] = intermediateResult.map(sequence => sequence.map(entry => entry.id))
+
+    result // return
   }
 }
 
