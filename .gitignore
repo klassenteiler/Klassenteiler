@@ -1,3 +1,4 @@
+.dccache
 *.class
 *.log
 Backend/scala-backend/.gitignore

@@ -3,6 +3,7 @@ import { Form, FormControl, Validators } from '@angular/forms';
 import { SelfReportedInEdit } from '../../teacher-clean-up.models';
 import { timer } from 'rxjs';
 import { ForbiddenNameValidator } from 'src/app/_shared/forbidden-name.directive';
+import { OriginalClassListChecker } from '../original-classList-checker';
 
 @Component({
   selector: 'app-student-detail',
@@ -13,8 +14,9 @@ export class StudentDetailComponent implements OnInit {
 
   @Input() studentEntity!: SelfReportedInEdit;
   @Input() currentClassListNames!: string[];
+  @Input() originalNamesChecker!: OriginalClassListChecker;
 
-  @Output() shouldBeDeleted  = new EventEmitter<boolean>();
+  @Output() shouldBeDeleted = new EventEmitter<boolean>();
   @Output() classListChanged = new EventEmitter<void>();
 
   sleeping: boolean = false;
@@ -33,46 +35,49 @@ export class StudentDetailComponent implements OnInit {
     ]);
   }
 
-  toggleEdit(){
-      if(this.editMode){
-        this.save()
-      }else{
-        this.edit()
-      }
+  toggleEdit() {
+    if (this.editMode) {
+      this.save()
+    } else {
+      this.edit()
+    }
   }
 
-  sleep(){
+  sleep() {
     this.sleeping = true;
-    timer(200).subscribe(val => {this.sleeping = false;})
+    timer(200).subscribe(val => { this.sleeping = false; })
   }
 
-  save(){
-    if(this.editMode && !this.sleeping){
-      if(this.formControl.valid){
-        this.studentEntity.name = this.formControl.value;
-        this.classListChanged.emit();
+  save() {
+    if (this.editMode && !this.sleeping) {
+      if (this.formControl.valid) {
+        const toChange: string = this.formControl.value;
+        if (this.originalNamesChecker.checkNameToAdd(toChange)) {
+          this.studentEntity.name = toChange;
+          this.classListChanged.emit();
+        }
       }
       this.editMode = false;
       this.sleep();
     }
   }
 
-  edit(){
-    if(!this.editMode && !this.sleeping){
+  edit() {
+    if (!this.editMode && !this.sleeping) {
       this.formControl.setValue(this.studentEntity.name)
       this.editMode = true;
     }
   }
 
-  delete(){
+  delete() {
     const shouldBeDestructed: boolean = this.studentEntity.delete();
-    if(shouldBeDestructed){
+    if (shouldBeDestructed) {
       this.shouldBeDeleted.emit(true);
     }
     this.classListChanged.emit();
   }
 
-  recover(){
+  recover() {
     this.studentEntity.recover();
     this.classListChanged.emit();
   }

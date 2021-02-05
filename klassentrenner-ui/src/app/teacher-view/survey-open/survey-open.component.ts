@@ -60,11 +60,6 @@ export class SurveyOpenComponent implements OnInit {
     }
   }
 
-  test(){
-    console.log(this.nSignups == 0)
-    console.log(this.showDemoDataButton())
-  }
-
   closeSurvey(): void {
     const closeObs = this.teacherService.closeSurvey(this.schoolClass, this.classTeacher)
     

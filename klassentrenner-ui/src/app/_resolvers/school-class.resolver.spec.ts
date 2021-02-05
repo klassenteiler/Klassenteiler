@@ -56,6 +56,7 @@ describe('SchoolClassResolver', () => {
       const location: Location = TestBed.inject(Location);
       console.log('resolve test')
     //   router.navigate(['create'])
+      // deepcode ignore PromiseNotCaughtGeneral: <please specify a reason of ignoring this>
       router.navigate([nonResolvingPath]).then(() => {
         console.log('in then')
         expect(location.path()).toBe(nonResolvingPath)

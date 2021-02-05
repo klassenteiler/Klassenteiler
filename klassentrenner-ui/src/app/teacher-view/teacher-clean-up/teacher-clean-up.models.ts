@@ -103,6 +103,11 @@ export class SelfReportedInEdit{
         }
     }
 
+    get origName(): string{
+        if(this._origName === null){throw new Error("tried to get original name")}
+        return this._origName
+    }
+
     get recoverName(): string{
         if(this.teacherAdded){ return ""}
         else{

@@ -3,6 +3,7 @@
     <app-student-detail 
     [studentEntity]="thisStudent" 
     [currentClassListNames] = "currentClassListNames"
+    [originalNamesChecker] = "originalNamesChecker"
     (shouldBeDeleted)="delete(index)" 
     (classListChanged)="triggerClassListChanged()"></app-student-detail>
 </ul>

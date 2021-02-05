@@ -1,8 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormControl, Validators } from '@angular/forms';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ForbiddenNameValidator } from 'src/app/_shared/forbidden-name.directive';
 import {  SelfReportedInEdit } from '../teacher-clean-up.models';
+import { OriginalClassListChecker } from './original-classList-checker';
 
 @Component({
   selector: 'app-correct-classlist',
@@ -13,13 +15,22 @@ export class CorrectClasslistComponent implements OnInit {
 
   @Input() classList!: Array<SelfReportedInEdit>;
   @Input() currentClassListNames!: string[];
+  @Input() originalClassListNames!: string[];
   @Output() classListChanged = new EventEmitter<void>()
+
+  originalNamesChecker!: OriginalClassListChecker;
+
+  
 
   newStudentControl!: FormControl;
   // newStudentControl = new FormControl("", [Validators.required, forbiddenNameValidator(["a", "b"])]);
-  constructor() { }
+    constructor(private modalService: NgbModal) { 
+  }
 
   ngOnInit(): void {
+    const c: OriginalClassListChecker = new OriginalClassListChecker(this.modalService, this.originalClassListNames)
+    this.originalNamesChecker = c
+    
     const validator = new ForbiddenNameValidator()
     this.newStudentControl = new FormControl("", [
       validator.func.bind(this) // TODO this is some very hacky shit
@@ -35,12 +46,18 @@ export class CorrectClasslistComponent implements OnInit {
   add(){
     console.log(this.currentClassListNames)
     const name_to_add = this.newStudentControl.value
-    if(this.newStudentControl.valid &&  name_to_add !== ""){
-      const newStudent: SelfReportedInEdit = SelfReportedInEdit.makeTeacherAdded(name_to_add)
-      this.newStudentControl.setValue("")
 
-      this.classList.push(newStudent);
-      this.triggerClassListChanged();
+    if(this.newStudentControl.valid && name_to_add !== ""){
+      if(this.originalNamesChecker.checkNameToAdd(name_to_add)){
+        const newStudent: SelfReportedInEdit = SelfReportedInEdit.makeTeacherAdded(name_to_add)
+        this.newStudentControl.setValue("")
+
+        this.classList.push(newStudent);
+        this.triggerClassListChanged();
+      }
+      else{
+        this.newStudentControl.setValue("")
+      }
     }
   }
 
@@ -48,3 +65,4 @@ export class CorrectClasslistComponent implements OnInit {
     this.classListChanged.emit()
   }
 }
+ 

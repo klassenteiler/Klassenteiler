@@ -21,6 +21,7 @@ export class TeacherCleanUpComponent implements OnInit {
   friendRstudents: Array<FriendReported2Match> | null = null;
 
   currentClassListNames: string[] = [];
+  originalClassListNames: string[] = [];
 
   // the current merging intermediate state is derived from a list of self reported students in the backend
   // this is summarised by the stateHash
@@ -35,8 +36,13 @@ export class TeacherCleanUpComponent implements OnInit {
         this.classList = selfRstudents;
         this.friendRstudents = friendRstudents;
         this.stateHash = stateHash;
+        this.originalClassListNames = this.getOriginalClassList(selfRstudents);
         this.updateCurrentClasslist();
       });
+  }
+
+  getOriginalClassList(clsList: SelfReportedInEdit[]): string[]{
+    return clsList.filter(s => !s.teacherAdded).map(s=> s.origName)
   }
 
   saveClassList() {
