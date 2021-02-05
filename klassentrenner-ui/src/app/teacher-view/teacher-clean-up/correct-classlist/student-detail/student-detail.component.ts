@@ -4,11 +4,26 @@ import { SelfReportedInEdit } from '../../teacher-clean-up.models';
 import { timer } from 'rxjs';
 import { ForbiddenNameValidator } from 'src/app/_shared/forbidden-name.directive';
 import { OriginalClassListChecker } from '../original-classList-checker';
+import { animate, AnimationEvent, state, style, transition, trigger } from '@angular/animations';
+import { AppModule } from 'src/app/app.module';
 
 @Component({
   selector: 'app-student-detail',
   templateUrl: './student-detail.component.html',
-  styleUrls: ['./student-detail.component.css']
+  styleUrls: ['./student-detail.component.css'],
+  animations: [
+    trigger('undoFocusedTrigger', [
+      state('focused', style({
+        borderColor: 'red',
+        borderWidth: 'thick'
+      })),
+      state('normal', style({
+        borderColor: 'black',
+        borderWidth: '0pt'
+      })),
+      transition('normal <=> focused', [animate('0.5s')])
+    ])
+  ]
 })
 export class StudentDetailComponent implements OnInit {
 
@@ -20,6 +35,7 @@ export class StudentDetailComponent implements OnInit {
   @Output() classListChanged = new EventEmitter<void>();
 
   sleeping: boolean = false;
+  undoFocusedFlag  = false;
 
   editMode: boolean = false;
 
@@ -33,6 +49,26 @@ export class StudentDetailComponent implements OnInit {
       Validators.required,
       validator.func.bind(this)
     ]);
+
+    if (!this.studentEntity.teacherAdded) {
+      this.originalNamesChecker.highlightUndo.subscribe((name: string) => {
+        if (name == this.studentEntity.origName) {
+          this.highlightUndo();
+        }
+      })
+    }
+  }
+
+  highlightUndo() {
+    console.log(`highlighting ${this.studentEntity.origName}`)
+    this.undoFocusedFlag = true;
+  }
+  animationEnd(event: AnimationEvent) {
+    if(event.toState == "focused"){
+      timer(2000).subscribe(s=>{
+        this.undoFocusedFlag = false;
+      })
+    }
   }
 
   toggleEdit() {

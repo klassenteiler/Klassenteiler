@@ -10,7 +10,7 @@
 
 <div class='row mt-3'>
     <div class='col-sm'>
-    <input [formControl]="newStudentControl" type='text' class="form-control" 
+    <input [formControl]="newStudentControl" type='text' class="form-control" (keyup.enter)="add()"
     [class.is-invalid]="newStudentControl.invalid && (newStudentControl.touched || newStudentControl.dirty)">
     <div class="invalid-feedback">
         Dieser Name ist bereits in der Klassenliste. 

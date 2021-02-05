@@ -1,5 +1,5 @@
 
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -25,11 +25,16 @@ export class NgbdModalContent {
 }
 
 export class OriginalClassListChecker{
+  highlightUndo = new EventEmitter<string>()
+
   constructor(private modalService: NgbModal, private originalClassListNames: string[]) {}
 
   checkNameToAdd(namee: string): boolean{
     if(this.originalClassListNames.indexOf(namee) !== -1){
-      this.open(namee)
+      this.open(namee).result.then( 
+        _s =>this.highlightUndo.emit(namee),
+        _s =>this.highlightUndo.emit(namee),
+      )
       return false
     }
     else{
@@ -40,5 +45,6 @@ export class OriginalClassListChecker{
   open(namee: string) {
     const modalRef = this.modalService.open(NgbdModalContent);
     modalRef.componentInstance.name = namee;
+    return modalRef
   }
 }

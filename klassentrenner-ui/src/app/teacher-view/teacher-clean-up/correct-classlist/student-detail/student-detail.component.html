@@ -39,7 +39,8 @@
                 </svg>
              </button>
 
-             <button (click)="recover()" class='btn btn-success' [disabled]="!studentEntity.recoverable"> 
+             <button (click)="recover()" class='btn btn-success' [disabled]="!studentEntity.recoverable" 
+             [@undoFocusedTrigger]="undoFocusedFlag ? 'focused' : 'normal' " (@undoFocusedTrigger.done)="animationEnd($event)"> 
                 <svg class="bi" width="22" height="22" fill="currentColor">
                     <use xlink:href="assets/bootstrap-icons.svg#arrow-counterclockwise"/>
                 </svg>
