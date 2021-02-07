@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { mergeMap , map} from 'rxjs/operators';
+import { Observable, of, Subject, timer } from 'rxjs';
+import { mergeMap , map, switchMap, retry, takeUntil, tap, share} from 'rxjs/operators';
 import { AppConfigService } from 'src/app/app-config.service';
 import { DemoService } from 'src/app/_services/demo.service';
 import { TeacherService } from 'src/app/_services/teacher.service';
@@ -16,7 +16,10 @@ export class SurveyOpenComponent implements OnInit {
   @Input() classTeacher!: ClassTeacher;
 
   studentUrl!: string;
-  nSignups:number=0;
+  public nSignupsObsStream: Observable<number> = of(0);
+  public showDemoDataButton: boolean = false;
+  private stopPolling = new Subject();
+
 
   submittingDemo = false;
 
@@ -32,19 +35,32 @@ export class SurveyOpenComponent implements OnInit {
   ngOnInit(): void {
     this.studentUrl = `${this.configService.frontendUrl}/${this.schoolClass.studentURL}`
 
-    this.teacherService.nSignups(this.schoolClass, this.classTeacher).subscribe(n => {
-      console.log(`nSignups = ${n}`)
-      this.nSignups = n})
+    this.nSignupsObsStream = timer(1, 5000).pipe(
+      switchMap(() => this.teacherService.nSignups(this.schoolClass, this.classTeacher)),
+      retry(),
+      // tap(console.log),
+      share(),
+      takeUntil(this.stopPolling)
+    )
 
-    console.log(this.showDemoDataButton())
+    this.showDemoDataButton = this.shouldShowDemoButton()
+
+    this.nSignupsObsStream.subscribe(n => {
+      if(n>0){ this.showDemoDataButton = false;}}
+      )
+    // console.log(this.showDemoDataButton())
   }
 
-  showDemoDataButton():boolean {
-    return this.demoService.demoActive() && (this.nSignups == 0) && this.demoService.schoolEligable(this.schoolClass)
+  ngOnDestroy() {
+    this.stopPolling.next();
+  }
+
+  shouldShowDemoButton(): boolean{
+      return this.demoService.demoActive() && this.demoService.schoolEligable(this.schoolClass)
   }
 
   submitSampleData(){
-    if(this.showDemoDataButton()){
+    if(this.showDemoDataButton){
       this.submittingDemo = true;
       this.demoService.submitSampleData(this.schoolClass).subscribe(
         msg => {

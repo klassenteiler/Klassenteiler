@@ -15,7 +15,7 @@
 </div>
 <div class="card">
     <div class="card-body">
-        <div *ngIf="showDemoDataButton()" class="alert alert-info">
+        <div *ngIf="showDemoDataButton" class="alert alert-info">
             <H4>Schulklasse mit Beispieldaten befüllen</H4>
             <p>
             Falls Sie unser Tool nur ausprobieren wollen können Sie hier Beispieldaten generieren. Dann wird simuliert, dass sich Schüler:innen in der Umfrage eintragen. 
@@ -26,7 +26,7 @@
         </div>
         <div>
         <H4> Übersicht</H4>
-        <p>Bisher haben sich <mark>{{nSignups}}</mark> Schüler:innen eingetragen. </p>
+        <p>Bisher haben sich <mark>{{nSignupsObsStream | async}}</mark> Schüler:innen eingetragen. </p>
 
         <p>
         Sie können die Umfrage beenden. Dann kann sich niemand mehr eintragen. 
