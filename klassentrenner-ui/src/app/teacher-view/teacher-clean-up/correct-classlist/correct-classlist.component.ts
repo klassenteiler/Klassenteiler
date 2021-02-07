@@ -51,6 +51,9 @@ export class CorrectClasslistComponent implements OnInit {
 
   onAddEnter(){
     // this.add();
+    // https://github.com/angular/angular/issues/22426
+    // https://stackoverflow.com/questions/39787038/how-to-manage-angular2-expression-has-changed-after-it-was-checked-exception-w
+    // https://stackoverflow.com/questions/56891143/error-expressionchangedafterithasbeencheckederror-previous-value-ng-untouche
     console.log('on Enter currently does not work, due to angular change detection issues')
   }
 

@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormArray, FormBuilder, FormControl } from '@angular/forms';
 import { timeStamp } from 'console';
 import { FriendReported2Match } from '../teacher-clean-up.models';
+import * as stringSim from 'string-similarity';
 
 @Component({
   selector: 'app-match-students',
@@ -57,8 +58,13 @@ export class MatchStudentsComponent implements OnInit {
 
   getClassListForId(entityId: number): Array<_MatchOption>{
     //TODO sort by similarity
+    if(this.friendReportedList === null){throw new Error('friendRlist == null')}
 
-    const sortedClassList: string[] = this.classList!
+    const query: string = this.friendReportedList[entityId].name
+
+    const ratings: Array<{'target': string, 'rating': number}> = stringSim.findBestMatch(query, this.classList!).ratings
+
+    const sortedClassList: string[] = ratings.sort((left, right) => right.rating - left.rating ).map(s => s.target)
 
     const opts: _MatchOption[] =  sortedClassList.map(s => new _MatchOption(s, s))
     return [_MatchOption.unkown].concat(opts)

@@ -37,6 +37,7 @@ export class TeacherCleanUpComponent implements OnInit {
         this.friendRstudents = friendRstudents;
         this.stateHash = stateHash;
         this.originalClassListNames = this.getOriginalClassList(selfRstudents);
+        this.inplaceSortClassList();
         this.updateCurrentClasslist();
       });
   }

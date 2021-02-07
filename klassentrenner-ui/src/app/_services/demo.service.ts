@@ -50,14 +50,19 @@ export class DemoService {
         return result
       })
 
-      const combined: Observable<string> = forkJoin(allSubmitCommands).pipe(map(stuff => {
-        console.log(stuff)
+      // execute all observables in parallel
+      // const combined: Observable<any> = forkJoin(allSubmitCommands)
+      
+      // execute obervables in sequence
+      const combined: Observable<any> = allSubmitCommands.reduce((left, right) => {
+        return left.pipe(mergeMap(l => right))
+      })
+
+      const finalOk: Observable<string> = combined.pipe(map(_tmp => {
         return 'ok'
       }))
 
-      return combined
-    }));
+      return finalOk
+    }));  
   }
-
-
 }
