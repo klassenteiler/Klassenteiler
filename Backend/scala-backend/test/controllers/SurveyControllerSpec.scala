@@ -43,6 +43,8 @@ class SurveyControllerSpec
 
   var classId: Int = _
   var classSecret: String = _
+  val student1: StudentCC =
+    StudentCC(None, "baseStudent", "encName", true, None)
   var student1Id: Int = _
 
   val schoolClass: SchoolClassDB = SchoolClassDB(
@@ -65,8 +67,6 @@ class SurveyControllerSpec
     classId = createdSchoolClass.id.get
     classSecret = createdSchoolClass.classSecret
 
-    val student1: StudentCC =
-      StudentCC(None, "baseStudent", "encName", true, None)
     student1Id = awaitInf(studentModel.createStudent(student1, classId)).get
   }
 
@@ -329,10 +329,11 @@ class SurveyControllerSpec
 
       awaitInf(classModel.updateStatus(classId, SurveyStatus.Closed))
       val request: FakeRequest[play.api.mvc.AnyContent] =
-        FakeRequest().withHeaders(
-          Headers("teacherSecret" -> schoolClass.teacherSecret)
-            
-        ).withJsonBody(Json.toJson(mergeObject))
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
       val result: Future[Result] =
         controller.startCalculating(classId, classSecret).apply(request)
       status(result) mustBe Ok.header.status
@@ -392,7 +393,9 @@ class SurveyControllerSpec
           )
           .withJsonBody(Json.toJson(mergeObject))
       val result: Result =
-        awaitInf(controller.startCalculating(classId, classSecret).apply(request))
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
       status(Future.successful(result)) mustBe Ok.header.status
 
       val numOfStudentsAfter: Int =
@@ -498,7 +501,9 @@ class SurveyControllerSpec
           )
           .withJsonBody(Json.toJson(mergeObject))
       val result: Result =
-        awaitInf(controller.startCalculating(classId, classSecret).apply(request))
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
       status(Future.successful(result)) mustBe Ok.header.status
 
       val updatedStudentId: Int = awaitInf(
@@ -566,7 +571,9 @@ class SurveyControllerSpec
           .withJsonBody(Json.toJson(mergeObject))
 
       val result: Result =
-        awaitInf(controller.startCalculating(classId, classSecret).apply(request))
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
       status(Future.successful(result)) mustBe Ok.header.status
 
       val allStudentsAfter: Seq[StudentCC] =
@@ -607,7 +614,9 @@ class SurveyControllerSpec
           .withJsonBody(Json.toJson(mergeObject))
 
       val result: Result =
-        awaitInf(controller.startCalculating(classId, classSecret).apply(request))
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
       status(Future.successful(result)) mustBe Ok.header.status
 
       val numStudentsAfter: Int =
@@ -694,7 +703,9 @@ class SurveyControllerSpec
           .withJsonBody(Json.toJson(mergeObject))
 
       val result: Result =
-        awaitInf(controller.startCalculating(classId, classSecret).apply(request))
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
       status(Future.successful(result)) mustBe Ok.header.status
 
       val numStudentsAfter: Int =
@@ -770,7 +781,9 @@ class SurveyControllerSpec
           .withJsonBody(Json.toJson(mergeObject))
 
       val result: Result =
-        awaitInf(controller.startCalculating(classId, classSecret).apply(request))
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
       status(Future.successful(result)) mustBe Ok.header.status
 
       val allStudentsAfter: Seq[StudentCC] =
@@ -803,13 +816,76 @@ class SurveyControllerSpec
           .withJsonBody(Json.toJson(mergeObject))
 
       val result: Result =
-        awaitInf(controller.startCalculating(classId, classSecret).apply(request))
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
       status(Future.successful(result)) mustBe Ok.header.status
 
       val numStudentsAfter: Int =
         awaitInf(studentModel.getStudents(classId)).length
 
       numStudentsAfter mustBe 0
+    }
+    "return 400 if the user send invalid merging commands by not handling all self-reported students" in {
+      awaitInf(classModel.updateStatus(classId, SurveyStatus.Closed))
+      val friendReportedStudent: StudentCC =
+        StudentCC(None, "test", "encName", false, None)
+      val friendReportedStudentId: Int =
+        awaitInf(
+          studentModel.createStudent(friendReportedStudent, classId)
+        ).get
+
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
+        Seq(),
+        Seq(),
+        Seq(),
+        Seq()
+      )
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+
+      val result: Result =
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
+      status(Future.successful(result)) mustBe BadRequest.header.status
+    }
+    "return 400 if the user send invalid merging commands by adding and deleting the same student" in {
+      awaitInf(classModel.updateStatus(classId, SurveyStatus.Closed))
+      val mergeObject: MergeCommandsCC = MergeCommandsCC(
+        Seq(),
+        Seq(
+          StudentCC(
+            None,
+            student1.hashedName,
+            student1.encryptedName,
+            true,
+            None
+          )
+        ), // studentsToAdd
+        Seq(student1Id), // studentsToDelete
+        Seq()
+      )
+
+      // sending the request
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+          .withJsonBody(Json.toJson(mergeObject))
+
+      val result: Result =
+        awaitInf(
+          controller.startCalculating(classId, classSecret).apply(request)
+        )
+      status(Future.successful(result)) mustBe BadRequest.header.status
     }
 
     "return status 410 if the survey of the class is in wrong status (Open,Calculating,Done)" in {

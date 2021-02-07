@@ -193,81 +193,135 @@ class SurveyController @Inject() (
       mergingObject: MergeCommandsCC
   ): Future[Boolean] = {
 
-    //1. create new
-    val creationSuccessList: Seq[Future[Boolean]] =
-      mergingObject.studentsToAdd.map(student =>
-        createStudents(classId, student, Seq())
+    val validInput = validateMergingInput(classId, mergingObject)
+    validInput.flatMap(validated => {
+      if (validated) {
+        //1. create new
+        val creationSuccessList: Seq[Future[Boolean]] =
+          mergingObject.studentsToAdd.map(student =>
+            createStudents(classId, student, Seq())
+          )
+
+        val creationSuccess: Future[Boolean] = Future
+          .sequence(creationSuccessList)
+          .map((arr: Seq[Boolean]) => {
+            arr.forall(_ == true)
+          })
+
+        // 2. rename
+
+        val renameSuccess: Future[Boolean] =
+          creationSuccess.flatMap(cSuccess => {
+            if (cSuccess) {
+              val renameSuccessesList: Seq[Future[Boolean]] =
+                mergingObject.studentsToRename.map(student =>
+                  mergeModel.renameAndMerge(
+                    classId,
+                    student.id.get,
+                    student.hashedName,
+                    student.encryptedName
+                  )
+                )
+              Future
+                .sequence(renameSuccessesList)
+                .map((arr: Seq[Boolean]) => {
+                  arr.forall(_ == true)
+                }) // return
+            } else {
+              Future.successful(false) // return
+            }
+          })
+
+        //3. delete
+        val deletionSuccess: Future[Boolean] =
+          renameSuccess.flatMap(rSuccess => {
+            if (rSuccess) {
+              val deletionSuccessesList: Seq[Future[Boolean]] =
+                mergingObject.studentsToDelete.map(id =>
+                  studentModel.removeStudent(id)
+                )
+              Future
+                .sequence(deletionSuccessesList)
+                .map((arr: Seq[Boolean]) => {
+                  arr.forall(_ == true)
+                }) // return
+            } else {
+              Future.successful(false) //return
+            }
+          })
+
+        //4. isAliasOf
+        val aliasOfSuccess: Future[Boolean] =
+          deletionSuccess.flatMap(dSuccess => {
+            if (dSuccess) {
+              val aliasOfSuccessesList: Seq[Future[Boolean]] =
+                mergingObject.isAliasOf.map(aliasTuple =>
+                  mergeModel.findRewireAndDelete(
+                    classId,
+                    aliasTuple._1,
+                    aliasTuple._2
+                  )
+                )
+              Future
+                .sequence(aliasOfSuccessesList)
+                .map((arr: Seq[Boolean]) => {
+                  arr.forall(_ == true)
+                }) // return
+            } else {
+              Future.successful(false)
+            }
+          })
+        aliasOfSuccess
+
+      } else {
+        Future.successful(false) // return
+      }
+    })
+
+  }
+
+  def validateMergingInput(
+      classId: Int,
+      mergingObject: MergeCommandsCC
+  ): Future[Boolean] = {
+    // to not bring the database into an invalid state, all friendreported students have to be handled in some way
+    // i.e. they have to be either merged or deleted. In this step we the mergeCommands cover all of these cases
+    val allFriendRepStudents: Future[Seq[StudentCC]] =
+      studentModel.getAllFriendReportedStudents(classId)
+
+    val allFriendRepsHandled: Future[Boolean] = allFriendRepStudents
+      .map(list =>
+        list
+          .map(student =>
+            mergeCommandsContains(student, mergingObject)
+          ) //Future[Seq[Boolean]]
+          .forall(_ == true)
       )
 
-    val creationSuccess: Future[Boolean] = Future
-      .sequence(creationSuccessList)
-      .map((arr: Seq[Boolean]) => {
-        arr.forall(_ == true)
-      })
+    allFriendRepsHandled
+  }
 
-    // 2. rename
+  def mergeCommandsContains(
+      student: StudentCC,
+      mergingObject: MergeCommandsCC
+  ): Boolean = {
+    // check whether the student appears in any of the tuples for the rewiring process
+    val inAliasList: Seq[Boolean] =
+      mergingObject.isAliasOf.map(aliasTuple => aliasTuple._1 == student.id.get)
+    val inAlias: Boolean = inAliasList.exists(_ == true)
+    // check whether the student appears in the list of students to delete
+    val inDelete: Boolean =
+      mergingObject.studentsToDelete.exists(_ == student.id.get)
+    // check whether the hash of the student appears in the list of students to add
+    val inAdd: Boolean = mergingObject.studentsToAdd.exists(s =>
+      s.hashedName == student.hashedName
+    )
+    // check whether the hash of the student appears in the list of students to rename
+    val inRename: Boolean = mergingObject.studentsToRename.exists(s =>
+      s.hashedName == student.hashedName
+    )
 
-    val renameSuccess: Future[Boolean] =
-      creationSuccess.flatMap(cSuccess => {
-        if (cSuccess) {
-          val renameSuccessesList: Seq[Future[Boolean]] =
-            mergingObject.studentsToRename.map(student =>
-              mergeModel.renameAndMerge(
-                classId,
-                student.id.get,
-                student.hashedName,
-                student.encryptedName
-              )
-            )
-          Future
-            .sequence(renameSuccessesList)
-            .map((arr: Seq[Boolean]) => {
-              arr.forall(_ == true)
-            }) // return
-        } else {
-          Future.successful(false) // return
-        }
-      })
-
-    //3. delete
-    val deletionSuccess: Future[Boolean] = renameSuccess.flatMap(rSuccess => {
-      if (rSuccess) {
-        val deletionSuccessesList: Seq[Future[Boolean]] =
-          mergingObject.studentsToDelete.map(id =>
-            studentModel.removeStudent(id)
-          )
-        Future
-          .sequence(deletionSuccessesList)
-          .map((arr: Seq[Boolean]) => {
-            arr.forall(_ == true)
-          }) // return
-      } else {
-        Future.successful(false) //return
-      }
-    })
-
-    //4. isAliasOf
-    val aliasOfSuccess: Future[Boolean] = deletionSuccess.flatMap(dSuccess => {
-      if (dSuccess) {
-        val aliasOfSuccessesList: Seq[Future[Boolean]] =
-          mergingObject.isAliasOf.map(aliasTuple =>
-            mergeModel.findRewireAndDelete(
-              classId,
-              aliasTuple._1,
-              aliasTuple._2
-            )
-          )
-        Future
-          .sequence(aliasOfSuccessesList)
-          .map((arr: Seq[Boolean]) => {
-            arr.forall(_ == true)
-          }) // return
-      } else {
-        Future.successful(false)
-      }
-    })
-    aliasOfSuccess
-
+    inAlias || inDelete || inAdd || inRename
   }
 
   // PUT
@@ -295,14 +349,23 @@ class SurveyController @Inject() (
                         mergeStudents(classId, mergingJsonOption.get)
 
                       mergingSuccess.flatMap(success => {
-                        startPartitionAlgorithm(classId)
-                        classModel
-                          .updateStatus(classId, SurveyStatus.Calculating).map(
-                            succs => Ok(
-                            Json
-                              .obj("message" -> "success - started calculating")
+                        if (success) {
+                          startPartitionAlgorithm(classId)
+                          classModel
+                            .updateStatus(classId, SurveyStatus.Calculating)
+                            .map(succs =>
+                              Ok(
+                                Json
+                                  .obj(
+                                    "message" -> "success - started calculating"
+                                  )
+                              )
                             )
-                          )
+                        } else {
+                          Future.successful(
+                            BadRequest("Invalid Merging Commands")
+                          ) //return
+                        }
                       })
 
                     } else {
