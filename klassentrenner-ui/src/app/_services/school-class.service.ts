@@ -14,6 +14,10 @@ export class SchoolClassService {
 
   constructor(private backendService: BackendService, private config: AppConfigService) { }
 
+  getClassStatus(schoolClass: SchoolClass): Observable<number> {
+    return this.backendService.getClassStatus(schoolClass.id!, schoolClass.classSecret);
+  }
+
   submitStudentSurvey(schoolClass: SchoolClass, ownName: string, friendsNames: Array<string>){
     const payload = this.prepareStudentSurveySubmission(schoolClass, ownName, friendsNames);
     return this.backendService.submitStudentSurvey(payload, schoolClass.id!, schoolClass.classSecret )

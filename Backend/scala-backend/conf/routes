@@ -9,6 +9,7 @@ GET     /                                       controllers.HomeController.index
 
 POST    /createClass                            controllers.SchoolClassController.createSchoolClass()
 GET     /getClass/:id/:classSecret              controllers.SchoolClassController.getSchoolClass(id: Int, classSecret: String)
+GET     /getClassStatus/:classId/:classSecret   controllers.SchoolClassController.getClassStatus(classId: Int, classSecret: String)
 GET     /teacherAuth/:id/:classSecret           controllers.AuthenticationController.authenticateTeacher(id: Int, classSecret: String)
 POST    /submitStudentSurvey/:id/:classSecret   controllers.SurveyController.submitSurvey(id: Int, classSecret: String)
 PUT     /closeSurvey/:id/:classSecret           controllers.SurveyController.closeSurvey(id: Int, classSecret: String)

@@ -26,11 +26,6 @@ export class ResultsComponent implements OnInit {
     )
   }
 
-  click(){
-    console.log("click")
-    console.log(this.groupA)
-  }
-
   setResults(students: Array<ClearLocalStudent>){
         // console.log(students);
         this.resultClassList = students;
@@ -41,7 +36,6 @@ export class ResultsComponent implements OnInit {
         console.log('in set results')
         console.log(this.groupA)
         console.log(this.groupB)
-        this.click();
   }
 
 

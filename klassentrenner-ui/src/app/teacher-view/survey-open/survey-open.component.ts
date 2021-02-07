@@ -48,7 +48,9 @@ export class SurveyOpenComponent implements OnInit {
     this.nSignupsObsStream.subscribe(n => {
       if(n>0){ this.showDemoDataButton = false;}}
       )
-    // console.log(this.showDemoDataButton())
+
+    // after 30 minutes stop updating the nSignups counter
+    timer(30 * 60 * 1000).subscribe(_tmp => {this.stopPolling.next()})
   }
 
   ngOnDestroy() {

@@ -112,7 +112,8 @@ class SchoolClassControllerSpec
       schoolClass.className mustBe "testClassName"
       schoolClass.id.get mustBe 2 // because we initially entered one class manually
 
-      val createdClass: SchoolClassCC = awaitInf(classModel.getSchoolClass(schoolClass.id.get))
+      val createdClass: SchoolClassCC =
+        awaitInf(classModel.getSchoolClass(schoolClass.id.get))
       createdClass.className mustBe "testClassName"
     }
     "should return schoolClass by id" in {
@@ -144,6 +145,20 @@ class SchoolClassControllerSpec
           .getSchoolClass(classId, "wrong Secret")
           .apply(FakeRequest())
       status(result2) mustBe NotFound.header.status
+    }
+    "return 200 and classStatus (getClassStatus)" in {
+      val result: Future[Result] =
+        controller
+          .getClassStatus(classId, schoolClass.classSecret)
+          .apply(
+            FakeRequest()
+          )
+      status(result) mustBe Ok.header.status
+      contentAsString(result) mustBe Json
+        .obj(
+          "status" -> 0
+        )
+        .toString
     }
   }
 }
