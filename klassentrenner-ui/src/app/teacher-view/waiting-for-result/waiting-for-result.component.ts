@@ -33,7 +33,8 @@ export class WaitingForResultComponent implements OnInit {
       }
     })
 
-    timer(60*1000).subscribe(_tmp =>{
+    // after 5 minutes stop pooling
+    timer(5*60*1000).subscribe(_tmp =>{
       console.log('stopping the pooling')
       this.stopPolling.next()
     })
