@@ -12,7 +12,7 @@ import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
       </button>
     </div>
     <div class="modal-body">
-      <p> Der Name {{name}} hat schon mal existiert. Wurde aber mittlerweile geändert. Bitte stellen Sie den ursprünglichen Namen mit dem Grünen Knopf wieder her, anstatt den Namen neu hinzuzufügen. 
+      <p> Der Name {{name}} hat schon mal existiert. Wurde aber mittlerweile geändert. Bitte stellen Sie den ursprünglichen Namen mit dem grünen Knopf wieder her, anstatt den Namen neu hinzuzufügen. 
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>
