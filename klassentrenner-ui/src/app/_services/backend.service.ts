@@ -35,6 +35,10 @@ export class BackendService {
     return this.http.post(`${this.config.apiBaseUrl}/submitStudentSurvey/${classId}/${classSecret}`, payload);
   }
 
+  getClassStatus(classId: number, classSecret: string): Observable<number>{
+    return this.http.get<{"status": number}>(`${this.config.apiBaseUrl}/getClassStatus/${classId}/${classSecret}`).pipe(map(s => s.status))
+  }
+
   prepareTeacherGetRequest<T>(classId: number, classSecret: string, teacherSecret: string, functionName: string): Observable<T> {
     const headers = new HttpHeaders().set("teacherSecret", teacherSecret)
     const url: string = `${this.config.apiBaseUrl}/${functionName}/${classId}/${classSecret}`
