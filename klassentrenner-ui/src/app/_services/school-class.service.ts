@@ -53,11 +53,6 @@ export class SchoolClassService {
     return obs2
   }
 
-  // getCurrentUrl(): string{
-  //   console.log(this.router.url)
-  //   this.router.routerState.paramMap
-  //   return this.router.url
-  // }
 
   makeSchoolClass(schoolName: string, className:string): Observable<[string, SchoolClass, ClassTeacher]>{
     // let password: string;
@@ -82,30 +77,5 @@ export class SchoolClassService {
 
     return pre2;
 
-    // const createClassObs: Observable<[string, SchoolClass, ClassTeacher]> = new Observable((observer) => {
-
-    //     console.log("starting slow function")
-    //     const password = EncTools.createTeacherPassword();
-    //     const [schoolClassLocal, clsTeach]: [SchoolClass, ClassTeacher] = EncTools.makeClass(schoolName, className, password)
-
-    //     observer.next([password, schoolClassLocal, clsTeach])
-    //     observer.complete()
-    // });
-      
-
-    // const preOutput: Observable<[string, SchoolClass, ClassTeacher]> =  createClassObs.pipe(concatMap(
-    //   ([password, schoolClassLocal, clsTeach]:[string, SchoolClass, ClassTeacher]) =>
-    //   {
-    //     const backendProcessedObs: Observable<[string, SchoolClass, ClassTeacher]> =  this.backendService.createClassInBackend(
-    //       schoolClassLocal.toTransport(), 
-    //       clsTeach.toTransport(password) // possibly some error handling has to go here as a pipe
-    //       ).pipe(map((cls: SchoolClassT) => {
-    //         const fullClass: SchoolClass = SchoolClass.fromTransport(cls); // has id etc filled out
-    //         return [password, fullClass, clsTeach]
-    //     }))
-    //     return backendProcessedObs
-    //   }));
-
-    //   return preOutput
   }
 }

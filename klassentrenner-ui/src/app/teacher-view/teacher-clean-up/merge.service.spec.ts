@@ -6,7 +6,7 @@ import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, ClearLocalStudent, EncTools, SchoolClass } from 'src/app/_tools/enc-tools.service';
 
 import { MergeService } from './merge.service';
-import { SelfReportedInEdit } from './teacher-clean-up.models';
+import { MergeCommandsDict, SelfReportedInEdit } from './teacher-clean-up.models';
 
 class MockTeacherService{
   static makeFriendRBackendStudents(){
@@ -34,7 +34,7 @@ class MockTeacherService{
 
 describe('MergeService', () => {
   let service: MergeService;
-  var teacherServiceSpy = jasmine.createSpyObj('TeacherService', ['getSelfReported', 'getFriendReported'])
+  var teacherServiceSpy = jasmine.createSpyObj('TeacherService', ['getSelfReportedEnc', 'getFriendReportedEnc'])
 
 
 
@@ -73,10 +73,31 @@ beforeEach(async () => {
     expect(service).toBeTruthy();
   });
 
+  it('MergeCommandDict should be properly encoded', () => {
+    const knownStudent = new ClearLocalStudent("known student", true, 100)
+    const commands = new MergeCommandsDict(
+      [new ClearLocalStudent("new", true)],
+      [new ClearLocalStudent("newName", true, 42)],
+      [2],
+      [[3, "known student"]]
+    )
+
+    const encrypted = commands.toTransport(schoolClass!)
+
+    expect(encrypted.studentsToRename[0].id).toBeTruthy()
+    expect(encrypted.studentsToRename[0].id).toEqual(42)
+
+    expect(encrypted.isAliasOf[0][1]).toEqual(schoolClass!.localStudentToTransport(knownStudent).hashedName)
+
+    console.log(encrypted)
+  })
+
 
   it('should recover partial edit state if and only if backend state has not changed', async () => {
-    teacherServiceSpy.getSelfReported.and.returnValue(of(MockTeacherService.makeBackendStudents()));
-    teacherServiceSpy.getFriendReported.and.returnValue(of(MockTeacherService.makeFriendRBackendStudents()))
+    teacherServiceSpy.getSelfReportedEnc.and.returnValue(of(
+      schoolClass!.arrayLocalStudentToTransport( MockTeacherService.makeBackendStudents())));
+    teacherServiceSpy.getFriendReportedEnc.and.returnValue(of(
+      schoolClass!.arrayLocalStudentToTransport( MockTeacherService.makeFriendRBackendStudents())))
 
     const [mergeHash, firstState] = await service.getMergeState(schoolClass!, classTeacher!).toPromise()
 
@@ -108,7 +129,8 @@ beforeEach(async () => {
 
     // now we pretend the backend service changed
     const newBackendStudentList : ClearLocalStudent[] = MockTeacherService.makeBackendStudents().concat([ new ClearLocalStudent("Extra Student", true, 75)]);
-    teacherServiceSpy.getSelfReported.and.returnValue(of(newBackendStudentList));
+    teacherServiceSpy.getSelfReportedEnc.and.returnValue(of(
+      schoolClass!.arrayLocalStudentToTransport( newBackendStudentList)));
     // now the teacher again reloads
 
     const [fourthHash, fourthState] = await service.getMergeState(schoolClass!, classTeacher!).toPromise();

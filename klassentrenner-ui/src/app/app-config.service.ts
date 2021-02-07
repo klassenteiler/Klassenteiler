@@ -88,4 +88,13 @@ export class MockAppConfigService {
 
       return this.appConfig.skipMerging
     }
+
+    get demoData(): string{
+      this.check()
+      return this.appConfig.demoData
+    }
+    get demoSchoolnamePrefix(): string{
+      this.check()
+      return this.appConfig.demoSchoolnamePrefix
+    }
   }

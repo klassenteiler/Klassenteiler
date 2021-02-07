@@ -26,6 +26,8 @@ class StudentControllerSpec extends PlaySpec with MockDatabase with Injecting {
     authenticationController
   )
 
+  implicit val StudentReads = Json.reads[StudentCC]
+
   // clear Database and insert one schoolClass and three students
   this.clearDatabase();
   val classModel: SchoolClassModel = new SchoolClassModel(db)
@@ -60,7 +62,7 @@ class StudentControllerSpec extends PlaySpec with MockDatabase with Injecting {
   val student3Id: Option[Int] =
     awaitInf(studentModel.createStudent(student3, classId))
 
-  "StudentController " should {
+  "StudentController's getSignups" should {
     "return number of self-reported students" in {
       val request: FakeRequest[play.api.mvc.AnyContent] =
         FakeRequest()
@@ -114,5 +116,116 @@ class StudentControllerSpec extends PlaySpec with MockDatabase with Injecting {
       status(result) mustBe BadRequest.header.status
     }
   }
+  "StudentController's getSelfReportedStudents" should {
+    "return only the selfReportedStudents" in {
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(Headers("teacherSecret" -> schoolClass.teacherSecret))
+      val result: Future[Result] =
+        controller
+          .getSelfReportedStudents(classId, schoolClass.classSecret)
+          .apply(request)
+      status(result) mustBe Ok.header.status
+      val resultBody: String =
+        contentAsString(result) // automatically waits for future
+      val jsBody: JsValue = Json.parse(resultBody)
+      val students: Seq[StudentCC] = Json.fromJson[Seq[StudentCC]](jsBody).get
+      students.length mustBe 2
+    }
+    "return status 404 if classSecret or id is wrong" in {
+      val result1: Future[Result] =
+        controller
+          .getSelfReportedStudents(99, schoolClass.classSecret) // wrong id
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> schoolClass.teacherSecret)
+            )
+          )
+      status(result1) mustBe NotFound.header.status
 
+      val result2: Future[Result] =
+        controller
+          .getSelfReportedStudents(classId, "wrong Secret")
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> schoolClass.teacherSecret)
+            )
+          )
+      status(result2) mustBe NotFound.header.status
+    }
+    "return status 401 if teacherSecret is wrong" in {
+      val result: Future[Result] =
+        controller
+          .getSelfReportedStudents(classId, schoolClass.classSecret)
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> "wrong secret")
+            )
+          )
+      status(result) mustBe Unauthorized.header.status
+    }
+    "return status 400 if no teacherSecret is provided" in {
+      val result: Future[Result] =
+        controller
+          .getSelfReportedStudents(classId, schoolClass.classSecret)
+          .apply(FakeRequest())
+      status(result) mustBe BadRequest.header.status
+    }
+  }
+  "StudentController's getFriendReportedStudents" should {
+    "return only the friendreported Students" in {
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(Headers("teacherSecret" -> schoolClass.teacherSecret))
+      val result: Future[Result] =
+        controller
+          .getFriendReportedStudents(classId, schoolClass.classSecret)
+          .apply(request)
+      status(result) mustBe Ok.header.status
+      val resultBody: String =
+        contentAsString(result) // automatically waits for future
+      val jsBody: JsValue = Json.parse(resultBody)
+      val students: Seq[StudentCC] = Json.fromJson[Seq[StudentCC]](jsBody).get
+      students.length mustBe 1
+    }
+        "return status 404 if classSecret or id is wrong" in {
+      val result1: Future[Result] =
+        controller
+          .getFriendReportedStudents(99, schoolClass.classSecret) // wrong id
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> schoolClass.teacherSecret)
+            )
+          )
+      status(result1) mustBe NotFound.header.status
+
+      val result2: Future[Result] =
+        controller
+          .getFriendReportedStudents(classId, "wrong Secret")
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> schoolClass.teacherSecret)
+            )
+          )
+      status(result2) mustBe NotFound.header.status
+    }
+    "return status 401 if teacherSecret is wrong" in {
+      val result: Future[Result] =
+        controller
+          .getFriendReportedStudents(classId, schoolClass.classSecret)
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> "wrong secret")
+            )
+          )
+      status(result) mustBe Unauthorized.header.status
+    }
+    "return status 400 if no teacherSecret is provided" in {
+      val result: Future[Result] =
+        controller
+          .getFriendReportedStudents(classId, schoolClass.classSecret)
+          .apply(FakeRequest())
+      status(result) mustBe BadRequest.header.status
+    }
+  }
 }
