@@ -1,0 +1,22 @@
+{
+    "Tim": ["Phillip", "Dieter", "Peter"],
+    "Phillip": ["Dieter", "Clemens"],
+    "Klemens": ["Phillip", "Anna"],
+    "Peter": ["Santa Claus", "Anna"],
+    "Anna": ["Peter", "Dieter"],
+    "Dieter": ["Max", "Klemens"],
+    "Max": ["Tim"],
+    "Elisabeth": ["Tim"],
+    "Günter": ["Tim"],
+    "Hans": ["Tim"],
+    "Pradeep": ["Tim"],
+    "Hugo": ["Tim"],
+    "Anton": ["Tim"],
+    "Joshy": ["Tim"],
+    "Klaus": ["Tim"],
+    "Maria": ["Tim"],
+    "Charlotte": ["Tim"],
+    "Sabine": ["Tim"],
+    "Sarah": ["Tim"],
+    "Angela": ["Tim"]
+}

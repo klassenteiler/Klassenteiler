@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormArray, FormBuilder, FormControl } from '@angular/forms';
 import { timeStamp } from 'console';
 import { FriendReported2Match } from '../teacher-clean-up.models';
+import * as stringSim from 'string-similarity';
 
 @Component({
   selector: 'app-match-students',
@@ -15,6 +16,7 @@ export class MatchStudentsComponent implements OnInit {
 
 
   matchingControls! : FormArray;
+  numOfStudentsToMatch: number = 0;
 
   // City: string[] = ['Florida', 'South Dakota', 'Tennessee', 'Michigan']
 
@@ -35,6 +37,17 @@ export class MatchStudentsComponent implements OnInit {
       // here we always get a string but we might also need the option values
     })
     this.matchingControls = new FormArray(groups);
+
+    this.numOfStudentsToMatch = this.numStudentsThatNeedMatching(this.friendReportedList)
+  }
+
+  numStudentsThatNeedMatching(friendRlist: FriendReported2Match[]): number {
+    const listToMatch = friendRlist.filter(s => {
+      return !this.nameIsInClasslist(s.name)
+    })
+    const num = listToMatch.length
+    console.log(`number of students that need matching is ${num}`)
+    return num
   }
 
   getControl(entityId: number) : FormControl {
@@ -44,9 +57,14 @@ export class MatchStudentsComponent implements OnInit {
   }
 
   getClassListForId(entityId: number): Array<_MatchOption>{
-    //
+    //TODO sort by similarity
+    if(this.friendReportedList === null){throw new Error('friendRlist == null')}
 
-    const sortedClassList: string[] = this.classList!
+    const query: string = this.friendReportedList[entityId].name
+
+    const ratings: Array<{'target': string, 'rating': number}> = stringSim.findBestMatch(query, this.classList!).ratings
+
+    const sortedClassList: string[] = ratings.sort((left, right) => right.rating - left.rating ).map(s => s.target)
 
     const opts: _MatchOption[] =  sortedClassList.map(s => new _MatchOption(s, s))
     return [_MatchOption.unkown].concat(opts)
@@ -78,7 +96,6 @@ export class MatchStudentsComponent implements OnInit {
   }
 
   triggerFriendRChange(){
-    console.log('trigger friend r change')
     this.friendReportedChanged.emit();
   }
 
@@ -99,6 +116,7 @@ export class _MatchOption{
   }
 
   static setValueFromStudent(s: FriendReported2Match): string|number{
+    // returns the value that should be written into the form based on the student
     if(!s.hasBeenAssigned){
       return _MatchOption.notYetSetMarker
     }

@@ -17,8 +17,11 @@ export class TeacherCleanUpComponent implements OnInit {
   activeStep: number = 1;
   readonly lastStep: number = 3;
 
-  classList: Array<SelfReportedInEdit>| null = null;
+  classList: Array<SelfReportedInEdit> | null = null;
   friendRstudents: Array<FriendReported2Match> | null = null;
+
+  currentClassListNames: string[] = [];
+  originalClassListNames: string[] = [];
 
   // the current merging intermediate state is derived from a list of self reported students in the backend
   // this is summarised by the stateHash
@@ -33,13 +36,21 @@ export class TeacherCleanUpComponent implements OnInit {
         this.classList = selfRstudents;
         this.friendRstudents = friendRstudents;
         this.stateHash = stateHash;
+        this.originalClassListNames = this.getOriginalClassList(selfRstudents);
+        this.inplaceSortClassList();
+        this.updateCurrentClasslist();
       });
+  }
+
+  getOriginalClassList(clsList: SelfReportedInEdit[]): string[]{
+    return clsList.filter(s => !s.teacherAdded).map(s=> s.origName)
   }
 
   saveClassList() {
     console.log("saving class state")
-
     if(this.classList === null){throw new Error("cant save classList cause it's not defined.")}
+
+    this.updateCurrentClasslist()
     this.mergeService.saveState2local(this.schoolClass, this.stateHash, this.classList!, null)
   }
 
@@ -62,9 +73,23 @@ export class TeacherCleanUpComponent implements OnInit {
     }
   }
 
+  sortClassList(clsList: SelfReportedInEdit[]): SelfReportedInEdit[]{
+    return clsList.sort((a,b)=>a.lastName.localeCompare(b.lastName))
+  }
+
+  inplaceSortClassList(){
+    if(this.classList === null){throw new Error("cant sort class list because it is null")}
+    this.classList = this.sortClassList(this.classList)
+    this.updateCurrentClasslist()
+  }
+
   getCurrentClasslist(): string[]{
     if(this.classList === null){ throw new Error("no classlist")}
     return this.classList.filter((s: SelfReportedInEdit) => !s.deleted).map(s => s.name)
+  }
+
+  updateCurrentClasslist(){
+    this.currentClassListNames = this.getCurrentClasslist();
   }
 
 }

@@ -194,6 +194,9 @@ export class SchoolClass{
   //   return localStudent
   // }
 
+  arrayLocalStudentToTransport(students: ClearLocalStudent[]): StudentT[] {
+    return students.map(s=> this.localStudentToTransport(s))
+  }
 
   localStudentToTransport(student: ClearLocalStudent): StudentT {
     const nameHash: string = this.hashStudentName(student.decryptedName)
@@ -275,6 +278,10 @@ export class ClassTeacher{
       teacherSecret: this.teacherSecret
     })
     return teachT
+  }
+
+  arrayStudentT2arrayStudents(encStudents: StudentT[]): ClearLocalStudent[] {
+    return encStudents.map(s=> this.clearLocalStudentFromTransport(s))
   }
 
 

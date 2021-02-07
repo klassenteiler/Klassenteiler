@@ -1,12 +1,37 @@
-<div class="card" *ngIf = "(classList !== null) && (friendRstudents !== null)">
-    <div class="card-body">
 
+
+<div class="card" *ngIf = "(classList === null) || (friendRstudents === null)">
+  <div class ="card-body">
+  Ihr Browser entschlüsselt gerade die Namen der Schüler:innen. Das kann ein bisschen dauern. 
+
+  <div class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="card" *ngIf = "(classList !== null) && (friendRstudents !== null)">
+    <div class="card-body" id="main-body">
+          <p>
+            Es kann sein, dass Schüler:innen Namen falsch geschrieben haben oder vergessen haben sich einzutragen. Hier haben Sie die Möglichkeit solche Fehler zu korrigieren bevor der Algorithmus ausgeführt wird. Dies passiert in drei Schritten:
+          </p>
         
-          <ul ngbNav #nav="ngbNav" [(activeId)]="activeStep" class="nav-tabs">
+          <div class="card">
+            <div class='card-header'>
+
+
+          <ul ngbNav #nav="ngbNav" [(activeId)]="activeStep" class="nav nav-tabs card-header-tabs">
             <li [ngbNavItem]="1">
-              <a ngbNavLink>1) Klassenliste Korregieren</a>
+              <a ngbNavLink>1) Klassenliste Korrigieren</a>
               <ng-template ngbNavContent>
-                <app-correct-classlist [classList]="classList" (classListChanged)="saveClassList()"></app-correct-classlist>
+                <app-correct-classlist 
+                [classList]="classList" 
+                [currentClassListNames] = "currentClassListNames"
+                [originalClassListNames] = "originalClassListNames"
+                (classListChanged)="saveClassList()"
+                (sortLastNamesEvent)="inplaceSortClassList()"
+                ></app-correct-classlist>
               </ng-template>
             </li>
             <li [ngbNavItem]="2">
@@ -14,22 +39,29 @@
               <ng-template ngbNavContent>
                   <app-match-students 
                     [friendReportedList]="friendRstudents" 
-                    [classList]="getCurrentClasslist()"
+                    [classList]="currentClassListNames"
                     (friendReportedChanged)="saveFriendReportedMatching()"
                     >
                   </app-match-students>
               </ng-template>
             </li>
             <li [ngbNavItem]="3">
-              <a ngbNavLink>3) Zusammenfassung</a>
+              <a ngbNavLink>3) Abschicken</a>
               <ng-template ngbNavContent>
-                <app-summary [classList]="classList" [friendReportedList]="friendRstudents"></app-summary>
+                <app-summary 
+                [classList]="classList" 
+                [friendReportedList]="friendRstudents"
+                [schoolClass]="schoolClass"
+                [classTeacher]="classTeacher"
+                ></app-summary>
               </ng-template>
             </li>
           </ul>
+            </div>
 
-          <div [ngbNavOutlet]="nav" class="mt-2"></div>
+          <div [ngbNavOutlet]="nav" class="card-body p-3" id="tab-outlet"></div>
 
+          </div>
 
           <div class='mt-3 row'>
           <div class="d-flex justify-content-between">

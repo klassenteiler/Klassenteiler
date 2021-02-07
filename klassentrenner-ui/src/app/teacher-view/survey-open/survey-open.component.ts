@@ -1,7 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { mergeMap , map} from 'rxjs/operators';
+import { Observable, of, Subject, timer } from 'rxjs';
+import { mergeMap , map, switchMap, retry, takeUntil, tap, share} from 'rxjs/operators';
 import { AppConfigService } from 'src/app/app-config.service';
+import { DemoService } from 'src/app/_services/demo.service';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, SchoolClass } from 'src/app/_tools/enc-tools.service';
 
@@ -15,23 +16,64 @@ export class SurveyOpenComponent implements OnInit {
   @Input() classTeacher!: ClassTeacher;
 
   studentUrl!: string;
-  nSignups:number=0;
+  public nSignupsObsStream: Observable<number> = of(0);
+  public showDemoDataButton: boolean = false;
+  private stopPolling = new Subject();
+
+
+  submittingDemo = false;
 
   
-  constructor(private configService: AppConfigService, private teacherService: TeacherService) { 
+  constructor(private configService: AppConfigService, private teacherService: TeacherService, private demoService: DemoService) { 
   }
 
   get studentURLhttp():string {
     return `http://${this.studentUrl}`
   }
 
+
   ngOnInit(): void {
     this.studentUrl = `${this.configService.frontendUrl}/${this.schoolClass.studentURL}`
 
-    this.teacherService.nSignups(this.schoolClass, this.classTeacher).subscribe(n => {
-      console.log(`nSignups = ${n}`)
-      this.nSignups = n})
-    // this.teacherService.
+    this.nSignupsObsStream = timer(1, 5000).pipe(
+      switchMap(() => this.teacherService.nSignups(this.schoolClass, this.classTeacher)),
+      retry(),
+      // tap(console.log),
+      share(),
+      takeUntil(this.stopPolling)
+    )
+
+    this.showDemoDataButton = this.shouldShowDemoButton()
+
+    this.nSignupsObsStream.subscribe(n => {
+      if(n>0){ this.showDemoDataButton = false;}}
+      )
+    // console.log(this.showDemoDataButton())
+  }
+
+  ngOnDestroy() {
+    this.stopPolling.next();
+  }
+
+  shouldShowDemoButton(): boolean{
+      return this.demoService.demoActive() && this.demoService.schoolEligable(this.schoolClass)
+  }
+
+  submitSampleData(){
+    if(this.showDemoDataButton){
+      this.submittingDemo = true;
+      this.demoService.submitSampleData(this.schoolClass).subscribe(
+        msg => {
+          console.log("Generating the sample data was successfull")
+          this.submittingDemo = false
+          window.location.reload()
+        },
+        error => {
+          console.log(error)
+          alert("Irgendetwas ist schief gegangen. Der Error wurde in die Konsole geloggt. Vieleicht hilft es die Seite neu zu laden")
+        }
+        )
+    }
   }
 
   closeSurvey(): void {
