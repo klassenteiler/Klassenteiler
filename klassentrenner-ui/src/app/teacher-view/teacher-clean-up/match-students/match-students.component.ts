@@ -15,6 +15,7 @@ export class MatchStudentsComponent implements OnInit {
 
 
   matchingControls! : FormArray;
+  numOfStudentsToMatch: number = 0;
 
   // City: string[] = ['Florida', 'South Dakota', 'Tennessee', 'Michigan']
 
@@ -35,6 +36,17 @@ export class MatchStudentsComponent implements OnInit {
       // here we always get a string but we might also need the option values
     })
     this.matchingControls = new FormArray(groups);
+
+    this.numOfStudentsToMatch = this.numStudentsThatNeedMatching(this.friendReportedList)
+  }
+
+  numStudentsThatNeedMatching(friendRlist: FriendReported2Match[]): number {
+    const listToMatch = friendRlist.filter(s => {
+      return !this.nameIsInClasslist(s.name)
+    })
+    const num = listToMatch.length
+    console.log(`number of students that need matching is ${num}`)
+    return num
   }
 
   getControl(entityId: number) : FormControl {
@@ -78,7 +90,6 @@ export class MatchStudentsComponent implements OnInit {
   }
 
   triggerFriendRChange(){
-    console.log('trigger friend r change')
     this.friendReportedChanged.emit();
   }
 

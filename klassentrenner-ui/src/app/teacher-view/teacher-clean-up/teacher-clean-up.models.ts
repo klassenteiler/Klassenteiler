@@ -85,6 +85,18 @@ export class SelfReportedInEdit{
     get lastName(): string {
         return this._currentName.split(" ").slice(-1)[0]
     }
+
+    get uniqueID(): string{
+        // used as id in the DOM for scrolling
+        if(this.teacherAdded){
+            const trimedName =this._currentName.replace(/\s/g, "")
+            return `new-${trimedName}`
+        }
+        else{
+            return `old-${this.id}`
+        }
+    }
+
     get id(): number { 
         if(this._id === null){throw new Error("tried to get id of student that does not have it set")}
         else{return this._id}

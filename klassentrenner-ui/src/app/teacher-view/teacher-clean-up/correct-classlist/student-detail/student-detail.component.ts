@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Form, FormControl, Validators } from '@angular/forms';
 import { SelfReportedInEdit } from '../../teacher-clean-up.models';
 import { timer } from 'rxjs';
@@ -6,6 +6,7 @@ import { ForbiddenNameValidator } from 'src/app/_shared/forbidden-name.directive
 import { OriginalClassListChecker } from '../original-classList-checker';
 import { animate, AnimationEvent, state, style, transition, trigger } from '@angular/animations';
 import { AppModule } from 'src/app/app.module';
+import { ViewportScroller } from '@angular/common';
 
 @Component({
   selector: 'app-student-detail',
@@ -34,6 +35,8 @@ export class StudentDetailComponent implements OnInit {
   @Output() shouldBeDeleted = new EventEmitter<boolean>();
   @Output() classListChanged = new EventEmitter<void>();
 
+  // @ViewChild("myDiv") divView: ElementRef;
+
   sleeping: boolean = false;
   undoFocusedFlag  = false;
 
@@ -41,7 +44,9 @@ export class StudentDetailComponent implements OnInit {
 
   formControl!: FormControl;
 
-  constructor() { }
+  constructor(
+    private viewportScroller: ViewportScroller 
+    ) { }
 
   ngOnInit(): void {
     const validator = new ForbiddenNameValidator()
@@ -59,8 +64,16 @@ export class StudentDetailComponent implements OnInit {
     }
   }
 
+  scrollToMe(){
+    // const elem = document.getElementById(this.studentEntity.uniqueID)
+    // elem!.scrollIntoView({ behavior: "smooth", block: "start" });
+    console.log('scrolling')
+    this.viewportScroller.scrollToAnchor(this.studentEntity.uniqueID);
+  }
+
   highlightUndo() {
     console.log(`highlighting ${this.studentEntity.origName}`)
+    this.scrollToMe()
     this.undoFocusedFlag = true;
   }
   animationEnd(event: AnimationEvent) {

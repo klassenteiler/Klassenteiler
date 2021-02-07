@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormControl, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { timer } from 'rxjs';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ForbiddenNameValidator } from 'src/app/_shared/forbidden-name.directive';
 import {  SelfReportedInEdit } from '../teacher-clean-up.models';
@@ -26,7 +27,10 @@ export class CorrectClasslistComponent implements OnInit {
 
   newStudentControl!: FormControl;
   // newStudentControl = new FormControl("", [Validators.required, forbiddenNameValidator(["a", "b"])]);
-    constructor(private modalService: NgbModal) { 
+  constructor(
+    private modalService: NgbModal,
+    // private cdr: ChangeDetectorRef
+    ) { 
   }
 
   ngOnInit(): void {
@@ -45,6 +49,11 @@ export class CorrectClasslistComponent implements OnInit {
     this.triggerClassListChanged();
   }
 
+  onAddEnter(){
+    // this.add();
+    console.log('on Enter currently does not work, due to angular change detection issues')
+  }
+
   add(){
     console.log(this.currentClassListNames)
     const name_to_add = this.newStudentControl.value
@@ -52,14 +61,12 @@ export class CorrectClasslistComponent implements OnInit {
     if(this.newStudentControl.valid && name_to_add !== ""){
       if(this.originalNamesChecker.checkNameToAdd(name_to_add)){
         const newStudent: SelfReportedInEdit = SelfReportedInEdit.makeTeacherAdded(name_to_add)
-        this.newStudentControl.setValue("")
 
         this.classList.push(newStudent);
         this.triggerClassListChanged();
       }
-      else{
-        this.newStudentControl.setValue("")
-      }
+      // timer(10).subscribe(_s => {this.newStudentControl.setValue("")})
+      this.newStudentControl.setValue("")
     }
   }
 

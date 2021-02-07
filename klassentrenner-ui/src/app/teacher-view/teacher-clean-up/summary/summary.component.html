@@ -4,9 +4,14 @@
             <span>{{problem}}</span>
         </li>
     </ul>
+    <p>Bitte gehen Sie zu Schritt 2 um diese Probleme zu lösen.</p>
 </div>
 <div *ngIf="mergeCommands !== null">
-    Seems fine
+    <p>
+    Bitte überprüfen Sie nochmals, dass die Klassenliste (Schritt 1) volständig ist und dass die Namen in Schritt 2 richtig zugeordnet sind. 
+    Dann können Sie Ihre Änderungen abschicken. Dies kann nicht Rückgängig gemacht werden. 
+    </p>
+    
 
     <button class='btn btn-lg btn-success' (click)="submit()">Abschicken!</button>
 </div>
