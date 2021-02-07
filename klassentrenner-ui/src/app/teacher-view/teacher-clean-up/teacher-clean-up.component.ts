@@ -17,7 +17,7 @@ export class TeacherCleanUpComponent implements OnInit {
   activeStep: number = 1;
   readonly lastStep: number = 3;
 
-  classList: Array<SelfReportedInEdit>| null = null;
+  classList: Array<SelfReportedInEdit> | null = null;
   friendRstudents: Array<FriendReported2Match> | null = null;
 
   currentClassListNames: string[] = [];
@@ -70,6 +70,16 @@ export class TeacherCleanUpComponent implements OnInit {
     if(this.activeStep > 1){
       this.activeStep -= 1;
     }
+  }
+
+  sortClassList(clsList: SelfReportedInEdit[]): SelfReportedInEdit[]{
+    return clsList.sort((a,b)=>a.lastName.localeCompare(b.lastName))
+  }
+
+  inplaceSortClassList(){
+    if(this.classList === null){throw new Error("cant sort class list because it is null")}
+    this.classList = this.sortClassList(this.classList)
+    this.updateCurrentClasslist()
   }
 
   getCurrentClasslist(): string[]{

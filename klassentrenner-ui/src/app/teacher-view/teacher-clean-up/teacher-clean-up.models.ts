@@ -82,6 +82,9 @@ export class SelfReportedInEdit{
     get name(): string { return this._currentName}
     get deleted(): boolean { return this._deleted}
     get teacherAdded(): boolean { return this._teacherAdded}
+    get lastName(): string {
+        return this._currentName.split(" ").slice(-1)[0]
+    }
     get id(): number { 
         if(this._id === null){throw new Error("tried to get id of student that does not have it set")}
         else{return this._id}

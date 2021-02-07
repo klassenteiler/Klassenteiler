@@ -146,6 +146,11 @@ export class MergeService {
 
         const editStudentsNew = this.selfRstudentsToStudentEdit(selfRstudents)
         const matchStudents = this.friendRstudents2edit(friendRstudents)
+
+        console.log('what i got fromt he backend')
+        console.log(selfRstudents)
+        console.log(friendRstudents)
+
         finalResultSelfReportedStudents2Edit = editStudentsNew
         finalResultFriendReportedStudents2Match = matchStudents
         // here I have to set the state

@@ -16,7 +16,9 @@ export class CorrectClasslistComponent implements OnInit {
   @Input() classList!: Array<SelfReportedInEdit>;
   @Input() currentClassListNames!: string[];
   @Input() originalClassListNames!: string[];
+  
   @Output() classListChanged = new EventEmitter<void>()
+  @Output() sortLastNamesEvent = new EventEmitter<void>()
 
   originalNamesChecker!: OriginalClassListChecker;
 
@@ -63,6 +65,10 @@ export class CorrectClasslistComponent implements OnInit {
 
   triggerClassListChanged(){
     this.classListChanged.emit()
+  }
+
+  sortLastNames(){
+    this.sortLastNamesEvent.emit()
   }
 }
  
