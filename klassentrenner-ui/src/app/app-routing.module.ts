@@ -15,8 +15,6 @@ const routes: Routes = [
   {path: 'create', component: CreateComponent},
   {path: 'teacher/:id/:classSecret', component: TeacherViewComponent, resolve: {schoolClass: SchoolClassResolver}},
   {path: 'student/:id/:classSecret', component: StudentViewComponent, resolve: {schoolClass: SchoolClassResolver}},
-  // extra componenent for filling the class with demo data at demo/:id/:classSecret/
-  // honestly probably better as a function inside the teacher component
   {path: 'notFound', component: NotFoundComponent},
   {path: 'impressum', component: ImpressumComponent},
   {path: 'datenschutz', component: DatenschutzComponent},
