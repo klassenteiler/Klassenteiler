@@ -103,4 +103,18 @@ class SchoolClassController @Inject() (
       auth.withClassAuthentication(body)
 
   }
+
+  // getClassStatus/:classId/:classSecret
+  def getClassStatus(implicit
+      classId: Int,
+      classSecret: String
+  ): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
+    implicit request: Request[AnyContent] =>
+      val body = { () =>
+        val status: Future[Int] = model.getStatus(classId)
+        status.map(s => Ok(Json.obj("status" -> s)))
+
+      }
+      auth.withClassAuthentication(body)
+  }
 }
