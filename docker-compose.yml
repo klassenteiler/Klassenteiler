@@ -28,6 +28,9 @@ services:
   frontend:
     build: klassentrenner-ui
     ports:
-    - "80:80"
+      - "80:80"
+    volumes:
+      - ./klassentrenner-ui/src/config:/usr/share/nginx/html/config
+      - ./klassentrenner-ui/src/assets:/usr/share/nginx/html/assets
     # volumes:
     #   - ./klassentrenner-ui/:/app

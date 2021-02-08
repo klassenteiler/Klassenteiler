@@ -11,7 +11,6 @@ class StudentModelSpec
     with MockDatabase
     with BeforeAndAfterEach {
 
-
   // we have access to db because DatabaseCleanerOnEachTest itself implements the trait play.api.db.slick.HasDatabaseConfigProvider
   val studentModel: StudentModel = new StudentModel(db)
   val classModel: SchoolClassModel = new SchoolClassModel(db)
@@ -34,21 +33,22 @@ class StudentModelSpec
     val createdSchoolClass: SchoolClassCC =
       awaitInf(classModel.createSchoolClass(schoolClass))
     classId = createdSchoolClass.id.get
-    println("Before Test: SchoolclassId is "+ classId)
+    println("Before Test: SchoolclassId is " + classId)
   }
 
   "The Student Model" should {
     "create Students" in {
-      val student1: StudentCC = StudentCC(None, "hashedName", "encName", true, None)
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", true, None)
 
       val student1Id: Option[Int] =
         // awaitInf is a helper defined in MockDatabase
-        awaitInf(studentModel.createStudent(student1, classId)) 
+        awaitInf(studentModel.createStudent(student1, classId))
       student1Id.get mustBe 1 // first student has id 1
 
       val student2: StudentCC =
         StudentCC(None, "hashedName2", "encName2", true, None)
-      
+
       val student2Id: Option[Int] =
         awaitInf(studentModel.createStudent(student2, classId))
       student2Id.get mustBe 2 // second student has id 2
@@ -80,8 +80,10 @@ class StudentModelSpec
       student1Id.get mustBe 1 // first student has id 1
       val allStudents: Seq[StudentCC] =
         awaitInf(studentModel.getStudents(classId))
-      allStudents.length mustBe 1 
-      val firstStudent: StudentCC = allStudents(0) // since there is only one student we can access the first element
+      allStudents.length mustBe 1
+      val firstStudent: StudentCC = allStudents(
+        0
+      ) // since there is only one student we can access the first element
       firstStudent.selfReported mustBe false
 
       // student with same name but this time the entry is self-reported
@@ -93,12 +95,12 @@ class StudentModelSpec
 
       val allStudents2: Seq[StudentCC] =
         awaitInf(studentModel.getStudents(classId))
-      allStudents.length mustBe 1 
+      allStudents.length mustBe 1
       val firstStudent2: StudentCC = allStudents2(0)
       firstStudent2.selfReported mustBe true // now the value must be updated
     }
     "should return the studentID of old student if he is already self reported" in {
-       val student1: StudentCC =
+      val student1: StudentCC =
         StudentCC(None, "uniqueName", "encName", true, None)
 
       val student1Id: Option[Int] =
@@ -112,11 +114,13 @@ class StudentModelSpec
       student2Id.get mustBe 1 // same id
     }
     "count only self-reported students" in {
-      val numOfStudents0: Int = awaitInf(studentModel.getNumberOfStudents(classId))
+      val numOfStudents0: Int =
+        awaitInf(studentModel.getNumberOfStudents(classId))
 
       numOfStudents0 mustBe 0
 
-      val student1: StudentCC = StudentCC(None, "hashedName", "encName", true, None)
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", true, None)
       val student2: StudentCC =
         StudentCC(None, "hashedName2", "encName2", false, None)
 
@@ -128,7 +132,8 @@ class StudentModelSpec
         awaitInf(studentModel.createStudent(student2, classId))
       student2Id.get mustBe 2 // second student has id 2
 
-      val numOfStudents1: Int = awaitInf(studentModel.getNumberOfStudents(classId))
+      val numOfStudents1: Int =
+        awaitInf(studentModel.getNumberOfStudents(classId))
 
       numOfStudents1 mustBe 1
     }
@@ -138,7 +143,8 @@ class StudentModelSpec
         awaitInf(studentModel.getStudents(classId))
       allStudents.length mustBe 0
 
-      val student1: StudentCC = StudentCC(None, "hashedName", "encName", true, None)
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", true, None)
 
       val numOfStudentsId: Option[Int] =
         awaitInf(studentModel.createStudent(student1, classId))
@@ -205,6 +211,98 @@ class StudentModelSpec
         studentModel.updateGroupBelonging(2, 2)
       ) // updating a non-existent student
       updatedStudents2 mustBe 0
+    }
+    "return all selfreported students by classID" in {
+      val allSelfReportedStudents1: Seq[StudentCC] =
+        awaitInf(studentModel.getAllSelfReportedStudents(classId))
+
+      allSelfReportedStudents1.length mustBe 0
+
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", false, None)
+      val student2: StudentCC =
+        StudentCC(None, "hashedName2", "encName2", true, None)
+
+      val student1Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student1, classId))
+      student1Id.get mustBe 1 // first student has id 1
+
+      val student2Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student2, classId))
+      student2Id.get mustBe 2 // second student has id 2
+
+      val allSelfReportedStudents2: Seq[StudentCC] =
+        awaitInf(studentModel.getAllSelfReportedStudents(classId))
+      allSelfReportedStudents2.length mustBe 1
+      allSelfReportedStudents2(
+        0
+      ).id.get mustBe 2 // there is only one element in the list and it must be of the second student
+    }
+    "return all friendreported students by classID" in {
+      val allFriendReportedStudents1: Seq[StudentCC] =
+        awaitInf(studentModel.getAllFriendReportedStudents(classId))
+
+      allFriendReportedStudents1.length mustBe 0
+
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", false, None)
+      val student2: StudentCC =
+        StudentCC(None, "hashedName2", "encName2", true, None)
+
+      val student1Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student1, classId))
+      student1Id.get mustBe 1 // first student has id 1
+
+      val student2Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student2, classId))
+      student2Id.get mustBe 2 // second student has id 2
+
+      val allFriendReportedStudents2: Seq[StudentCC] =
+        awaitInf(studentModel.getAllFriendReportedStudents(classId))
+      allFriendReportedStudents2.length mustBe 1
+      allFriendReportedStudents2(0).id.get mustBe 1
+    }
+    "delete student by id" in {
+      // delete student that does not exist
+      val success1: Boolean = awaitInf(studentModel.removeStudent(99))
+      success1 mustBe false
+
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", true, None)
+      val student1Id: Option[Int] =
+        awaitInf(studentModel.createStudent(student1, classId))
+      val allStudents1: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents1.length mustBe 1
+      val success2: Boolean =
+        // awaitInf is a helper defined in MockDatabase
+        awaitInf(studentModel.removeStudent(student1Id.get))
+      success2 mustBe true
+      val allStudents2: Seq[StudentCC] =
+        awaitInf(studentModel.getStudents(classId))
+      allStudents2.length mustBe 0
+    }
+    "return student by unique hash and classId" in {
+      // student with that name doesnt exist yet
+      val id1: Option[Int] =
+        awaitInf(studentModel.getByHash("hashedName", classId))
+      id1.isEmpty mustBe true // none is returned
+
+      val student1: StudentCC =
+        StudentCC(None, "hashedName", "encName", true, None)
+
+      val student1Id: Option[Int] =
+        // awaitInf is a helper defined in MockDatabase
+        awaitInf(studentModel.createStudent(student1, classId))
+
+      val id2: Option[Int] =
+        awaitInf(studentModel.getByHash("hashedName", classId))
+      id2 mustBe student1Id
+
+      // wrong classId
+      val id3: Option[Int] =
+        awaitInf(studentModel.getByHash("hashedName", 99))
+      id3.isEmpty mustBe true // none is returned
     }
   }
 }

@@ -2,10 +2,11 @@ import { query } from '@angular/animations';
 import { Injectable } from '@angular/core';
 import { stat } from 'fs';
 import { Observable, zip } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { flatMap, map, mergeMap } from 'rxjs/operators';
+import { StudentT } from 'src/app/models';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, ClearLocalStudent, EncTools, SchoolClass } from 'src/app/_tools/enc-tools.service';
-import { FriendReported2Match, SelfReportedInEdit } from './teacher-clean-up.models';
+import { FriendReported2Match, MergingCommandsT, SelfReportedInEdit } from './teacher-clean-up.models';
 
 @Injectable({
   providedIn: 'root'
@@ -29,6 +30,10 @@ export class MergeService {
 
   setStateHash(sCls: SchoolClass, stateHash: string){
     localStorage.setItem(this.stateHashKey(sCls), stateHash);
+  }
+
+  removeStateHash(sCls: SchoolClass){
+    localStorage.removeItem(this.stateHashKey(sCls))
   }
 
   checkStateHash(sCls: SchoolClass, queryHash: string): boolean {
@@ -81,6 +86,13 @@ export class MergeService {
     window.location.reload();
   }
 
+  clearStateInLocal(schoolClass: SchoolClass){
+    localStorage.removeItem(this.classListKey(schoolClass))
+    localStorage.removeItem(this.friendRListKey(schoolClass))
+    this.removeStateHash(schoolClass)
+  }
+
+  // state here means a partial state of merging
   getStateFromLocal(schoolClass: SchoolClass): [Array<SelfReportedInEdit>, FriendReported2Match[]]{
     const classListS: string | null = localStorage.getItem(this.classListKey(schoolClass));
     if(classListS === null){ throw new Error("Can not get ClassList because it does not exist in local storage")}
@@ -93,19 +105,28 @@ export class MergeService {
     return [classList, matchList]
   }
 
+  getStudentsFromDb(schoolClass: SchoolClass, classTeacher: ClassTeacher): Observable<[string, StudentT[], StudentT[]]>{
+    // hash of DB state, list of self reported students, list of friend reported students
+    const selfReportedStudentsObs: Observable<StudentT[]> = this.teacherService.getSelfReportedEnc(schoolClass, classTeacher);
+    const friendReportedStudentsObs: Observable<StudentT[]> = this.teacherService.getFriendReportedEnc(schoolClass, classTeacher);
+
+    const allStudentsObs: Observable<[StudentT[], StudentT[]]> = zip(selfReportedStudentsObs, friendReportedStudentsObs)
+    
+    const out: Observable<[string, StudentT[], StudentT[]]> = allStudentsObs.pipe(map( ([selfRstudents, friendRstudents]: [Array<StudentT>, StudentT[]]) => {
+      const summary: string = JSON.stringify(selfRstudents) + JSON.stringify(friendRstudents)
+      const stateHash: string = EncTools.sha256(summary)
+
+      return [stateHash, selfRstudents, friendRstudents]
+    }));
+    return out
+  }
 
   // get current state of merging, i.e. [Array<studentsInEdit>, Array<Students2Match>]
   // also return the state hash, (the state hash summarises which backend state (expressed by list of self reported students) the current merging intermediate result is valid for)
   getMergeState(schoolClass: SchoolClass, classTeacher: ClassTeacher): Observable<[string, SelfReportedInEdit[], FriendReported2Match[]]>{
-    const selfReportedStudentsObs: Observable<ClearLocalStudent[]> = this.teacherService.getSelfReported(schoolClass, classTeacher);
-    const friendReportedStudentsObs: Observable<ClearLocalStudent[]> = this.teacherService.getFriendReported(schoolClass, classTeacher);
+    const encryptedDBstudents = this.getStudentsFromDb(schoolClass, classTeacher)
 
-    const allStudentsObs: Observable<[ClearLocalStudent[], ClearLocalStudent[]]> = zip(selfReportedStudentsObs, friendReportedStudentsObs)
-
-    return allStudentsObs.pipe(map( ([selfRstudents, friendRstudents]: [Array<ClearLocalStudent>, ClearLocalStudent[]]) => {
-      const summary: string = JSON.stringify(selfRstudents) + JSON.stringify(friendRstudents)
-      const stateHash: string = EncTools.sha256(summary)
-
+    return encryptedDBstudents.pipe(map( ([stateHash, selfRstudentsEnc, friendRstudentsEnc]: [string, Array<StudentT>, StudentT[]]) => {
       const stateIsValid: boolean = this.checkStateHash(schoolClass, stateHash)
 
       let finalResultSelfReportedStudents2Edit: SelfReportedInEdit[];
@@ -120,8 +141,16 @@ export class MergeService {
       else{
         // state is not valid. make a new state
 
+        const selfRstudents: ClearLocalStudent[] = classTeacher.arrayStudentT2arrayStudents(selfRstudentsEnc)
+        const friendRstudents: ClearLocalStudent[] = classTeacher.arrayStudentT2arrayStudents(friendRstudentsEnc)
+
         const editStudentsNew = this.selfRstudentsToStudentEdit(selfRstudents)
         const matchStudents = this.friendRstudents2edit(friendRstudents)
+
+        console.log('what i got fromt he backend')
+        console.log(selfRstudents)
+        console.log(friendRstudents)
+
         finalResultSelfReportedStudents2Edit = editStudentsNew
         finalResultFriendReportedStudents2Match = matchStudents
         // here I have to set the state
@@ -150,4 +179,20 @@ export class MergeService {
      })
    }
 
+
+   submitMergeCommandsAndStartCalculation(schoolClass: SchoolClass, classTeacher: ClassTeacher, mergeCommands: MergingCommandsT): Observable<string>{
+    return this.getStudentsFromDb(schoolClass, classTeacher).pipe(mergeMap(([hash, _selfR, _friendR]: [string, StudentT[], StudentT[]])=>{
+      const hash_ok = this.checkStateHash(schoolClass, hash)
+      if(!hash_ok){
+        throw new Error("It seems the database has changed in the meantime")
+        window.location.reload()
+      }
+      else{
+        return this.teacherService.startCalculatingWithMerge(schoolClass, classTeacher, mergeCommands).pipe(map(s=> {
+          this.clearStateInLocal(schoolClass)
+          return s
+        }))
+      }
+    }))
+   }
 }

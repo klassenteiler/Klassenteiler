@@ -1,13 +1,32 @@
 
-<ul class="list-group" *ngFor="let thisStudent of classList; index as index">
-    <app-student-detail [studentEntity]="thisStudent" (shouldBeDeleted)="delete(index)" (classListChanged)="triggerClassListChanged()"></app-student-detail>
+<p>
+    Bitte stellen Sie sicher, dass alle Schüler:innen der Klasse in dieser Klassenliste vorkommen. Falls Sie einen Namen nicht kennen (z. B. weil jemand einen Scherznamen eingetragen hat), können Sie diesen löschen. Bitte löschen Sie nur Namen, die Sie nicht erkennen. Mit dem Stift Symbol können Sie falsch geschriebene Namen korrigieren. Weiter unten finden Sie die Möglichkeit, neue Schüler hinzuzufügen.
+</p>
+
+<div class='container'>
+    <button class="btn btn-primary" (click)="sortLastNames()">
+        Nach Nachnamen Sortieren
+    </button>
+<ul class="list-group mt-3">
+    <app-student-detail *ngFor="let thisStudent of classList; index as index"
+    [studentEntity]="thisStudent" 
+    [currentClassListNames] = "currentClassListNames"
+    [originalNamesChecker] = "originalNamesChecker"
+    (shouldBeDeleted)="delete(index)" 
+    (classListChanged)="triggerClassListChanged()"></app-student-detail>
 </ul>
 
 <div class='row mt-3'>
     <div class='col-sm'>
-    <input [formControl]="newStudentControl" type='text'>
+    <input [formControl]="newStudentControl" type='text' class="form-control" (keyup.enter)="onAddEnter()"
+    [class.is-invalid]="newStudentControl.invalid && (newStudentControl.touched || newStudentControl.dirty)">
+    <!-- https://stackoverflow.com/questions/56210778/expressionchangedafterchecked-on-enter-but-not-click -->
+    <div class="invalid-feedback">
+        Dieser Name ist bereits in der Klassenliste. 
+    </div>
     </div>
     <div class='col-sm'>
-        <button (click)="add()">Hinzufügen</button>
+        <button (click)="add()" class="btn btn-success">Hinzufügen</button>
     </div>
+</div>
 </div>

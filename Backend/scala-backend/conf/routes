@@ -18,6 +18,9 @@ GET     /getResult/:id/:classSecret             controllers.SurveyController.get
 
 GET     /nSignups/:id/:classSecret              controllers.StudentController.getSignups(id: Int, classSecret: String)
 
+GET     /getSelfReported/:id/:classSecret       controllers.StudentController.getSelfReportedStudents(id: Int, classSecret: String)
+GET     /getFriendReported/:id/:classSecret     controllers.StudentController.getFriendReportedStudents(id: Int, classSecret: String)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

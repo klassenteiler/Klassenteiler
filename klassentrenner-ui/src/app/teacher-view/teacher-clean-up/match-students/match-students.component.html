@@ -1,6 +1,12 @@
-<div class='col-12 container'>
-    <ul class='list-group'>
+<div class='container' *ngIf="numOfStudentsToMatch == 0">
+    Hier gibt es nichts zu tun. 
+</div>
 
+<div class='container' *ngIf="numOfStudentsToMatch > 0">
+    <p>
+        Einige Schüler:innen haben anscheinend die Namen ihrer Freund:innen falsch geschrieben. Bitte wählen Sie für jeden Namen den passenden aus der Liste aus. Falls sie einen Namen nicht kennen, können Sie UNBEKANNT auswählen. Dann wird dieser Eintrag gelöscht.
+    </p>
+    <ul class='list-group'>
         <ng-container *ngFor="let matchingStudent of friendReportedList; index as index">
             <ng-container *ngIf="!nameIsInClasslist(matchingStudent.name)">
                 <li class="list-group-item" [class.list-group-item-danger]="matchingStudent.shouldBeDeleted">
