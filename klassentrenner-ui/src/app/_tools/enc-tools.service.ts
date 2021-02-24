@@ -84,7 +84,7 @@ export class EncTools {
   }
 
   static createRandomString(length: number): string{
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678'
+    const charset = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ12345678'
     const nChars = charset.length
 
     var filler: Uint16Array = new Uint16Array(length);
