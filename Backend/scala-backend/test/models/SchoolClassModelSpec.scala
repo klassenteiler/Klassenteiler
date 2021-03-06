@@ -230,5 +230,22 @@ class SchoolClassModelSpec
         awaitInf(classModel.getStatus(createdClass1.id.get))
       surveyStatus1 mustBe SurveyStatus.Closed
     }
+    "return the number of classes that are in status x" in {
+      val numOfOpenClasses =
+        awaitInf(classModel.getNumOfClasses(SurveyStatus.Open))
+      numOfOpenClasses mustBe 1
+      val numOfDoneClasses =
+        awaitInf(classModel.getNumOfClasses(SurveyStatus.Done))
+      numOfDoneClasses mustBe 0
+      awaitInf(
+        classModel.updateStatus(createdClass1.id.get, SurveyStatus.Done)
+      )
+      val numOfOpenClasses2 =
+        awaitInf(classModel.getNumOfClasses(SurveyStatus.Open))
+      numOfOpenClasses2 mustBe 0
+      val numOfDoneClasses2 =
+        awaitInf(classModel.getNumOfClasses(SurveyStatus.Done))
+      numOfDoneClasses2 mustBe 1
+    }
   }
 }

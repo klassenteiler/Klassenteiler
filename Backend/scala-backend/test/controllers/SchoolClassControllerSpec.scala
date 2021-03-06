@@ -160,5 +160,22 @@ class SchoolClassControllerSpec
         )
         .toString
     }
+    "return 200 and a json with the counts of all classes" in {
+      val result: Future[Result] =
+        controller
+          .getCountOfAllClasses()
+          .apply(
+            FakeRequest()
+          )
+      status(result) mustBe Ok.header.status
+      contentAsString(result) mustBe Json
+        .obj(
+          "openClasses" -> 2,
+          "closedClasses" -> 0,
+          "calculatingClasses" -> 0,
+          "doneClasses" -> 0
+        )
+        .toString
+    }
   }
 }

@@ -4,7 +4,7 @@ import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.ExecutionContext // the execution context is needed for concurrent execution
 import models.Tables._
 import scala.concurrent.Future
-
+import models.SurveyStatus
 
 class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
   
@@ -81,6 +81,11 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
     val result: Future[Seq[Int]] = intermediateResult.map(sequence => sequence.map(entry => entry.id))
 
     result // return
+  }
+
+  def getNumOfClasses(statuss: Int): Future[Int] = {
+    val intermediateResult: Future[Seq[models.Tables.SchoolclassRow]]  = db.run(Schoolclass.filter(_.surveystatus === statuss).result)
+    intermediateResult.map(rows => rows.length)
   }
 }
 
