@@ -163,7 +163,7 @@ class SurveyController @Inject() (
   }
 
   // PUT /closeSurvey/:id/:classSecret
-  // setzt survey status von schoolclass mit der relevanten classId und
+  // setzt survey status von schoolclass mit der relevanten classId
   def closeSurvey(implicit classId: Int, classSecret: String) = Action.async {
     implicit request: Request[AnyContent] =>
       val body = { _: ClassTeacherCC =>
@@ -482,4 +482,32 @@ class SurveyController @Inject() (
 
       auth.withTeacherAuthentication(body)
   }
+
+
+ // PUT /openSurvey/:id/:classSecret
+  // setzt survey status von schoolclass mit der relevanten classId 
+  def openSurvey(implicit classId: Int, classSecret: String) = Action.async {
+    implicit request: Request[AnyContent] =>
+      val body = { _: ClassTeacherCC =>
+        {
+          classModel
+            .getStatus(classId)
+            .flatMap(status => {
+              if (status == SurveyStatus.Closed) {
+
+                classModel
+                  .updateStatus(classId, SurveyStatus.Open)
+                  .map(_ =>
+                    Ok(
+                      Json.obj("message" -> "success - survey reopened")
+                    ) //return
+                  )
+
+              } else Future.successful(Gone("Survey has wrong status")) //return
+            })
+        }
+      }
+      auth.withTeacherAuthentication(body)
+  }
+  
 }
