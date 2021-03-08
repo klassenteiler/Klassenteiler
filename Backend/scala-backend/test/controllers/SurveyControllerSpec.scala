@@ -1010,4 +1010,80 @@ class SurveyControllerSpec
     }
   }
 
+  "SurveyController /openSurvey" should {
+    "return status 200, contain message and update status if request is correct" in {
+      awaitInf(classModel.updateStatus(classId, SurveyStatus.Closed))
+      awaitInf(classModel.getStatus(classId)) mustBe SurveyStatus.Closed
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest()
+          .withHeaders(
+            Headers("teacherSecret" -> schoolClass.teacherSecret)
+          )
+      val result: Future[Result] =
+        controller.openSurvey(classId, classSecret).apply(request)
+      status(result) mustBe Ok.header.status
+      contentAsString(result) mustBe Json
+        .obj(
+          "message" -> "success - survey reopened"
+        )
+        .toString
+      awaitInf(classModel.getStatus(classId)) mustBe SurveyStatus.Open
+    }
+
+    "return status 410 if the survey of the class is in wrong status" in {
+
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest().withHeaders(
+          Headers("teacherSecret" -> schoolClass.teacherSecret)
+        )
+
+      awaitInf(classModel.updateStatus(classId, SurveyStatus.Open))
+      val result1: Future[Result] =
+        controller.openSurvey(classId, classSecret).apply(request)
+      status(result1) mustBe Gone.header.status
+
+      awaitInf(classModel.updateStatus(classId, SurveyStatus.Calculating))
+      val result2: Future[Result] =
+        controller.openSurvey(classId, classSecret).apply(request)
+      status(result2) mustBe Gone.header.status
+
+      awaitInf(classModel.updateStatus(classId, SurveyStatus.Done))
+      val result3: Future[Result] =
+        controller.openSurvey(classId, classSecret).apply(request)
+      status(result3) mustBe Gone.header.status
+    }
+    "return status 404 if classSecret or id is wrong" in {
+      val request: FakeRequest[play.api.mvc.AnyContent] =
+        FakeRequest().withHeaders(
+          Headers("teacherSecret" -> schoolClass.teacherSecret)
+        )
+
+      // wrong id
+      val result: Future[Result] =
+        controller.openSurvey(99, classSecret).apply(request)
+      status(result) mustBe NotFound.header.status
+      // wrong secret
+      val result2: Future[Result] =
+        controller.openSurvey(classId, "wrong secret").apply(request)
+      status(result2) mustBe NotFound.header.status
+    }
+    "return status 401 if teacherSecret is wrong" in {
+      val result: Future[Result] =
+        controller
+          .openSurvey(classId, schoolClass.classSecret)
+          .apply(
+            FakeRequest().withHeaders(
+              Headers("teacherSecret" -> "wrong secret")
+            )
+          )
+      status(result) mustBe Unauthorized.header.status
+    }
+    "return status 400 if no teacherSecret is provided" in {
+      val result: Future[Result] =
+        controller
+          .openSurvey(classId, schoolClass.classSecret)
+          .apply(FakeRequest())
+      status(result) mustBe BadRequest.header.status
+    }
+  }
 }

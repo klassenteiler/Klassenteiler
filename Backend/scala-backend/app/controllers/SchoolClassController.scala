@@ -5,6 +5,8 @@ import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 import models._
+import models.SurveyStatus
+import models.ClassCounts
 
 import play.api.db.slick.DatabaseConfigProvider
 import scala.concurrent.ExecutionContext
@@ -28,6 +30,8 @@ class SchoolClassController @Inject() (
 
   implicit val schoolClassReads = Json.reads[SchoolClassCC]
   implicit val schoolClassWrites = Json.writes[SchoolClassCC]
+
+  implicit val clascountWriter = Json.writes[ClassCounts]
 
   implicit val classTeacherReads = Json.reads[ClassTeacherCC]
 
@@ -116,5 +120,22 @@ class SchoolClassController @Inject() (
 
       }
       auth.withClassAuthentication(body)
+  }
+
+  def getCountOfAllClasses(): play.api.mvc.Action[play.api.mvc.AnyContent] = Action.async {
+    val openClasses = model.getNumOfClasses(SurveyStatus.Open)
+    val closedClasses = model.getNumOfClasses(SurveyStatus.Closed)
+    val calculatingClasses = model.getNumOfClasses(SurveyStatus.Calculating)
+    val doneClasses = model.getNumOfClasses(SurveyStatus.Done)
+
+    val combinedCounts: Future[ClassCounts] = 
+    for {
+      openCl <- openClasses
+      closedCl <- closedClasses
+      calcCl <- calculatingClasses
+      doneCl <- doneClasses
+    } yield ClassCounts(openCl, closedCl, calcCl, doneCl)
+    combinedCounts.map(result => Ok(Json.toJson(result)))
+    
   }
 }

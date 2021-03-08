@@ -8,11 +8,13 @@
 GET     /                                       controllers.HomeController.index()
 
 POST    /createClass                            controllers.SchoolClassController.createSchoolClass()
+GET     /getNumOfClasses                        controllers.SchoolClassController.getCountOfAllClasses()
 GET     /getClass/:id/:classSecret              controllers.SchoolClassController.getSchoolClass(id: Int, classSecret: String)
 GET     /getClassStatus/:classId/:classSecret   controllers.SchoolClassController.getClassStatus(classId: Int, classSecret: String)
 GET     /teacherAuth/:id/:classSecret           controllers.AuthenticationController.authenticateTeacher(id: Int, classSecret: String)
 POST    /submitStudentSurvey/:id/:classSecret   controllers.SurveyController.submitSurvey(id: Int, classSecret: String)
 PUT     /closeSurvey/:id/:classSecret           controllers.SurveyController.closeSurvey(id: Int, classSecret: String)
+PUT     /openSurvey/:id/:classSecret            controllers.SurveyController.openSurvey(id: Int, classSecret: String)
 POST    /startCalculating/:id/:classSecret      controllers.SurveyController.startCalculating(id: Int, classSecret: String)
 GET     /getResult/:id/:classSecret             controllers.SurveyController.getResults(id: Int, classSecret: String)
 
