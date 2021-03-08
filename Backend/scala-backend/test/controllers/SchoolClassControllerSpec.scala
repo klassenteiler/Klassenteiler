@@ -160,7 +160,19 @@ class SchoolClassControllerSpec
         )
         .toString
     }
-    "return 200 and a json with the counts of all classes" in {
+    "return 200 and a json with the counts of all classes that are not DEMO classes" in {
+      val demoClass: SchoolClassDB = SchoolClassDB(
+        None,
+        "DEMO",
+        Some("AMG"),
+        "clsSecret",
+        "teachsecret",
+        "puKey",
+        "encPrivateKey",
+        Some(0)
+      )
+      val createdSchoolClass2: SchoolClassCC =
+        awaitInf(classModel.createSchoolClass(demoClass))
       val result: Future[Result] =
         controller
           .getCountOfAllClasses()
