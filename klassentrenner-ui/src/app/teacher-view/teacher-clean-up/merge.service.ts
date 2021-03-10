@@ -184,8 +184,9 @@ export class MergeService {
     return this.getStudentsFromDb(schoolClass, classTeacher).pipe(mergeMap(([hash, _selfR, _friendR]: [string, StudentT[], StudentT[]])=>{
       const hash_ok = this.checkStateHash(schoolClass, hash)
       if(!hash_ok){
-        throw new Error("It seems the database has changed in the meantime")
+        window.alert('Etwas ist schief gelaufen.')
         window.location.reload()
+        throw new Error("It seems the database has changed in the meantime")
       }
       else{
         return this.teacherService.startCalculatingWithMerge(schoolClass, classTeacher, mergeCommands).pipe(map(s=> {
