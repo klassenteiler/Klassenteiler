@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Observable, of, Subject, timer } from 'rxjs';
-import { mergeMap , map, switchMap, retry, takeUntil, tap, share} from 'rxjs/operators';
+import { mergeMap , map, switchMap, retry, takeUntil, tap, share, take, filter} from 'rxjs/operators';
 import { AppConfigService } from 'src/app/app-config.service';
 import { DemoService } from 'src/app/_services/demo.service';
 import { TeacherService } from 'src/app/_services/teacher.service';
@@ -65,10 +65,13 @@ export class SurveyOpenComponent implements OnInit {
     if(this.showDemoDataButton){
       this.submittingDemo = true;
       this.demoService.submitSampleData(this.schoolClass).subscribe(
-        msg => {
+        nSamples => {
           console.log("Generating the sample data was successfull")
-          this.submittingDemo = false
-          window.location.reload()
+          this.nSignupsObsStream.pipe(filter(n => (n>=nSamples)), take(1)).subscribe(x=>{
+            // wait for the nSignups to update before hidding the spinner so that the user is not confused
+            // TODO actually the update pooling might not be active any more 
+            this.submittingDemo = false
+          })
         },
         error => {
           console.log(error)

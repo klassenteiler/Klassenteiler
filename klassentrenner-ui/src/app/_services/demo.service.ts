@@ -38,7 +38,7 @@ export class DemoService {
     return schoolName.substring(0, prefix.length) === prefix
   }
 
-  submitSampleData(schoolClass: SchoolClass): Observable<string>{
+  submitSampleData(schoolClass: SchoolClass): Observable<number>{
     if(!this.schoolEligable(schoolClass)){throw new Error("schoolClass with this name can not be filled with sample data")}
 
     return this.getDemoData().pipe(mergeMap(sampleData =>{
@@ -58,8 +58,8 @@ export class DemoService {
         return left.pipe(mergeMap(l => right))
       })
 
-      const finalOk: Observable<string> = combined.pipe(map(_tmp => {
-        return 'ok'
+      const finalOk: Observable<number> = combined.pipe(map(_tmp => {
+        return sampleData.length
       }))
 
       return finalOk

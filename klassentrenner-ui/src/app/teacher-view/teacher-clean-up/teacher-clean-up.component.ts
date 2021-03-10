@@ -12,17 +12,20 @@ import { SelfReportedInEdit } from './teacher-clean-up.models';
   selector: 'ngbd-modal-content',
   template: `
     <div class="modal-header">
-      <h4 class="modal-title">Hi there!</h4>
+      <h4 class="modal-title">Fehlen noch Schüler:innen?</h4>
       <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
     <div class="modal-body">
-      <p>Hello</p>
+      <p>
+      Wollen Sie die Umfrage wieder öffnen? Dann können noch weitere Schüler:innen an der Umfrage über den Link teilnehmen. 
+      Korrekturen von Namen die Sie hier bereits gemacht haben werden dabei gelöscht.
+      </p>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-outline-primary" (click)="activeModal.close('Confirm')">Wieder Öffnen</button>
-      <button type="button" class="btn btn-outline-dark" (click)="activeModal.dismiss('Cancel')">Nicht Öffnen</button>
+      <button type="button" class="btn btn-outline-primary" (click)="activeModal.close('Confirm')">Wieder Öffnen!</button>
+      <button type="button" class="btn btn-outline-dark" (click)="activeModal.dismiss('Cancel')">Doch Nicht!</button>
     </div>
   `
 })
