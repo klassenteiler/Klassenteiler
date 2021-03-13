@@ -20,12 +20,12 @@ import { SelfReportedInEdit } from './teacher-clean-up.models';
     <div class="modal-body">
       <p>
       Wollen Sie die Umfrage wieder öffnen? Dann können noch weitere Schüler:innen an der Umfrage über den Link teilnehmen. 
-      Korrekturen von Namen die Sie hier bereits gemacht haben werden dabei gelöscht.
+      Korrekturen von Einträgen, die Sie hier bereits gemacht haben, werden dabei ggf. gelöscht.
       </p>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-outline-primary" (click)="activeModal.close('Confirm')">Wieder Öffnen!</button>
-      <button type="button" class="btn btn-outline-dark" (click)="activeModal.dismiss('Cancel')">Doch Nicht!</button>
+      <button type="button" class="btn btn-outline-primary" (click)="activeModal.close('Confirm')">Wieder öffnen!</button>
+      <button type="button" class="btn btn-outline-dark" (click)="activeModal.dismiss('Cancel')">Doch nicht!</button>
     </div>
   `
 })
