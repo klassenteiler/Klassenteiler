@@ -85,6 +85,10 @@ export class BackendService {
     return this.prepareTeacherPutRequest<StringMessageT>(classId, classSecret, teacherSecret, "closeSurvey");
   }
 
+  reopenSurvey(classId: number, classSecret: string, teacherSecret: string): Observable<StringMessageT> {
+    return this.prepareTeacherPutRequest<StringMessageT>(classId, classSecret, teacherSecret, "openSurvey");
+  }
+
   startCalculatingWithMerge(classId: number, classSecret: string, teacherSecret: string, mergeBody: any): Observable<StringMessageT> {
     return this.prepareTeacherPostRequest<StringMessageT>(classId, classSecret, teacherSecret, "startCalculating", mergeBody);
   }

@@ -13,6 +13,10 @@
 
 <div class="card" *ngIf = "(classList !== null) && (friendRstudents !== null)">
     <div class="card-body" id="main-body">
+          <div>
+            <button class='btn btn-link' (click)="reopenSurvey()">Umfrage wieder öffnen</button> 
+          </div>
+
           <p>
             Es kann sein, dass Schüler:innen Namen falsch geschrieben haben oder vergessen haben sich einzutragen. Hier haben Sie die Möglichkeit solche Fehler zu korrigieren bevor der Algorithmus ausgeführt wird. Dies passiert in drei Schritten:
           </p>

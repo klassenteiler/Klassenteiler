@@ -1,12 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, of } from 'rxjs';
+import { TeacherService } from 'src/app/_services/teacher.service';
 import { ClassTeacher, SchoolClass } from 'src/app/_tools/enc-tools.service';
 import { MergeService } from './merge.service';
 
 import { TeacherCleanUpComponent } from './teacher-clean-up.component';
 import { SelfReportedInEdit } from './teacher-clean-up.models';
 
+class MockTeacherService{
+
+}
 
 class MockMergeService{
 
@@ -32,7 +36,8 @@ describe('TeacherCleanUpComponent', () => {
     await TestBed.configureTestingModule({
       imports:[NgbModule],
       providers: [
-        {provide: MergeService, useClass: MockMergeService}
+        {provide: MergeService, useClass: MockMergeService},
+        {provide: TeacherService, useClass: MockTeacherService}
       ],
       declarations: [ TeacherCleanUpComponent ]
     })

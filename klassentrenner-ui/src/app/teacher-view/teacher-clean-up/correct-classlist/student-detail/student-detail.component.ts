@@ -101,7 +101,10 @@ export class StudentDetailComponent implements OnInit {
     if (this.editMode && !this.sleeping) {
       if (this.formControl.valid) {
         const toChange: string = this.formControl.value;
-        if (this.originalNamesChecker.checkNameToAdd(toChange)) {
+        if (toChange === this.studentEntity.origName){
+          this.studentEntity.recover()
+        }
+        else if (this.originalNamesChecker.checkNameToAdd(toChange)) {
           this.studentEntity.name = toChange;
           this.classListChanged.emit();
         }
