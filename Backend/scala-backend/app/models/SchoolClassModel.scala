@@ -84,7 +84,7 @@ class SchoolClassModel(db: Database)(implicit ec: ExecutionContext) {
   }
 
   def getNumOfClasses(status: Int): Future[Int] = {
-    val intermediateResult: Future[Seq[models.Tables.SchoolclassRow]]  = db.run(Schoolclass.filter(x => (x.surveystatus === status && x.classname =!= "DEMO")).result)
+    val intermediateResult: Future[Seq[models.Tables.SchoolclassRow]]  = db.run(Schoolclass.filter(x => (x.surveystatus === status && x.schoolname =!= "DEMO")).result)
     intermediateResult.map(rows => rows.length)
   }
 }

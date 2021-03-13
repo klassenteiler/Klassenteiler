@@ -163,8 +163,8 @@ class SchoolClassControllerSpec
     "return 200 and a json with the counts of all classes that are not DEMO classes" in {
       val demoClass: SchoolClassDB = SchoolClassDB(
         None,
-        "DEMO",
-        Some("AMG"),
+        "test",
+        Some("DEMO"),
         "clsSecret",
         "teachsecret",
         "puKey",
