@@ -1,7 +1,7 @@
 import { stringify } from "@angular/compiler/src/util"
 import { type } from "os"
 import { StudentT } from "src/app/models"
-import { ClearLocalStudent, impl, SchoolClass } from "src/app/_tools/enc-tools.service"
+import { ClearLocalStudent, EncTools, impl, SchoolClass } from "src/app/_tools/enc-tools.service"
 
 interface StudentInEditStore{
     _currentName: string,
@@ -60,8 +60,9 @@ export class SelfReportedInEdit{
     }
 
     static makeSelfReported(name: string, id: number){
+        const cleanName = EncTools.cleanName(name)
         return new SelfReportedInEdit(
-            name,
+            cleanName,
             false,
             id,
             false,
@@ -70,8 +71,9 @@ export class SelfReportedInEdit{
     }
 
     static makeTeacherAdded(name: string){
+        const cleanName = EncTools.cleanName(name)
         return new SelfReportedInEdit(
-            name,
+            cleanName,
             true,
             null,
             false,
@@ -132,8 +134,8 @@ export class SelfReportedInEdit{
 
     set name(nname:string){
         if (this.deleted){ throw new Error("cant change name on a deleted student")}
-
-        this._currentName = nname
+        const cleanName  = EncTools.cleanName(nname)
+        this._currentName = cleanName
     }
 
 

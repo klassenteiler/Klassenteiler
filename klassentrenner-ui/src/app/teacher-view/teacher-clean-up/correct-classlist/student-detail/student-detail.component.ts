@@ -7,6 +7,7 @@ import { OriginalClassListChecker } from '../original-classList-checker';
 import { animate, AnimationEvent, state, style, transition, trigger } from '@angular/animations';
 import { AppModule } from 'src/app/app.module';
 import { ViewportScroller } from '@angular/common';
+import { EncTools } from 'src/app/_tools/enc-tools.service';
 
 @Component({
   selector: 'app-student-detail',
@@ -100,14 +101,15 @@ export class StudentDetailComponent implements OnInit {
   save() {
     if (this.editMode && !this.sleeping) {
       if (this.formControl.valid) {
-        const toChange: string = this.formControl.value;
+        const rawName: string = this.formControl.value;
+        const toChange: string = EncTools.cleanName(rawName);
         if (toChange === this.studentEntity.origName){
           this.studentEntity.recover()
         }
         else if (this.originalNamesChecker.checkNameToAdd(toChange)) {
           this.studentEntity.name = toChange;
-          this.classListChanged.emit();
         }
+        this.classListChanged.emit();
       }
       this.editMode = false;
       this.sleep();

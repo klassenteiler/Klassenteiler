@@ -4,6 +4,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { timer } from 'rxjs';
 import { TeacherService } from 'src/app/_services/teacher.service';
 import { ForbiddenNameValidator } from 'src/app/_shared/forbidden-name.directive';
+import { EncTools } from 'src/app/_tools/enc-tools.service';
 import {  SelfReportedInEdit } from '../teacher-clean-up.models';
 import { OriginalClassListChecker } from './original-classList-checker';
 
@@ -59,7 +60,8 @@ export class CorrectClasslistComponent implements OnInit {
 
   add(){
     console.log(this.currentClassListNames)
-    const name_to_add = this.newStudentControl.value
+    const rraw_name = this.newStudentControl.value
+    const name_to_add = EncTools.cleanName(rraw_name);
 
     if(this.newStudentControl.valid && name_to_add !== ""){
       if(this.originalNamesChecker.checkNameToAdd(name_to_add)){

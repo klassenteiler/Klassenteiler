@@ -18,8 +18,10 @@
                  [class.is-invalid]="formControl.invalid && (formControl.touched || formControl.dirty)"
                  placeholder="{{studentEntity.name}}" 
                  (blur)="save()" (keyup.enter)="save()" autofocus>
-                 <div *ngIf="formControl.invalid"  class="invalid-feedback">
-                    <span *ngIf="formControl.errors!.forbiddenName">Dieser Name kommt bereits vor.</span>
+                 <div *ngIf="formControl.invalid "  class="invalid-feedback">
+                    <span 
+                    *ngIf="formControl.errors!.forbiddenName && !(formControl.errors!.forbiddenName.name === studentEntity.name) ">
+                    Dieser Name kommt bereits vor.</span>
                     <!-- note the exclamation mark after errors in the line above, I am a bit confused about it -->
                 </div>
              </span>
