@@ -1,4 +1,5 @@
 import { AbstractControl, ValidatorFn } from "@angular/forms";
+import { EncTools } from "../_tools/enc-tools.service";
 
 /** A hero's name can't match the given regular expression */
 export class ForbiddenNameValidator{
@@ -9,8 +10,9 @@ export class ForbiddenNameValidator{
 
     func (control: AbstractControl): {[key: string]: any} | null{
       // console.log(this.currentClassListNames)
-      const foundId: number = this.currentClassListNames.indexOf(control.value)
+      const cleanName: string = EncTools.cleanName(control.value)
+      const foundId: number = this.currentClassListNames.indexOf(cleanName)
       const forbidden = foundId !== -1;
-      return forbidden ? {forbiddenName: {arrayPosition: foundId}} : null;
+      return forbidden ? {forbiddenName: {arrayPosition: foundId, name: cleanName}} : null;
     };
 }
